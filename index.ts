@@ -12,14 +12,8 @@ const MAIN_HOLD_HOURS = Math.min(Math.max(Number(Deno.env.get("HOLD_HOURS") ?? 4
 let SELF = "simplypaye"; // nom reel de la fonction, detecte automatiquement (ex. hyper-worker)
 const db = createClient(SB_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
-// Origines autorisées : le site + l'application mobile Capacitor (Android/iOS). Ajoutez ALLOWED_ORIGINS="https://autre.site" si besoin.
-const ALLOWED = new Set([
-  SITE, "capacitor://localhost", "https://localhost", "http://localhost",
-  ...(Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((x) => x.trim().replace(/\/$/, "")).filter(Boolean),
-].filter(Boolean));
-let CORS: Record<string, string> = {
-  "Access-Control-Allow-Origin": SITE || "null",
-  "Vary": "Origin",
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
 };
@@ -247,24 +241,8 @@ async function antiSpam(kind: string, wa: string) {
 
 const amountsOf = (kind: string, row: Row) => (kind === "main" ? { FC: row.fc || 0, USD: row.usd || 0 } : row.amounts || {});
 
-// Limitation de débit simple par IP (anti-abus) : 40 requêtes POST / minute
-const HITS = new Map<string, number[]>();
-const limited = (ip: string) => {
-  const now = Date.now(), arr = (HITS.get(ip) ?? []).filter((x) => now - x < 60_000);
-  arr.push(now); HITS.set(ip, arr);
-  if (HITS.size > 5000) HITS.clear();
-  return arr.length > 40;
-};
-
 Deno.serve(async (req) => {
-  const origin = (req.headers.get("origin") ?? "").replace(/\/$/, "");
-  CORS = { ...CORS, "Access-Control-Allow-Origin": ALLOWED.has(origin) ? origin : (SITE || "null") };
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
-  if (req.method === "POST") {
-    const ip = (req.headers.get("x-forwarded-for") ?? "").split(",")[0].trim() || "?";
-    if (limited(ip)) return fail("Trop de requêtes, réessayez dans une minute.", 429);
-    if (Number(req.headers.get("content-length") ?? 0) > 200_000) return fail("Requête trop volumineuse.", 413);
-  }
   // Diagnostic (sans donnée sensible) : appelé par le Dashboard admin
   if (req.method === "GET" && !req.url.includes("cb=1")) return json({ ok: true, merchant: !!MC, key: !!KEY, site: !!SITE, main_open: Deno.env.get("MAIN_OPEN") === "1", callback: SEND_CALLBACK });
   const missing = [!MC && "SIMPLYPAYE_MERCHANT_CODE", !KEY && "SIMPLYPAYE_API_KEY", !SITE && "SITE_URL"].filter(Boolean);
