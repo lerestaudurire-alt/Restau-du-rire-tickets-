@@ -1,0 +1,14 @@
+Bonjour l'equipe SimplyPaye,
+
+Notre site de billetterie (code marchand : [VOTRE CODE MARCHAND]) n'arrive plus a lancer de paiement Mobile Money.
+Notre serveur envoie bien une requete POST a :
+   https://api-simply-pay.net/api/simply-production
+(en-tetes Content-Type: application/json, X-API-Key, corps JSON : merchantCode, phone, amount, currency, reference).
+Il n'y a aucune redirection cote client. Mais votre serveur repond :
+   HTTP 502 - "The GET method is not supported for route api/simply-production. Supported methods: POST."
+Votre passerelle semble transformer notre POST en GET (redirection HTTP->HTTPS, proxy ou load balancer).
+Un seul paiement de test (100 FC) a reussi, les autres echouent. Pouvez-vous verifier cela ?
+Pouvez-vous aussi autoriser l'URL de rappel (callback) de notre domaine : https://ebzctmnlriumujgygnby.supabase.co ?
+(avec le rappel active, nous avons recu : "URL de callback non autorisee")
+
+Merci.

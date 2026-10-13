@@ -1,0 +1,14 @@
+VERSION ORIGINALE (textes et structure repensés)
+- Design conservé (couleurs, polices, cartes, navigation).
+- Accueil, onglets, titres de pages, pied de page, "Qui sommes-nous", aide et mode d'emploi : tout réécrit.
+- Section Annonces supprimée (accueil, tableau de bord, code).
+- Nouveautés propres à l'app : compte à rebours J-xx avant l'Édition 1.5 et "La blague du jour".
+Mise en ligne : remplacez le dossier site/ sur GitHub puis ouvrez le site avec ?v=4 à la fin de l'adresse.
+
+MISE A JOUR 2 (ventes par vendeur, sécurité, applications natives)
+1. SUPABASE > SQL Editor : collez supabase/sql/15-ventes-par-vendeur.sql > Run (ou le fichier MISE-A-JOUR-SEULEMENT.sql, qui le contient).
+2. SUPABASE > Edge Functions : collez supabase/functions/simplypaye/index.ts > Deploy.
+   Nouveau secret facultatif : ALLOWED_ORIGINS (autres adresses autorisées, séparées par des virgules).
+   SITE_URL doit rester l'adresse exacte du site.
+3. GITHUB : remplacez le dossier site/ puis ouvrez le site avec ?v=5.
+4. Applications Android / iPhone : voir capacitor-app/LISEZ-MOI-STORES.md.

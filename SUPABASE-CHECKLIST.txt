@@ -1,0 +1,19 @@
+SUPABASE - A FAIRE UNE FOIS (puis plus de panne)
+
+1. SQL EDITOR : lancer sql/MISE-A-JOUR-SEULEMENT.sql (relancable sans risque).
+   -> colonnes en jsonb, droits d'acces, roles admin, chiffrement, diagnostic.
+
+2. EDGE FUNCTIONS : fonction nommee exactement "simplypaye" = functions/simplypaye/index.ts
+   -> Deploy, puis dans ses reglages : "Verify JWT" DESACTIVE.
+
+3. EDGE FUNCTIONS > SECRETS : SIMPLYPAYE_MERCHANT_CODE, SIMPLYPAYE_API_KEY, SITE_URL (sans "/" final).
+   Plus tard : MAIN_OPEN=1 pour ouvrir l'Edition 1.5.
+
+4. AUTHENTICATION > Sign In / Providers : "Allow new users to sign up" ACTIVE, fournisseur Email active.
+   AUTHENTICATION > URL Configuration : Site URL = adresse de votre site.
+
+5. VERIFICATION : sur le site, Dashboard admin > "Diagnostic du systeme" > Lancer.
+   Tout doit etre en vert. Un point rouge dit quoi corriger.
+
+A REFAIRE APRES CHAQUE MISE A JOUR : relancer le SQL (etape 1), redeployer la fonction (etape 2)
+si elle a change, puis lancer le diagnostic (etape 5).

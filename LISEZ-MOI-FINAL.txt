@@ -1,0 +1,44 @@
+LE RESTAU DU RIRE TICKETS - PACK COMPLET (derniere version)
+
+ORDRE D'INSTALLATION (base Supabase deja en service)
+1. SUPABASE > SQL Editor : collez supabase/sql/MISE-A-JOUR-SEULEMENT.sql > Run (relancable sans risque).
+   (Sur telephone, ouvrez supabase-a-copier-FINAL.html : boutons "Copier".)
+   Il contient : correctifs de creation d'evenement, statuts, stock, annonces + images, reversements,
+   stock limite "Sold out" (blocage de la survente), diagnostic.
+2. SUPABASE > Edge Functions > votre fonction de paiement : collez supabase/functions/simplypaye/index.ts > Deploy.
+   Secrets : SIMPLYPAYE_MERCHANT_CODE, SIMPLYPAYE_API_KEY (cle complete), SITE_URL, MAIN_OPEN=1.
+   (SIMPLYPAYE_CALLBACK : laisser desactive tant que SimplyPaye n'autorise pas votre adresse.)
+3. GITHUB : mettez TOUT le dossier site/ a la racine du depot (index.html, sw.js, icones, manifest, robots, sitemap).
+   Puis fermez/rouvrez le site avec ?v=2 a la fin de l'adresse.
+4. TESTS avant de partager : reservation (avec adresse) ; achat en especes (categorie + photo du ticket) ;
+   achat en ligne (sans adresse) ; scan d'un billet cote organisateur ; dashboard organisateur ; annonce avec images ;
+   un evenement avec stock 2 : verifier "Bientot epuise" puis "Sold out".
+
+MISE A JOUR (logo, salles, annonces, dashboard)
+- Nouveau logo "Restau du Rire Tickets" (dossier logos/ + icones de l'app + en-tete). Fichier pour les reseaux : logos/logo-restau-du-rire-tickets-profil-1080.png
+- Dashboard organisateur/admin et page de suivi : seulement le nombre de billets achetes ou reserves (plus le total programme). Le nom de l'evenement est affiche dans l'onglet.
+- Page publique : le total de billets n'est plus affiche (seulement Sold out / Bientot epuise).
+- Creation d'evenement : bouton "Ajouter une autre salle" (3 salles maximum, enregistrees dans le champ salle, separees par " • ").
+- Annonces : l'accueil affiche seulement l'affiche et le titre + bouton "Lire l'annonce" ; le texte complet s'ouvre dans une fenetre.
+- Aucun SQL a relancer pour cette mise a jour. Rouvrez le site avec ?v=3 a la fin de l'adresse.
+
+NOUVEAUTES
+- Grand design sur toute l'application publique (le dashboard admin reste compact).
+- Adresse seulement en mode Reservation. Mode "En especes" : categorie du ticket + photo + code a ecrire au dos
+  + message WhatsApp avec le code.
+- Modele de l'evenement (spectacle, gala d'humour, theatre, concert, festival...) = onglets en haut de l'accueil.
+- Numeros de paiement : M-Pesa, Airtel, Orange, Africell (bouton "Ajouter les 4 operateurs").
+- Nombre total de billets par categorie (en ligne + especes) : badges Sold out / Bientot epuise / Forte demande,
+  totaux dans les dashboards, et blocage de la survente dans la base (SQL 14).
+- Dashboard organisateur : ventes, commission 10 % + frais, net, reste a recevoir, scanner, rapport CSV.
+- Dashboard admin : reversements aux organisateurs, annonces & actualites (plusieurs images).
+- Logos M-Pesa, Airtel Money, Orange Money, Afrimoney dans le choix du paiement.
+- Guide d'installation (iPhone, Android, ordinateur) + carte sur l'accueil.
+- Paiement : choix de l'operateur, un seul essai (pas de double debit), commande conservee si reponse illisible.
+
+A SAVOIR
+- PROV_PCT (frais SimplyPaye, 3 % par defaut) et PLAT_PCT (10 %) sont dans index.html : ajustez si besoin.
+- Le versement automatique sur le Mobile Money de l'organisateur n'est pas implemente : suivi manuel dans
+  Dashboard > evenement > "Reversement".
+- Visa / Mastercard : logo non ajoute (image avec filigrane) - envoyez une version propre.
+- CGV, confidentialite, mentions legales : textes types a faire relire par un juriste.

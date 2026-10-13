@@ -1,0 +1,28 @@
+{
+  "appId": "com.restaudurire.tickets",
+  "appName": "Restau du Rire",
+  "webDir": "www",
+  "backgroundColor": "#0e2f2b",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": false
+  },
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  },
+  "ios": {
+    "contentInset": "always"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#0e2f2b",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0e2f2b"
+    }
+  }
+}

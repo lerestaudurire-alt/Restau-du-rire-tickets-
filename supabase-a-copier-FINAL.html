@@ -1,0 +1,639 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Supabase – à copier (version finale)</title><style>
+*{box-sizing:border-box}body{margin:auto;background:#f3f7f5;color:#0e2f2b;font:16px/1.5 -apple-system,system-ui,sans-serif;padding:16px;max-width:760px}h1{font-family:Georgia,serif}
+.card{background:#fff;border-radius:16px;padding:16px;margin:14px 0;border-left:6px solid #0f9d8a;box-shadow:0 2px 10px #0001}h2{font-size:18px;margin:0 0 6px;display:flex;gap:10px;align-items:center}
+h2 span{background:#0e2f2b;color:#fff;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;font-size:15px;flex:none}.h{color:#4d6862;font-size:14px;margin:4px 0 10px}
+.btn{width:100%;border:0;border-radius:12px;padding:14px;background:#0f9d8a;color:#fff;font-weight:700;font-size:16px}.ok{background:#0e2f2b!important}
+textarea{width:100%;margin-top:10px;font:12px/1.4 ui-monospace,Menlo,monospace;border:1px solid #cfe0db;border-radius:10px;padding:8px;background:#f8fbfa}</style></head><body>
+<h1>Supabase : à copier</h1><p class="h">Appuyez sur « Copier », puis collez dans Supabase (aucune sélection manuelle nécessaire).</p><section class="card"><h2><span>1</span>SQL (SQL Editor)</h2><p class="h">Supabase → SQL Editor → tout effacer → coller → Run. Relançable sans risque.</p><button class="btn" onclick="cp('sq',this)">📋 Copier (15965 caractères)</button><textarea id="sq" readonly rows="5" onclick="this.select()">-- Mise a jour uniquement (parties 05, 06, 07) : SANS les anciens scripts 00 a 04.
+-- A coller dans Supabase &gt; SQL Editor pour une base deja installee.
+
+-- ########## 05-fix-creation-evenement.sql ##########
+-- 05 — Correction : &quot;Création impossible (400) : expected JSON array [22P02]&quot;
+-- Cause : certaines colonnes de la table events existent déjà dans votre base avec un type
+-- tableau (text[]), alors que le site envoie du JSON (objets). Les scripts précédents
+-- (&quot;add column if not exists&quot;) ne changent jamais le type d&#x27;une colonne déjà créée.
+-- À exécuter UNE fois dans Supabase &gt; SQL Editor. Sans danger si déjà correct.
+
+-- 0) Supprimer les anciennes contraintes CHECK qui utilisent des fonctions de tableau
+--    (ex. cardinality(pay_numbers)) : elles bloquent la conversion en jsonb.
+do $$
+declare r record;
+begin
+  for r in select conname from pg_constraint
+           where conrelid=&#x27;public.events&#x27;::regclass and contype=&#x27;c&#x27;
+             and (pg_get_constraintdef(oid) ilike &#x27;%tickets%&#x27;
+               or pg_get_constraintdef(oid) ilike &#x27;%pay_numbers%&#x27;
+               or pg_get_constraintdef(oid) ilike &#x27;%modes%&#x27;
+               or pg_get_constraintdef(oid) ilike &#x27;%cardinality%&#x27;
+               or pg_get_constraintdef(oid) ilike &#x27;%array_length%&#x27;) loop
+    execute format(&#x27;alter table public.events drop constraint %I&#x27;, r.conname);
+  end loop;
+end $$;
+
+do $$
+declare c text;
+begin
+  foreach c in array array[&#x27;tickets&#x27;,&#x27;pay_numbers&#x27;] loop
+    if exists (select 1 from information_schema.columns
+               where table_schema=&#x27;public&#x27; and table_name=&#x27;events&#x27; and column_name=c
+                 and (data_type=&#x27;ARRAY&#x27; or data_type in (&#x27;text&#x27;,&#x27;json&#x27;,&#x27;character varying&#x27;))) then
+      execute format(&#x27;alter table public.events alter column %I drop default&#x27;, c);
+      execute format(&#x27;alter table public.events alter column %I type jsonb using
+        case when %I is null then &#x27;&#x27;[]&#x27;&#x27;::jsonb else to_jsonb(%I) end&#x27;, c, c, c);
+    end if;
+  end loop;
+
+  if exists (select 1 from information_schema.columns
+             where table_schema=&#x27;public&#x27; and table_name=&#x27;events&#x27; and column_name=&#x27;modes&#x27;
+               and data_type&lt;&gt;&#x27;jsonb&#x27;) then
+    alter table public.events alter column modes drop default;
+    alter table public.events alter column modes type jsonb using &#x27;{}&#x27;::jsonb;
+  end if;
+end $$;
+
+-- Valeurs par défaut sûres
+alter table public.events alter column tickets set default &#x27;[]&#x27;::jsonb;
+alter table public.events alter column pay_numbers set default &#x27;[]&#x27;::jsonb;
+alter table public.events alter column modes set default &#x27;{}&#x27;::jsonb;
+
+-- Même vérification pour les commandes (items envoyés en JSON)
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+             where table_schema=&#x27;public&#x27; and table_name=&#x27;orders&#x27; and column_name=&#x27;items&#x27;
+               and data_type&lt;&gt;&#x27;jsonb&#x27;) then
+    alter table public.orders alter column items type jsonb using to_jsonb(items);
+  end if;
+end $$;
+
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- Contrôle : les 3 lignes doivent afficher &quot;jsonb&quot;
+
+-- ########## 06 : evenements sur plusieurs dates (festival) ##########
+alter table public.events add column if not exists ends_at timestamptz;
+alter table public.events add column if not exists dates jsonb;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- ########## 07 : colonnes obligatoires heritees (ex. &quot;cat&quot;) qui bloquent la creation ##########
+do $$
+declare r record;
+begin
+  for r in select column_name from information_schema.columns
+           where table_schema=&#x27;public&#x27; and table_name=&#x27;events&#x27;
+             and is_nullable=&#x27;NO&#x27; and column_default is null and column_name&lt;&gt;&#x27;id&#x27; loop
+    execute format(&#x27;alter table public.events alter column %I drop not null&#x27;, r.column_name);
+  end loop;
+end $$;
+notify pgrst, &#x27;reload schema&#x27;;
+-- 08 — Page de suivi de l&#x27;organisateur (lien #progress/...) : fonction event_progress
+-- Ne renvoie AUCUNE donnee personnelle (ni nom, ni telephone) : seulement les chiffres de vente.
+drop function if exists public.event_progress(text);
+create or replace function public.event_progress(p_token text) returns jsonb
+language sql stable security definer set search_path=public as $$
+  select coalesce((
+    select jsonb_build_object(
+      &#x27;found&#x27;, true,
+      &#x27;title&#x27;, e.title, &#x27;venue&#x27;, e.venue, &#x27;city&#x27;, e.city,
+      &#x27;starts_at&#x27;, e.starts_at, &#x27;dates&#x27;, e.dates,
+      &#x27;tickets&#x27;, coalesce(e.tickets,&#x27;[]&#x27;::jsonb),
+      &#x27;orders&#x27;, coalesce((
+        select jsonb_agg(jsonb_build_object(
+          &#x27;status&#x27;, o.status,
+          &#x27;kind&#x27;, o.kind,
+          &#x27;used&#x27;, coalesce(o.used,false),
+          &#x27;items&#x27;, coalesce(o.items,&#x27;[]&#x27;::jsonb),
+          &#x27;qty&#x27;, coalesce(o.total_qty,(select coalesce(sum((i-&gt;&gt;&#x27;qty&#x27;)::int),0) from jsonb_array_elements(coalesce(o.items,&#x27;[]&#x27;::jsonb)) i)),
+          &#x27;amounts&#x27;, coalesce(o.amounts,&#x27;{}&#x27;::jsonb),
+          &#x27;day&#x27;, to_char(o.created_at,&#x27;YYYY-MM-DD&#x27;)))
+        from public.orders o
+        where o.event_id=e.id and o.status in (&#x27;pending&#x27;,&#x27;confirmed&#x27;)), &#x27;[]&#x27;::jsonb))
+    from public.events e
+    where coalesce(p_token,&#x27;&#x27;)&lt;&gt;&#x27;&#x27; and e.share_token=p_token
+    limit 1
+  ), jsonb_build_object(&#x27;found&#x27;, false));
+$$;
+grant execute on function public.event_progress(text) to anon, authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- 09 — Suppression d&#x27;un evenement depuis le tableau de bord
+-- Admin : peut tout supprimer. Organisateur : seulement ses evenements SANS commande confirmee.
+drop function if exists public.delete_event(uuid);
+create or replace function public.delete_event(p_id uuid) returns boolean
+language plpgsql security definer set search_path=public as $$
+declare ev public.events%rowtype;
+begin
+  select * into ev from public.events where id=p_id;
+  if not found then raise exception &#x27;introuvable&#x27;; end if;
+  if not public.is_admin() then
+    if ev.owner_id is distinct from auth.uid() then raise exception &#x27;refuse&#x27;; end if;
+    if exists(select 1 from public.orders where event_id=p_id and status=&#x27;confirmed&#x27;) then
+      raise exception &#x27;Cet evenement a deja des billets confirmes : contactez l&#x27;&#x27;administrateur pour le supprimer.&#x27;;
+    end if;
+  end if;
+  delete from public.orders where event_id=p_id;
+  delete from public.events where id=p_id;
+  return true;
+end $$;
+revoke all on function public.delete_event(uuid) from public, anon;
+grant execute on function public.delete_event(uuid) to authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+
+-- ########## 10-diagnostic.sql ##########
+-- 10 - Diagnostic du systeme (bouton &quot;Lancer le diagnostic&quot; du Dashboard). Relancable sans risque.
+create or replace function public.system_check() returns jsonb language plpgsql security definer set search_path=public as $$
+declare r jsonb:=&#x27;[]&#x27;; t text; f text;
+begin
+  if not public.is_admin() then raise exception &#x27;denied&#x27;; end if;
+  -- types des colonnes JSON
+  for t,f in select * from (values (&#x27;events&#x27;,&#x27;tickets&#x27;),(&#x27;events&#x27;,&#x27;pay_numbers&#x27;),(&#x27;events&#x27;,&#x27;modes&#x27;),(&#x27;orders&#x27;,&#x27;items&#x27;)) v(a,b) loop
+    r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Colonne &#x27;||t||&#x27;.&#x27;||f||&#x27; en jsonb&#x27;,&#x27;ok&#x27;,coalesce((select data_type=&#x27;jsonb&#x27; from information_schema.columns where table_schema=&#x27;public&#x27; and table_name=t and column_name=f),false),
+      &#x27;h&#x27;,&#x27;Lancez MISE-A-JOUR-SEULEMENT.sql (partie 05).&#x27;);
+  end loop;
+  -- colonnes indispensables
+  for t,f in select * from (values (&#x27;events&#x27;,&#x27;ticket_info&#x27;),(&#x27;events&#x27;,&#x27;pay_link&#x27;),(&#x27;events&#x27;,&#x27;dates&#x27;),(&#x27;events&#x27;,&#x27;ends_at&#x27;),(&#x27;events&#x27;,&#x27;share_token&#x27;),(&#x27;events&#x27;,&#x27;owner_id&#x27;),
+    (&#x27;orders&#x27;,&#x27;phone_enc&#x27;),(&#x27;orders&#x27;,&#x27;phone_idx&#x27;),(&#x27;orders&#x27;,&#x27;pay_ref&#x27;),(&#x27;orders&#x27;,&#x27;hold&#x27;),(&#x27;orders&#x27;,&#x27;expires_at&#x27;),
+    (&#x27;reservations&#x27;,&#x27;phone_enc&#x27;),(&#x27;reservations&#x27;,&#x27;phone_idx&#x27;),(&#x27;reservations&#x27;,&#x27;pay_ref&#x27;),(&#x27;reservations&#x27;,&#x27;hold&#x27;),(&#x27;reservations&#x27;,&#x27;expires_at&#x27;)) v(a,b) loop
+    r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Colonne &#x27;||t||&#x27;.&#x27;||f,&#x27;ok&#x27;,exists(select 1 from information_schema.columns where table_schema=&#x27;public&#x27; and table_name=t and column_name=f),
+      &#x27;h&#x27;,&#x27;Lancez SQL-COMPLET-A-JOUR.sql (ou MISE-A-JOUR-SEULEMENT.sql).&#x27;);
+  end loop;
+  -- fonctions
+  foreach f in array array[&#x27;my_role&#x27;,&#x27;is_admin&#x27;,&#x27;admin_rows&#x27;,&#x27;admin_waitlist&#x27;,&#x27;find_ticket&#x27;,&#x27;find_order&#x27;,&#x27;org_orders&#x27;,&#x27;staff_check&#x27;,&#x27;staff_list&#x27;,&#x27;admin_overview&#x27;,&#x27;event_progress&#x27;,&#x27;delete_event&#x27;,&#x27;expire_holds&#x27;,&#x27;blind&#x27;,&#x27;enc&#x27;,&#x27;dec&#x27;] loop
+    r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Fonction &#x27;||f,&#x27;ok&#x27;,exists(select 1 from pg_proc where proname=f and pronamespace=&#x27;public&#x27;::regnamespace),&#x27;h&#x27;,&#x27;Lancez SQL-COMPLET-A-JOUR.sql.&#x27;);
+  end loop;
+  -- droits d&#x27;acces
+  for t,f in select * from (values (&#x27;events&#x27;,&#x27;ev_insert&#x27;),(&#x27;events&#x27;,&#x27;ev_select&#x27;),(&#x27;events&#x27;,&#x27;ev_update&#x27;),(&#x27;orders&#x27;,&#x27;ord_insert&#x27;)) v(a,b) loop
+    r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Droit &#x27;||f,&#x27;ok&#x27;,exists(select 1 from pg_policies where schemaname=&#x27;public&#x27; and tablename=t and policyname=f),&#x27;h&#x27;,&#x27;Lancez 03-database-policies.sql (inclus dans SQL-COMPLET-A-JOUR.sql).&#x27;);
+  end loop;
+  -- administrateurs, cle de chiffrement, stockage
+  r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Au moins un administrateur&#x27;,&#x27;ok&#x27;,exists(select 1 from public.app_roles where role=&#x27;admin&#x27;),&#x27;h&#x27;,&#x27;Lancez 04-admin-fix.sql.&#x27;);
+  r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Cle de chiffrement AES-256&#x27;,&#x27;ok&#x27;,exists(select 1 from public.app_secrets where k=&#x27;aes_key&#x27;),&#x27;h&#x27;,&#x27;Lancez 01-database.sql.&#x27;);
+  r:=r||jsonb_build_object(&#x27;n&#x27;,&#x27;Stockage des affiches et preuves&#x27;,&#x27;ok&#x27;,(select count(*) from storage.buckets where id in (&#x27;affiches&#x27;,&#x27;preuves&#x27;))=2,&#x27;h&#x27;,&#x27;Lancez 03-database-policies.sql.&#x27;);
+  return r;
+end $$;
+revoke all on function public.system_check() from public, anon;
+grant execute on function public.system_check() to authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+
+-- ########## 11 : statuts des commandes (corrige &quot;orders_status_check&quot; : le statut confirmed etait refuse) ##########
+-- 11 - Corrige l&#x27;erreur &quot;orders_status_check&quot; : la base refusait le statut &quot;confirmed&quot; pour les commandes.
+-- Relancable sans risque (les anciennes lignes ne sont pas modifiées).
+do $$ declare t text; c record; begin
+  foreach t in array array[&#x27;orders&#x27;,&#x27;reservations&#x27;] loop
+    for c in select conname from pg_constraint
+             where conrelid=(&#x27;public.&#x27;||t)::regclass and contype=&#x27;c&#x27; and pg_get_constraintdef(oid) ilike &#x27;%status%&#x27; loop
+      execute format(&#x27;alter table public.%I drop constraint %I&#x27;, t, c.conname);
+    end loop;
+    execute format(&#x27;alter table public.%I add constraint %I check (status in (&#x27;&#x27;pending&#x27;&#x27;,&#x27;&#x27;confirmed&#x27;&#x27;,&#x27;&#x27;cancelled&#x27;&#x27;,&#x27;&#x27;rejected&#x27;&#x27;,&#x27;&#x27;expired&#x27;&#x27;,&#x27;&#x27;failed&#x27;&#x27;,&#x27;&#x27;refunded&#x27;&#x27;)) not valid&#x27;, t, t||&#x27;_status_check&#x27;);
+  end loop;
+end $$;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- ########## 12 : stock = commandes en attente + confirmees (les billets diminuent des l&#x27;enregistrement) ##########
+-- Les billets diminuent des qu&#x27;une commande est enregistree (en attente ou confirmee), pas seulement apres confirmation.
+drop function if exists public.stock();
+create or replace function public.stock() returns jsonb language sql stable security definer set search_path=public as $$
+  select jsonb_build_object(
+    &#x27;total&#x27;, coalesce(sum(standard+vip+vvip+sponsor+grand_sponsor),0),
+    &#x27;standard&#x27;, coalesce(sum(standard),0), &#x27;vip&#x27;, coalesce(sum(vip),0), &#x27;vvip&#x27;, coalesce(sum(vvip),0),
+    &#x27;sponsor&#x27;, coalesce(sum(sponsor),0), &#x27;grand_sponsor&#x27;, coalesce(sum(grand_sponsor),0))
+  from public.reservations where status&lt;&gt;&#x27;cancelled&#x27; $$;
+grant execute on function public.stock() to anon, authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+
+-- ########## 13 : annonces ##########
+-- 11 - Annonces &amp; actualites (page d&#x27;accueil). Relancable sans risque.
+create table if not exists public.announcements(
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  title text not null, body text, image_url text, link_url text,
+  active boolean not null default true, sort int default 0);
+alter table public.announcements enable row level security;
+drop policy if exists ann_read on public.announcements;
+drop policy if exists ann_admin on public.announcements;
+create policy ann_read on public.announcements for select to anon, authenticated using (active or public.is_admin());
+create policy ann_admin on public.announcements for all to authenticated using (public.is_admin()) with check (public.is_admin());
+grant select on public.announcements to anon;
+grant select, insert, update, delete on public.announcements to authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- ########## 14 : organisateurs ##########
+-- 12 - Organisateurs : reversements, modeles d&#x27;evenement libres, adresse facultative. Relancable sans risque.
+-- Les modeles d&#x27;evenement (gala d&#x27;humour, theatre...) : on retire toute contrainte limitant la categorie.
+do $$ declare c record; begin
+  for c in select conname from pg_constraint where conrelid=&#x27;public.events&#x27;::regclass and contype=&#x27;c&#x27;
+           and pg_get_constraintdef(oid) ilike &#x27;%category%&#x27; loop
+    execute format(&#x27;alter table public.events drop constraint %I&#x27;, c.conname);
+  end loop; end $$;
+-- L&#x27;adresse n&#x27;est plus obligatoire (sauf reservation)
+do $$ begin
+  if exists (select 1 from information_schema.columns where table_schema=&#x27;public&#x27; and table_name=&#x27;orders&#x27; and column_name=&#x27;address&#x27;) then
+    alter table public.orders alter column address drop not null; end if; end $$;
+-- Reversements aux organisateurs (suivi des sommes envoyees sur leur Mobile Money)
+create table if not exists public.payouts(
+  id uuid primary key default gen_random_uuid(), created_at timestamptz default now(),
+  event_id uuid not null, amount numeric not null check (amount &gt; 0), currency text not null default &#x27;CDF&#x27;, note text);
+alter table public.payouts enable row level security;
+drop policy if exists payouts_admin on public.payouts; drop policy if exists payouts_owner on public.payouts;
+create policy payouts_admin on public.payouts for all to authenticated using (public.is_admin()) with check (public.is_admin());
+create policy payouts_owner on public.payouts for select to authenticated
+  using (exists (select 1 from public.events e where e.id = payouts.event_id and e.owner_id = auth.uid()));
+grant select on public.payouts to authenticated; grant insert, update, delete on public.payouts to authenticated;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- ########## 15 : images des annonces ##########
+-- 13 - Plusieurs images par annonce. Relancable sans risque.
+alter table public.announcements add column if not exists images jsonb default &#x27;[]&#x27;::jsonb;
+notify pgrst, &#x27;reload schema&#x27;;
+
+-- ########## 16 : stock limite (Sold out) ##########
+-- 14 - Stock limite : impossible de vendre plus de billets que le total programme (en ligne + especes + reservations).
+-- Relancable sans risque.
+create or replace function public.orders_stock_guard() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare ev jsonb; t jsonb; it jsonb; lim int; sold int; want int;
+begin
+  if NEW.event_id is null or coalesce(NEW.status,&#x27;pending&#x27;) in (&#x27;cancelled&#x27;,&#x27;rejected&#x27;,&#x27;expired&#x27;,&#x27;failed&#x27;) then return NEW; end if;
+  perform pg_advisory_xact_lock(hashtext(NEW.event_id::text));
+  select tickets into ev from public.events where id = NEW.event_id;
+  if ev is null or jsonb_typeof(ev) &lt;&gt; &#x27;array&#x27; then return NEW; end if;
+  for it in select * from jsonb_array_elements(coalesce(NEW.items,&#x27;[]&#x27;::jsonb)) loop
+    t := null;
+    select x into t from jsonb_array_elements(ev) x where x-&gt;&gt;&#x27;id&#x27; = it-&gt;&gt;&#x27;id&#x27; limit 1;
+    lim := coalesce(nullif(t-&gt;&gt;&#x27;stock&#x27;,&#x27;&#x27;)::numeric, 0)::int;
+    if t is not null and lim &gt; 0 then
+      select coalesce(sum((i-&gt;&gt;&#x27;qty&#x27;)::numeric),0)::int into sold
+        from public.orders o, jsonb_array_elements(coalesce(o.items,&#x27;[]&#x27;::jsonb)) i
+        where o.event_id = NEW.event_id and o.status not in (&#x27;cancelled&#x27;,&#x27;rejected&#x27;,&#x27;expired&#x27;,&#x27;failed&#x27;) and i-&gt;&gt;&#x27;id&#x27; = it-&gt;&gt;&#x27;id&#x27;;
+      want := coalesce((it-&gt;&gt;&#x27;qty&#x27;)::numeric, 0)::int;
+      if sold + want &gt; lim then
+        raise exception &#x27;SOLD_OUT: % (reste %)&#x27;, coalesce(t-&gt;&gt;&#x27;name&#x27;,&#x27;&#x27;), greatest(lim - sold, 0);
+      end if;
+    end if;
+  end loop;
+  return NEW;
+end $$;
+drop trigger if exists orders_stock_guard on public.orders;
+create trigger orders_stock_guard before insert on public.orders for each row execute function public.orders_stock_guard();
+notify pgrst, &#x27;reload schema&#x27;;
+</textarea></section><section class="card"><h2><span>2</span>Code de la fonction de paiement</h2><p class="h">Edge Functions → votre fonction (dynamic-action) → Code → tout effacer → coller → Deploy.</p><button class="btn" onclick="cp('fn',this)">📋 Copier (20366 caractères)</button><textarea id="fn" readonly rows="5" onclick="this.select()">// Edge Function Supabase : paiement SimplyPaye + réservations gratuites + réservations &quot;payer plus tard&quot;
+// Déploiement : supabase functions deploy simplypaye --no-verify-jwt
+import { createClient } from &quot;https://esm.sh/@supabase/supabase-js@2&quot;;
+
+const API = &quot;https://api-simply-pay.net/api&quot;;
+const MC = Deno.env.get(&quot;SIMPLYPAYE_MERCHANT_CODE&quot;) ?? &quot;&quot;;
+const KEY = Deno.env.get(&quot;SIMPLYPAYE_API_KEY&quot;) ?? &quot;&quot;;
+const SITE = (Deno.env.get(&quot;SITE_URL&quot;) ?? &quot;&quot;).replace(/\/$/, &quot;&quot;);
+const SB_URL = Deno.env.get(&quot;SUPABASE_URL&quot;)!;
+const SEND_CALLBACK = Deno.env.get(&quot;SIMPLYPAYE_CALLBACK&quot;) === &quot;1&quot;;
+const MAIN_HOLD_HOURS = Math.min(Math.max(Number(Deno.env.get(&quot;HOLD_HOURS&quot;) ?? 48), 1), 168);
+let SELF = &quot;simplypaye&quot;; // nom reel de la fonction, detecte automatiquement (ex. hyper-worker)
+const db = createClient(SB_URL, Deno.env.get(&quot;SUPABASE_SERVICE_ROLE_KEY&quot;)!);
+
+const CORS = {
+  &quot;Access-Control-Allow-Origin&quot;: &quot;*&quot;,
+  &quot;Access-Control-Allow-Headers&quot;: &quot;authorization, x-client-info, apikey, content-type&quot;,
+  &quot;Access-Control-Allow-Methods&quot;: &quot;POST, GET, OPTIONS&quot;,
+};
+const json = (b: unknown, s = 200) =&gt;
+  new Response(JSON.stringify(b), { status: s, headers: { ...CORS, &quot;Content-Type&quot;: &quot;application/json; charset=utf-8&quot; } });
+const fail = (m: string, s = 400) =&gt; json({ error: m }, s);
+
+const MAIN: Record&lt;string, [string, number, &quot;FC&quot; | &quot;USD&quot;]&gt; = {
+  standard: [&quot;Standard&quot;, 5000, &quot;FC&quot;],
+  vip: [&quot;VIP&quot;, 10, &quot;USD&quot;],
+  vvip: [&quot;VVIP&quot;, 20, &quot;USD&quot;],
+  sponsor: [&quot;Sponsor&quot;, 50, &quot;USD&quot;],
+  grand_sponsor: [&quot;Grand Sponsor&quot;, 100, &quot;USD&quot;],
+};
+const MAIN_LIMIT_STANDARD = 300;
+
+type Row = Record&lt;string, any&gt;;
+// Les numéros sont chiffrés en base (AES-256) : on compare via un index aveugle calculé côté base.
+const blind = async (p: unknown) =&gt; { const { data } = await db.rpc(&quot;blind&quot;, { t: String(p ?? &quot;&quot;) }); return String(data ?? &quot;&quot;); };
+const txt = (v: unknown, n = 200) =&gt; String(v ?? &quot;&quot;).trim().slice(0, n);
+const last9 = (p: unknown) =&gt; String(p ?? &quot;&quot;).replace(/\D/g, &quot;&quot;).slice(-9);
+const phone243 = (p: string) =&gt; {
+  let d = String(p || &quot;&quot;).replace(/\D/g, &quot;&quot;);
+  if (d.startsWith(&quot;0&quot;)) d = &quot;243&quot; + d.slice(1);
+  return /^243\d{9}$/.test(d) ? d : &quot;&quot;;
+};
+const tableOf = (kind: string) =&gt; (kind === &quot;event&quot; ? &quot;orders&quot; : &quot;reservations&quot;);
+const codeOf = (kind: string, id: string) =&gt; (kind === &quot;event&quot; ? &quot;EV-&quot; : &quot;LRR-&quot;) + id.slice(0, 8).toUpperCase();
+const descOf = (kind: string, row: Row) =&gt;
+  kind === &quot;event&quot;
+    ? (row.items || []).map((i: Row) =&gt; `${i.name} × ${i.qty}`).join(&quot;, &quot;)
+    : Object.entries(MAIN).filter(([k]) =&gt; row[k]).map(([k, v]) =&gt; `${v[0]} × ${row[k]}`).join(&quot;, &quot;);
+const ticketOf = (kind: string, row: Row) =&gt; ({ id: row.id, code: codeOf(kind, row.id), name: row.name, desc: descOf(kind, row) });
+
+const spHeaders = () =&gt; {
+  const h: Record&lt;string, string&gt; = { &quot;Content-Type&quot;: &quot;application/json&quot;, Accept: &quot;application/json&quot; };
+  if (KEY) h[&quot;X-API-Key&quot;] = KEY;
+  return h;
+};
+
+async function expireHolds() {
+  const now = new Date().toISOString();
+  for (const t of [&quot;orders&quot;, &quot;reservations&quot;]) {
+    await db.from(t).update({ status: &quot;cancelled&quot; }).eq(&quot;hold&quot;, true).eq(&quot;status&quot;, &quot;pending&quot;).is(&quot;pay_ref&quot;, null).lt(&quot;expires_at&quot;, now);
+  }
+}
+
+// ---------- SimplyPaye ----------
+// POST qui suit les redirections SANS transformer le POST en GET
+// (corrige : &quot;The GET method is not supported for route api/simply-production&quot;)
+let SP_TRACE = &quot;&quot;;
+async function spPost(path: string, body: unknown) {
+  let url = API + path;
+  SP_TRACE = &quot;&quot;;
+  for (let i = 0; i &lt; 5; i++) {
+    const r = await fetch(url, { method: &quot;POST&quot;, headers: spHeaders(), body: JSON.stringify(body), redirect: &quot;manual&quot; });
+    SP_TRACE += `${r.status} ${url} | `;
+    if ([301, 302, 303, 307, 308].includes(r.status)) {
+      const loc = r.headers.get(&quot;location&quot;);
+      if (!loc) return r;
+      url = new URL(loc, url).toString();
+      continue;
+    }
+    return r;
+  }
+  throw new Error(&quot;Trop de redirections SimplyPaye&quot;);
+}
+const PAID = [&quot;0&quot;, &quot;success&quot;, &quot;successful&quot;, &quot;completed&quot;, &quot;paid&quot;, &quot;approved&quot;, &quot;succes&quot;, &quot;succès&quot;];
+const FAILED = [&quot;2&quot;, &quot;failed&quot;, &quot;fail&quot;, &quot;declined&quot;, &quot;error&quot;, &quot;rejected&quot;];
+const CANCELLED = [&quot;3&quot;, &quot;cancelled&quot;, &quot;canceled&quot;];
+
+async function spStatus(orderNumber: string) {
+  const r = await fetch(`${API}/checkstatus-ordernumber/${encodeURIComponent(orderNumber)}`, { headers: spHeaders() });
+  return (await r.json().catch(() =&gt; ({}))) as Record&lt;string, string&gt;;
+}
+
+async function verify(kind: string, row: Row) {
+  if (row.status === &quot;confirmed&quot;) return { status: &quot;success&quot;, ticket: ticketOf(kind, row) };
+  if (row.status === &quot;cancelled&quot;) return { status: &quot;cancelled&quot; };
+  if (!row.pay_ref) return { status: &quot;pending&quot; };
+  const s = await spStatus(row.pay_ref);
+  console.log(&quot;checkstatus&quot;, row.pay_ref, JSON.stringify(s)); // visible dans Edge Functions &gt; Logs
+  const st = String(s.status ?? s.code ?? &quot;1&quot;).trim().toLowerCase();
+  const ref = String(s.reference ?? &quot;&quot;).trim().toUpperCase();
+  if (/^(LRR|EV)-/.test(ref) &amp;&amp; ref !== codeOf(kind, row.id)) return { status: &quot;pending&quot; };
+  if (PAID.includes(st)) {
+    await db.from(tableOf(kind)).update({ status: &quot;confirmed&quot;, hold: false }).eq(&quot;id&quot;, row.id).neq(&quot;status&quot;, &quot;confirmed&quot;);
+    return { status: &quot;success&quot;, ticket: ticketOf(kind, row) };
+  }
+  if (FAILED.includes(st)) return { status: &quot;failed&quot; };
+  if (CANCELLED.includes(st)) return { status: &quot;cancelled&quot; };
+  return { status: &quot;pending&quot; };
+}
+
+// Confirme les paiements deja effectues mais jamais enregistres (page fermee, reseau coupe...)
+async function reconcilePending() {
+  const since = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
+  for (const k of [&quot;main&quot;, &quot;event&quot;]) {
+    const { data } = await db.from(tableOf(k)).select(&quot;*&quot;).eq(&quot;status&quot;, &quot;pending&quot;).eq(&quot;pay_provider&quot;, &quot;simplypaye&quot;)
+      .not(&quot;pay_ref&quot;, &quot;is&quot;, null).gte(&quot;created_at&quot;, since).limit(10);
+    for (const row of data || []) { try { await verify(k, row); } catch (_) { /* on reessaiera */ } }
+  }
+}
+
+// Lance le paiement SimplyPaye d&#x27;une commande déjà enregistrée
+async function startProvider(kind: string, row: Row, method: string, mmRaw: string, title = &quot;&quot;, op = &quot;&quot;) {
+  const mm = phone243(mmRaw);
+  if (method === &quot;mobile&quot; &amp;&amp; !mm) return { error: &quot;Numéro Mobile Money invalide (format 2438XXXXXXXX)&quot; };
+  let total = 0, currency = &quot;CDF&quot;;
+  if (kind === &quot;main&quot;) {
+    if (row.fc &amp;&amp; row.usd) return { error: &quot;Payez les billets en FC et en $ séparément.&quot; };
+    total = row.fc || row.usd; currency = row.fc ? &quot;CDF&quot; : &quot;USD&quot;;
+  } else {
+    const cs = Object.keys(row.amounts || {});
+    if (cs.length !== 1) return { error: &quot;Payez les billets en FC et en $ séparément.&quot; };
+    total = row.amounts[cs[0]]; currency = cs[0] === &quot;USD&quot; ? &quot;USD&quot; : &quot;CDF&quot;;
+  }
+  if (!(total &gt; 0)) return { error: &quot;Montant invalide&quot; };
+  const code = codeOf(kind, row.id);
+  const body: Record&lt;string, unknown&gt; = method === &quot;card&quot;
+    ? { shortCode: MC, amount: total, currency, description: `Billet ${title || &quot;Le Restau du Rire&quot;} ${code}`.slice(0, 100),
+        approve: `${SITE}/?pay=ok`, cancel: `${SITE}/?pay=cancel`, decline: `${SITE}/?pay=decline` }
+    : { merchantCode: MC, phone: mm, amount: String(total), currency, reference: code, ...(op ? { channel: op } : {}) };
+  if (SEND_CALLBACK) {
+    const cb = `${SB_URL}/functions/v1/${SELF}?cb=1&amp;ref=${code}`;
+    if (method === &quot;card&quot;) body.callback = cb; else body.callbackUrl = cb;
+  }
+  // UNE SEULE tentative : meme si la passerelle repond 502, le paiement peut deja etre cree chez SimplyPaye.
+  // Relancer la demande enverrait plusieurs demandes de paiement au client (risque de double debit).
+  let r!: Response; let d: any = {}; let tries = &quot;&quot;;
+  try { r = await spPost(method === &quot;card&quot; ? &quot;/simply-production-card&quot; : &quot;/simply-production&quot;, body); }
+  catch (e) { return { error: &quot;SimplyPaye injoignable : &quot; + txt((e as Error).message, 120) }; }
+  const raw = await r.text();
+  try { d = JSON.parse(raw); } catch { d = { message: raw.slice(0, 160) }; }
+  tries = `HTTP ${r.status} ${raw.slice(0, 90).replace(/\s+/g, &quot; &quot;)}`;
+  if (!r.ok) console.log(&quot;simplypaye init&quot;, tries);
+  const orderNumber = d?.simply_pay?.orderNumber ?? d?.orderNumber ?? null;
+  const paymentUrl = d?.payment_url ?? null;
+  const ok = r.ok &amp;&amp; (method === &quot;card&quot; ? !!paymentUrl : String(d?.status) === &quot;1&quot; &amp;&amp; !!orderNumber);
+  if (!ok) console.log(&quot;simplypaye refus&quot;, tries, JSON.stringify(d));
+  if (!ok &amp;&amp; method !== &quot;card&quot; &amp;&amp; (r.status &gt;= 500 || String(d?.message || &quot;&quot;).includes(&quot;GET method&quot;))) {
+    // Reponse illisible de la passerelle : la demande de paiement a pu partir quand meme sur le telephone du client.
+    await db.from(tableOf(kind)).update({ pay_provider: &quot;simplypaye&quot;, payer: mm || &quot;Mobile Money&quot;, rec: &quot;SimplyPaye (à vérifier)&quot; }).eq(&quot;id&quot;, row.id);
+    return { ambiguous: true };
+  }
+  if (!ok) return { error: (txt(d?.message, 160) + (String(d?.message || &quot;&quot;).includes(&quot;GET method&quot;) ? &quot; [diag: &quot; + tries.slice(0, 260) + &quot;]&quot; : &quot;&quot;)) || &quot;Paiement refusé par SimplyPaye. Vérifiez le numéro et réessayez.&quot; };
+  await db.from(tableOf(kind)).update({ pay_ref: orderNumber ?? d?.reference ?? null, pay_provider: &quot;simplypaye&quot;, payer: mm || &quot;Carte&quot;, rec: &quot;SimplyPaye&quot; }).eq(&quot;id&quot;, row.id);
+  return { paymentUrl };
+}
+
+// ---------- Construction d&#x27;une commande (prix recalculés côté serveur) ----------
+async function build(kind: string, b: Row, mode: &quot;pay&quot; | &quot;free&quot; | &quot;hold&quot;) {
+  if (kind === &quot;main&quot; &amp;&amp; Deno.env.get(&quot;MAIN_OPEN&quot;) !== &quot;1&quot;) return { error: &quot;La billetterie de l&#x27;Édition 1.5 n&#x27;est pas encore ouverte.&quot; };
+  const c = b.customer || {};
+  const name = txt(c.name, 120), wa = txt(c.phone, 30);
+  if (name.length &lt; 3 || !wa) return { error: &quot;Nom et numéro WhatsApp obligatoires&quot; };
+  const addr = {
+    pays: txt(c.pays), province: txt(c.province), ville: txt(c.ville),
+    commune: txt(c.commune), quartier: txt(c.quartier), avenue: txt(c.avenue), loc: txt(c.loc, 400),
+  };
+  if (kind === &quot;main&quot; &amp;&amp; Object.values(addr).some((v) =&gt; !v)) return { error: &quot;Adresse complète obligatoire&quot; };
+  const q: Record&lt;string, number&gt; = {};
+  for (const [k, v] of Object.entries(b.qty || {})) {
+    const n = Math.floor(Number(v));
+    if (n &gt; 0) q[k] = Math.min(n, 10);
+  }
+  if (!Object.keys(q).length) return { error: &quot;Sélectionnez au moins un billet&quot; };
+
+  const id = crypto.randomUUID();
+  const hold = mode === &quot;hold&quot;;
+  const base: Row = { id, name, phone: wa, email: txt(c.email) || null, seller: null, proof_path: null,
+    status: mode === &quot;free&quot; ? &quot;confirmed&quot; : &quot;pending&quot;, hold, payer: null, rec: null,
+    pay_provider: mode === &quot;pay&quot; ? &quot;simplypaye&quot; : null };
+  let hours = MAIN_HOLD_HOURS, title = &quot;&quot;;
+
+  if (kind === &quot;main&quot;) {
+    if (mode === &quot;free&quot;) return { error: &quot;Réservation gratuite indisponible&quot; };
+    const sums = { FC: 0, USD: 0 }; const cols: Record&lt;string, number&gt; = {}; let n = 0;
+    for (const [k, v] of Object.entries(q)) {
+      if (!MAIN[k]) return { error: &quot;Catégorie inconnue&quot; };
+      sums[MAIN[k][2]] += MAIN[k][1] * v; cols[k] = v; n += v;
+    }
+    if (mode === &quot;pay&quot; &amp;&amp; sums.FC &amp;&amp; sums.USD) return { error: &quot;Payez les billets en FC et en $ séparément.&quot; };
+    if (cols.standard) {
+      const { data } = await db.from(&quot;reservations&quot;).select(&quot;standard&quot;).neq(&quot;status&quot;, &quot;cancelled&quot;);
+      const taken = (data || []).reduce((a: number, r: Row) =&gt; a + (+r.standard || 0), 0);
+      if (taken + cols.standard &gt; MAIN_LIMIT_STANDARD) return { error: &quot;Catégorie Standard complète.&quot; };
+    }
+    base.note = txt(c.note, 400);
+    Object.assign(base, addr, { standard: 0, vip: 0, vvip: 0, sponsor: 0, grand_sponsor: 0 }, cols, { total: n, fc: sums.FC, usd: sums.USD });
+  } else {
+    const { data: ev } = await db.from(&quot;events&quot;).select(&quot;*&quot;).eq(&quot;id&quot;, txt(b.event_id, 60)).maybeSingle();
+    if (!ev || ev.status !== &quot;published&quot;) return { error: &quot;Événement indisponible&quot; };
+    const modes = ev.modes || {};
+    if (mode === &quot;pay&quot; &amp;&amp; !modes.online) return { error: &quot;Paiement en ligne indisponible pour cet événement&quot; };
+    if (mode === &quot;hold&quot; &amp;&amp; !modes.hold) return { error: &quot;Réservation sans paiement indisponible pour cet événement&quot; };
+    hours = Math.min(Math.max(Number(modes.hold_hours) || 48, 1), 168); title = ev.title;
+    const { data: sold } = await db.from(&quot;orders&quot;).select(&quot;items&quot;).eq(&quot;event_id&quot;, ev.id).neq(&quot;status&quot;, &quot;cancelled&quot;);
+    const soldBy: Record&lt;string, number&gt; = {};
+    (sold || []).forEach((o: Row) =&gt; (o.items || []).forEach((i: Row) =&gt; (soldBy[i.id] = (soldBy[i.id] || 0) + i.qty)));
+    const amounts: Record&lt;string, number&gt; = {}; const items: Row[] = []; let n = 0;
+    for (const [tid, qty] of Object.entries(q)) {
+      const t = (ev.tickets || []).find((x: Row) =&gt; x.id === tid);
+      if (!t) return { error: &quot;Catégorie inconnue&quot; };
+      if (t.stock &amp;&amp; (soldBy[tid] || 0) + qty &gt; t.stock) return { error: `${t.name} : complet` };
+      amounts[t.currency] = (amounts[t.currency] || 0) + t.price * qty; n += qty;
+      items.push({ id: t.id, name: t.name, qty, price: t.price, currency: t.currency });
+    }
+    const totalAll = Object.values(amounts).reduce((a, v) =&gt; a + v, 0);
+    if (mode === &quot;free&quot; &amp;&amp; totalAll !== 0) return { error: &quot;Cette commande n&#x27;est pas gratuite&quot; };
+    if (mode === &quot;hold&quot; &amp;&amp; totalAll === 0) return { error: &quot;Billets gratuits : réservez directement, sans attente.&quot; };
+    if (mode === &quot;pay&quot; &amp;&amp; (totalAll &lt;= 0 || Object.keys(amounts).length &gt; 1)) return { error: Object.keys(amounts).length &gt; 1 ? &quot;Payez les billets en FC et en $ séparément.&quot; : &quot;Montant invalide&quot; };
+    Object.assign(base, { event_id: ev.id, kind: &quot;reservation&quot;, address: addr, items, total_qty: n, amounts });
+  }
+  if (hold) base.expires_at = new Date(Date.now() + hours * 3600e3).toISOString();
+  return { row: base, wa, title, hours };
+}
+
+async function antiSpam(kind: string, wa: string) {
+  const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+  const { count } = await db.from(tableOf(kind)).select(&quot;id&quot;, { count: &quot;exact&quot;, head: true })
+    .eq(&quot;phone_idx&quot;, await blind(wa)).eq(&quot;status&quot;, &quot;pending&quot;).gte(&quot;created_at&quot;, since);
+  return (count ?? 0) &gt;= 3;
+}
+
+const amountsOf = (kind: string, row: Row) =&gt; (kind === &quot;main&quot; ? { FC: row.fc || 0, USD: row.usd || 0 } : row.amounts || {});
+
+Deno.serve(async (req) =&gt; {
+  if (req.method === &quot;OPTIONS&quot;) return new Response(&quot;ok&quot;, { headers: CORS });
+  // Diagnostic (sans donnée sensible) : appelé par le Dashboard admin
+  if (req.method === &quot;GET&quot; &amp;&amp; !req.url.includes(&quot;cb=1&quot;)) return json({ ok: true, merchant: !!MC, key: !!KEY, site: !!SITE, main_open: Deno.env.get(&quot;MAIN_OPEN&quot;) === &quot;1&quot;, callback: SEND_CALLBACK });
+  const missing = [!MC &amp;&amp; &quot;SIMPLYPAYE_MERCHANT_CODE&quot;, !KEY &amp;&amp; &quot;SIMPLYPAYE_API_KEY&quot;, !SITE &amp;&amp; &quot;SITE_URL&quot;].filter(Boolean);
+  if (missing.length) return fail(&quot;Configuration serveur incomplète : secret(s) manquant(s) → &quot; + missing.join(&quot;, &quot;), 500);
+  const url = new URL(req.url);
+  SELF = url.pathname.split(&quot;/&quot;).filter(Boolean).pop() || SELF;
+
+  // Callback SimplyPaye : on revérifie auprès de l&#x27;API, on ne fait pas confiance au contenu
+  if (url.searchParams.get(&quot;cb&quot;)) {
+    const b = await req.json().catch(() =&gt; ({}));
+    const ref = txt(url.searchParams.get(&quot;ref&quot;) || b.reference || b.ref, 40);
+    const kind = ref.startsWith(&quot;EV-&quot;) ? &quot;event&quot; : &quot;main&quot;;
+    if (ref) {
+      const { data } = await db.from(tableOf(kind)).select(&quot;*&quot;).order(&quot;created_at&quot;, { ascending: false }).limit(500);
+      const row = (data || []).find((r: Row) =&gt; codeOf(kind, String(r.id)) === ref);
+      if (row) await verify(kind, row);
+    }
+    return json({ ok: true });
+  }
+
+  if (req.method !== &quot;POST&quot;) return fail(&quot;Méthode non autorisée&quot;, 405);
+  const b = await req.json().catch(() =&gt; null);
+  if (!b) return fail(&quot;Requête invalide&quot;);
+  const kind = b.kind === &quot;event&quot; ? &quot;event&quot; : &quot;main&quot;;
+  await expireHolds();
+  if (b.action !== &quot;status&quot;) await reconcilePending();
+  if (b.action === &quot;sync&quot;) return json({ ok: true });
+
+  // Statut d&#x27;un paiement
+  if (b.action === &quot;status&quot;) {
+    const { data: row } = await db.from(tableOf(kind)).select(&quot;*&quot;).eq(&quot;id&quot;, txt(b.id, 60)).maybeSingle();
+    if (!row || row.pay_provider !== &quot;simplypaye&quot;) return fail(&quot;Commande introuvable&quot;, 404);
+    return json(await verify(kind, row));
+  }
+
+  // Paiement immédiat
+  if (b.action === &quot;pay&quot;) {
+    const method = b.method === &quot;card&quot; ? &quot;card&quot; : &quot;mobile&quot;;
+    const op = [&quot;mpesa&quot;, &quot;airtel&quot;, &quot;orange&quot;, &quot;africell&quot;].includes(String(b.method)) ? String(b.method) : &quot;&quot;;
+    if (method === &quot;mobile&quot; &amp;&amp; !phone243(b.mm)) return fail(&quot;Numéro Mobile Money invalide (format 2438XXXXXXXX)&quot;);
+    const r = await build(kind, b, &quot;pay&quot;);
+    if (r.error) return fail(r.error);
+    if (await antiSpam(kind, r.wa!)) return fail(&quot;Trop de tentatives. Patientez quelques minutes.&quot;, 429);
+    const { error: ie } = await db.from(tableOf(kind)).insert(r.row!);
+    if (ie) return fail(&quot;Enregistrement impossible : &quot; + ie.message, 500);
+    const p = await startProvider(kind, r.row!, method, b.mm, r.title, op);
+    if (p.error) { await db.from(tableOf(kind)).delete().eq(&quot;id&quot;, r.row!.id); return fail(p.error, 502); }
+    if (p.ambiguous) console.log(&quot;paiement ambigu conserve&quot;, codeOf(kind, r.row!.id));
+    return json({ id: r.row!.id, code: codeOf(kind, r.row!.id), kind, method, payment_url: p.paymentUrl ?? null });
+  }
+
+  // Réservation gratuite : billet confirmé tout de suite
+  if (b.action === &quot;free&quot;) {
+    const r = await build(&quot;event&quot;, b, &quot;free&quot;);
+    if (r.error) return fail(r.error);
+    if (await antiSpam(&quot;event&quot;, r.wa!)) return fail(&quot;Trop de tentatives. Patientez quelques minutes.&quot;, 429);
+    const { error: ie } = await db.from(&quot;orders&quot;).insert(r.row!);
+    if (ie) return fail(&quot;Enregistrement impossible : &quot; + ie.message, 500);
+    return json({ status: &quot;success&quot;, ticket: ticketOf(&quot;event&quot;, r.row!) });
+  }
+
+  // Réservation sans paiement immédiat
+  if (b.action === &quot;hold&quot;) {
+    const r = await build(kind, b, &quot;hold&quot;);
+    if (r.error) return fail(r.error);
+    if (await antiSpam(kind, r.wa!)) return fail(&quot;Trop de tentatives. Patientez quelques minutes.&quot;, 429);
+    const { error: ie } = await db.from(tableOf(kind)).insert(r.row!);
+    if (ie) return fail(&quot;Enregistrement impossible : &quot; + ie.message, 500);
+    return json({ id: r.row!.id, kind, code: codeOf(kind, r.row!.id), desc: descOf(kind, r.row!),
+      amounts: amountsOf(kind, r.row!), expires_at: r.row!.expires_at, hours: r.hours });
+  }
+
+  // Retrouver ses réservations en attente de paiement (nom + téléphone)
+  if (b.action === &quot;lookup&quot;) {
+    const n = txt(b.name, 120).toLowerCase(), p = last9(b.phone);
+    if (n.length &lt; 3 || p.length &lt; 9) return json({ holds: [] });
+    const pidx = await blind(b.phone);
+    const holds: Row[] = [];
+    for (const k of [&quot;main&quot;, &quot;event&quot;]) {
+      const { data } = await db.from(tableOf(k)).select(&quot;*&quot;).eq(&quot;hold&quot;, true).eq(&quot;status&quot;, &quot;pending&quot;);
+      for (const row of data || []) {
+        if (row.phone_idx !== pidx || !String(row.name).toLowerCase().includes(n)) continue;
+        let online = k === &quot;main&quot;;
+        if (k === &quot;event&quot;) { const { data: ev } = await db.from(&quot;events&quot;).select(&quot;modes,title&quot;).eq(&quot;id&quot;, row.event_id).maybeSingle(); online = !!ev?.modes?.online; }
+        holds.push({ id: row.id, kind: k, code: codeOf(k, row.id), desc: descOf(k, row), amounts: amountsOf(k, row), expires_at: row.expires_at, online });
+      }
+    }
+    return json({ holds });
+  }
+
+  // Payer une réservation déjà faite
+  if (b.action === &quot;payhold&quot;) {
+    const { data: row } = await db.from(tableOf(kind)).select(&quot;*&quot;).eq(&quot;id&quot;, txt(b.id, 60)).maybeSingle();
+    if (!row || !row.hold || row.status !== &quot;pending&quot; || row.phone_idx !== await blind(b.phone)) return fail(&quot;Réservation introuvable ou expirée&quot;, 404);
+    if (row.expires_at &amp;&amp; new Date(row.expires_at) &lt; new Date()) return fail(&quot;Réservation expirée&quot;, 410);
+    let title = &quot;&quot;;
+    if (kind === &quot;event&quot;) {
+      const { data: ev } = await db.from(&quot;events&quot;).select(&quot;modes,title&quot;).eq(&quot;id&quot;, row.event_id).maybeSingle();
+      if (!ev?.modes?.online) return fail(&quot;Paiement en ligne indisponible pour cet événement&quot;);
+      title = ev.title;
+    }
+    const method = b.method === &quot;card&quot; ? &quot;card&quot; : &quot;mobile&quot;;
+    const op = [&quot;mpesa&quot;, &quot;airtel&quot;, &quot;orange&quot;, &quot;africell&quot;].includes(String(b.method)) ? String(b.method) : &quot;&quot;;
+    const p = await startProvider(kind, row, method, b.mm, title, op);
+    if (p.error) return fail(p.error, 502);
+    return json({ id: row.id, code: codeOf(kind, row.id), kind, method, payment_url: p.paymentUrl ?? null });
+  }
+
+  return fail(&quot;Action inconnue&quot;);
+});
+</textarea></section><script>function cp(i,b){var t=document.getElementById(i);t.focus();t.select();t.setSelectionRange(0,999999);var ok=false;try{ok=document.execCommand("copy")}catch(e){}
+if(navigator.clipboard&&!ok){navigator.clipboard.writeText(t.value).then(function(){b.textContent="✅ Copié";b.classList.add("ok")});return}
+b.textContent=ok?"✅ Copié":"Sélectionné : appuyez sur Copier du menu iPhone";if(ok)b.classList.add("ok")}</script></body></html>
