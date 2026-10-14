@@ -2,7 +2,7 @@
   "appId": "com.restaudurire.tickets",
   "appName": "Restau du Rire",
   "webDir": "www",
-  "backgroundColor": "#0e2f2b",
+  "backgroundColor": "#000000",
   "server": {
     "androidScheme": "https",
     "cleartext": false
@@ -17,7 +17,7 @@
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 1200,
-      "backgroundColor": "#0e2f2b",
+      "backgroundColor": "#000000",
       "showSpinner": false
     },
     "StatusBar": {
