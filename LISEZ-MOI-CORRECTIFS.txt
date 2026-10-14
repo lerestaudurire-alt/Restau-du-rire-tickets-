@@ -25,3 +25,18 @@ DÉPLOIEMENT
  b) Supabase > Edge Functions > simplypaye : coller supabase/functions/simplypaye/index.ts > Deploy
  c) GitHub/Netlify : remplacer site/index.html et site/sw.js ; rouvrir le site avec ?v=4
  d) Application mobile : capacitor-app/www/ est déjà à jour
+
+
+=== CORRECTIFS v2 : attente de confirmation + plus de messages en double ===
+1. « Paiement échoué » trop tôt
+   Avant : le site déclarait l'échec après ~9 secondes, alors que le client n'avait pas encore saisi son code secret.
+   Maintenant : le site ATTEND (chrono affiché, jusqu'à 15 min). Un état « échec » reçu de SimplyPaye est ignoré pendant
+   4 minutes (2 min pour « annulé »). Le message devient « Paiement non confirmé » avec « Vérifier à nouveau ».
+   Un paiement jamais validé libère ses billets après 15 minutes.
+2. Messages PIN qui continuent d'arriver sur le téléphone
+   Cause probable : chaque appui sur « Payer » (ou chaque nouvel essai après l'échec annoncé trop tôt) créait une
+   nouvelle demande de paiement.
+   Maintenant : même numéro + mêmes billets depuis moins de 4 minutes => la demande en cours est reprise (aucun
+   nouveau message n'est envoyé). Dès qu'un paiement est confirmé, les demandes identiques en attente sont annulées.
+   LIMITE : une demande déjà envoyée à l'opérateur ne peut pas être rappelée ; elle expire d'elle-même.
+DÉPLOIEMENT : coller supabase/functions/simplypaye/index.ts > Deploy ; remplacer site/index.html et site/sw.js ; ?v=5

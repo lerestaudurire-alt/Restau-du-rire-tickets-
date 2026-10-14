@@ -119,23 +119,56 @@ function statesOf(s: Record<string, any>): string[] {
   return out;
 }
 
+// Délais : on ne déclare JAMAIS un échec tant que le client a peut-être encore le temps de saisir son code secret.
+const GRACE_FAILED_MS = 240_000;   // 4 min : un état "échec" reçu avant est ignoré (le client est encore en train de valider)
+const GRACE_CANCEL_MS = 120_000;   // 2 min pour un état "annulé"
+const GIVE_UP_MS = 900_000;        // 15 min : on libère définitivement les billets d'un paiement jamais validé
+
+const sameOrder = (kind: string, a: Row, b: Row) => {
+  if (kind === "main") return ["standard", "vip", "vvip", "sponsor", "grand_sponsor"].every((k) => (+a[k] || 0) === (+b[k] || 0));
+  const key = (o: Row) => JSON.stringify((o.items || []).map((i: Row) => [i.id, i.qty]).sort());
+  return a.event_id === b.event_id && key(a) === key(b);
+};
+
+// Quand un paiement est confirmé, les demandes identiques en double (même numéro, mêmes billets) sont annulées : plus de double compte.
+async function cleanupDuplicates(kind: string, row: Row) {
+  try {
+    if (!row.phone_idx) return;
+    const since = new Date(new Date(row.created_at || Date.now()).getTime() - 30 * 60 * 1000).toISOString();
+    const { data } = await db.from(tableOf(kind)).select("*").eq("phone_idx", row.phone_idx).eq("status", "pending")
+      .eq("pay_provider", "simplypaye").neq("id", row.id).gte("created_at", since).limit(20);
+    for (const d of data || []) if (sameOrder(kind, d, row)) await db.from(tableOf(kind)).update({ status: "cancelled" }).eq("id", d.id).eq("status", "pending");
+  } catch (_) { /* sans gravité */ }
+}
+
 async function verify(kind: string, row: Row) {
   if (row.status === "confirmed") return { status: "success", ticket: ticketOf(kind, row) };
   if (row.status === "cancelled") return { status: "cancelled" };
   if (!row.pay_ref) return { status: "pending", note: "Référence SimplyPaye absente : en attente du rappel (callback) ou à vérifier à la main." };
+  const age = Date.now() - new Date(row.created_at || Date.now()).getTime();
   const s = await spStatus(row.pay_ref);
-  console.log("checkstatus", row.pay_ref, JSON.stringify(s)); // visible dans Edge Functions > Logs
+  console.log("checkstatus", row.pay_ref, "age=" + Math.round(age / 1000) + "s", JSON.stringify(s)); // visible dans Edge Functions > Logs
   const ref = String(s.reference ?? s?.simply_pay?.reference ?? s?.data?.reference ?? "").trim().toUpperCase();
   if (/^(LRR|EV)-/.test(ref) && ref !== codeOf(kind, row.id)) return { status: "pending" };
-  for (const st of statesOf(s)) {
-    if (PAID.includes(st)) {
-      await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed");
-      return { status: "success", ticket: ticketOf(kind, row) };
-    }
-    if (FAILED.includes(st)) return { status: "failed" };
-    if (CANCELLED.includes(st)) return { status: "cancelled" };
+  const states = statesOf(s);
+  // 1) Payé : prioritaire sur tout le reste
+  if (states.some((st) => PAID.includes(st))) {
+    await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed");
+    await cleanupDuplicates(kind, row);
+    return { status: "success", ticket: ticketOf(kind, row) };
   }
-  return { status: "pending" };
+  // 2) Échec / annulation : seulement après le délai de grâce
+  if (states.some((st) => FAILED.includes(st))) {
+    if (age < GRACE_FAILED_MS) return { status: "pending", waiting: true, age: Math.round(age / 1000) };
+    if (age > GIVE_UP_MS) await db.from(tableOf(kind)).update({ status: "cancelled" }).eq("id", row.id).eq("status", "pending");
+    return { status: "failed" };
+  }
+  if (states.some((st) => CANCELLED.includes(st))) {
+    if (age < GRACE_CANCEL_MS) return { status: "pending", waiting: true, age: Math.round(age / 1000) };
+    await db.from(tableOf(kind)).update({ status: "cancelled" }).eq("id", row.id).eq("status", "pending");
+    return { status: "cancelled" };
+  }
+  return { status: "pending", age: Math.round(age / 1000) };
 }
 
 // Confirme les paiements deja effectues mais jamais enregistres (page fermee, reseau coupe...)
@@ -346,6 +379,14 @@ Deno.serve(async (req) => {
     if (method === "mobile" && !phone243(b.mm)) return fail("Numéro Mobile Money invalide (format 2438XXXXXXXX)");
     const r = await build(kind, b, "pay");
     if (r.error) return fail(r.error);
+    // Anti-doublon : même numéro + mêmes billets depuis moins de 4 min => on reprend la demande en cours (pas de 2e message sur le téléphone)
+    if (method === "mobile") {
+      const since = new Date(Date.now() - GRACE_FAILED_MS).toISOString();
+      const { data: recent } = await db.from(tableOf(kind)).select("*").eq("phone_idx", await blind(r.wa!)).eq("status", "pending")
+        .eq("pay_provider", "simplypaye").gte("created_at", since).order("created_at", { ascending: false }).limit(10);
+      const dup = (recent || []).find((d: Row) => sameOrder(kind, d, r.row!));
+      if (dup) return json({ id: dup.id, code: codeOf(kind, dup.id), kind, method, payment_url: null, reused: true });
+    }
     if (await antiSpam(kind, r.wa!)) return fail("Trop de tentatives. Patientez quelques minutes.", 429);
     const { error: ie } = await db.from(tableOf(kind)).insert(r.row!);
     if (ie) return fail("Enregistrement impossible : " + ie.message, 500);
