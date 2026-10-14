@@ -1,0 +1,27 @@
+CORRECTIFS - paiement en ligne (14 octobre 2026)
+
+1. Étiquette « Réservation » au lieu de « En ligne »
+   Cause : le serveur enregistrait tous les achats sous le type "reservation", même payés en ligne.
+   Conséquence cachée : la commission 10 % et les totaux « en ligne » ne comptaient pas ces ventes.
+   Correctif : le serveur enregistre maintenant "online". Pour les anciennes lignes : lancer supabase/sql/16-corriger-en-ligne.sql.
+
+2. Confirmation automatique du billet
+   - Lecture de la réponse SimplyPaye plus tolérante (état à la racine OU dans simply_pay / data / transaction).
+   - Le client vérifie toutes les 3 secondes ; bouton « Vérifier maintenant » dans la fenêtre.
+   - Le Dashboard se rafraîchit tout seul (toutes les 15 s) tant qu'un paiement en ligne est en attente.
+   - Bug corrigé : un paiement refusé ne s'affichait jamais (variable déclarée const).
+   - LIMITE : si SimplyPaye répond 502 au lancement, la référence de la commande n'est pas reçue et le billet
+     ne peut pas être vérifié. Il faut alors que SimplyPaye autorise l'URL de rappel, puis mettre le secret
+     SIMPLYPAYE_CALLBACK=1 (voir MESSAGE-SIMPLYPAYE.txt).
+
+3. Message « Ce numéro semble être Airtel Money, mais vous avez choisi undefined »
+   Supprimé. L'opérateur est déduit du numéro côté serveur (le client envoyait "op", le serveur lisait "method").
+
+4. « Vérification du paiement » : corrigé (voir 2). Le bouton « Tester SimplyPaye » (Action inconnue) fonctionne aussi.
+   « Vérifier les paiements en attente » affiche maintenant la réponse brute de SimplyPaye.
+
+DÉPLOIEMENT
+ a) Supabase > SQL Editor : supabase/sql/16-corriger-en-ligne.sql > Run
+ b) Supabase > Edge Functions > simplypaye : coller supabase/functions/simplypaye/index.ts > Deploy
+ c) GitHub/Netlify : remplacer site/index.html et site/sw.js ; rouvrir le site avec ?v=4
+ d) Application mobile : capacitor-app/www/ est déjà à jour

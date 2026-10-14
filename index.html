@@ -822,10 +822,10 @@ async function probePay(){const o=$("prb");o.innerHTML='<p class="sm">⏳ Test e
   const rep="Rapport test API SimplyPaye ("+new Date().toLocaleString("fr-FR")+")\nPOST https://api-simply-pay.net/api/simply-production\n"+L.join("\n");
   o.innerHTML='<textarea readonly rows="9" style="width:100%;font:11px monospace;color:#000" onclick="this.select()">'+esc(rep)+'</textarea><p class="sm" style="color:#bbb">Envoyez ce texte au support SimplyPaye.</p>'}
  catch(e){o.innerHTML='<p style="color:#ffb4c0">'+esc(e.message)+'</p>'}}
-async function reconcilePay(){const o=$("rec");if(!o)return;o.textContent="⏳ Vérification auprès de SimplyPaye…";let ok=0,pe=0,er=0;
+async function reconcilePay(){const o=$("rec");if(!o)return;o.textContent="⏳ Vérification auprès de SimplyPaye…";let ok=0,pe=0,er=0;const raws=[];o.style.whiteSpace="pre-wrap";
  for(const [tb,kind] of [["orders","event"],["reservations","main"]]){let rs=[];try{rs=await api(tb+"?select=id&status=eq.pending&pay_provider=eq.simplypaye&limit=100")}catch(e){continue}
-  for(const r of rs){try{const d=await fnCall({action:"status",kind,id:r.id});if(d.status==="success")ok++;else if(d.status==="pending")pe++;else er++}catch(e){er++}}}
- o.textContent="✅ "+ok+" confirmé(s) • ⏳ "+pe+" toujours en attente • ⚠️ "+er+" à vérifier";if(ok){load();rpcA("admin_overview").then(drawOvw).catch(()=>{})}}
+  for(const r of rs){try{const d=await fnCall({action:"status",kind,id:r.id,debug:true});if(d.status==="success")ok++;else{if(d.status==="pending")pe++;else er++;raws.push((kind==="event"?"EV-":"LRR-")+String(r.id).slice(0,8).toUpperCase()+" → "+d.status+(d.note?" ("+d.note+")":"")+" "+JSON.stringify(d.raw||{}).slice(0,260))}}catch(e){er++;raws.push("Erreur : "+(e&&e.message||e))}}}
+ o.textContent="✅ "+ok+" confirmé(s) • ⏳ "+pe+" toujours en attente • ⚠️ "+er+" à vérifier"+(raws.length?"\n\nRéponses SimplyPaye (à m'envoyer si un paiement reste bloqué) :\n"+raws.join("\n"):"");if(ok){load();rpcA("admin_overview").then(drawOvw).catch(()=>{})}}
 async function runDiag(){const o=$("diag");o.innerHTML='<p class="sm">⏳ Diagnostic en cours…</p>';const L=[];
  const add=(ok,n,h)=>L.push(`<div class="row2" style="color:#fff"><span>${ok?"✅":"❌"} ${esc(n)}${ok||!h?"":`<br><span class="sm" style="color:#ffb4c0">→ ${esc(h)}</span>`}</span></div>`);
  try{let r,nm="";for(const n of FNN){nm=n;r=await fetch(SB+"/functions/v1/"+n,{method:"GET",headers:H("")});if(r.status!==404)break}
@@ -839,7 +839,7 @@ async function runDiag(){const o=$("diag");o.innerHTML='<p class="sm">⏳ Diagno
 function opOf(n){n=String(n||"").replace(/\D/g,"");if(n.startsWith("243"))n=n.slice(3);else if(n.startsWith("0"))n=n.slice(1);return({81:"mpesa",82:"mpesa",83:"mpesa",97:"airtel",98:"airtel",99:"airtel",84:"orange",85:"orange",89:"orange",90:"africell",91:"africell"})[n.slice(0,2)]||""}
 function opWarn(sel,num){const o=opOf(num);if(!o||o===sel)return"";const N={mpesa:"M-Pesa",airtel:"Airtel Money",orange:"Orange Money",africell:"Africell Money"};return"Ce numéro semble être "+N[o]+", mais vous avez choisi "+N[sel]+". Continuer quand même ?"}
 const soldFix=m=>String(m||"").includes("SOLD_OUT")?"Désolé : cette catégorie de billets est épuisée (Sold out). Rechargez la page.":m;
-async function fnCall(b){if(b&&b.action==="pay"&&b.method&&b.method!=="card"&&b.mm){const w=opWarn(b.method,b.mm);if(w&&!confirm(w))throw new Error("Paiement annulé : choisissez l'opérateur qui correspond à votre numéro.")}
+async function fnCall(b){
  let r,tried=[];
  for(let k=0;k<FNN.length;k++){const n=FNN[(FNI+k)%FNN.length];tried.push(n);
   try{r=await fetch(SB+"/functions/v1/"+n,{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify(b)})}catch(e){throw new Error("Serveur de paiement injoignable : vérifiez votre connexion ou l'installation de la fonction.")}
@@ -877,8 +877,8 @@ let payTimer=0;
 function payStop(){clearInterval(payTimer);payTimer=0;closeMo()}
 function payModal(id,kind,method){mo.classList.add("on");
  const card=method==="card",res=method==="resume";
- $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:18px;width:100%;max-width:340px;margin:auto;text-align:center"><div id="pbox"><div style="font-size:42px">${card?"💳":"📲"}</div><h2 style="color:#000;font-size:18px;margin:8px 0">${res?"Vérification du paiement":card?"Finalisez le paiement par carte":"Confirmez sur votre téléphone"}</h2><p style="font-size:13px;color:#555">${res?"Nous vérifions votre paiement…":card?"Terminez le paiement dans l'onglet SimplyPaye. Cette page se met à jour automatiquement.":"Un message de paiement vient d'arriver sur votre téléphone. Saisissez votre code secret pour valider."}</p><p style="font-size:12px;color:#777">⏳ En attente de confirmation…</p></div><div style="margin-top:12px"><button class="ab" onclick="payStop()">Fermer</button></div></div>`;
- const t0=Date.now(),max=card?30*60e3:15*60e3,failN=0;clearInterval(payTimer);
+ $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:18px;width:100%;max-width:340px;margin:auto;text-align:center"><div id="pbox"><div style="font-size:42px">${card?"💳":"📲"}</div><h2 style="color:#000;font-size:18px;margin:8px 0">${res?"Vérification du paiement":card?"Finalisez le paiement par carte":"Confirmez sur votre téléphone"}</h2><p style="font-size:13px;color:#555">${res?"Nous vérifions votre paiement…":card?"Terminez le paiement dans l'onglet SimplyPaye. Cette page se met à jour automatiquement.":"Un message de paiement vient d'arriver sur votre téléphone. Saisissez votre code secret pour valider."}</p><p style="font-size:12px;color:#777">⏳ En attente de confirmation…</p></div><div style="margin-top:12px"><button class="ab" onclick="window.payTick&&window.payTick()">🔄 Vérifier maintenant</button> <button class="ab" onclick="payStop()">Fermer</button></div></div>`;
+ const t0=Date.now(),max=card?30*60e3:15*60e3;let failN=0;clearInterval(payTimer);
  const end=h=>{clearInterval(payTimer);payTimer=0;localStorage.removeItem("lrr_pay");const b=$("pbox");if(b)b.innerHTML=h};
  const tick=async()=>{try{const d=await fnCall({action:"status",kind,id});
    if(d.status==="success"){const k=d.ticket;end(`<div style="font-size:42px">✅</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement confirmé !</h2><b>${esc(k.name)}</b><br><span style="font-size:13px">${esc(k.desc)}</span><div id="pqr" style="display:flex;justify-content:center;margin:10px 0"></div><div style="font-size:20px;font-weight:900;letter-spacing:1px">${esc(k.code)}</div><p style="font-size:12px;color:#555;margin-top:6px">Présentez ce QR code à l'entrée. Retrouvez-le à tout moment dans « Mes places ».</p>`);
@@ -888,7 +888,7 @@ function payModal(id,kind,method){mo.classList.add("on");
    if(d.status==="failed"||d.status==="cancelled"){end(`<div style="font-size:42px">❌</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement ${d.status==="cancelled"?"annulé":"échoué"}</h2><p style="font-size:13px;color:#555">Aucun billet n'a été émis. Si vous avez pourtant validé le paiement, votre billet sera confirmé automatiquement dans quelques minutes (ouvrez « Mes places »). Sinon, vous pouvez réessayer.</p>`);return}
   }catch(e){}
   if(Date.now()-t0>max)end(`<div style="font-size:42px">⏱️</div><h2 style="color:#000;font-size:18px;margin:6px 0">Confirmation non reçue</h2><p style="font-size:13px;color:#555">Si votre compte a été débité, ouvrez « Mes places » dans quelques minutes ou contactez-nous.</p>`)};
- payTimer=setInterval(tick,4000);tick()}
+ payTimer=setInterval(tick,3000);window.payTick=tick;tick()}
 (function(){let s=null;try{s=JSON.parse(localStorage.getItem("lrr_pay")||"null")}catch(e){}
  if(/[?&]pay=/.test(location.search))history.replaceState(null,"",location.pathname+location.hash);
  if(s&&Date.now()-s.t<36e5)setTimeout(()=>payModal(s.id,s.kind,"resume"),600);else localStorage.removeItem("lrr_pay")})();
@@ -1147,7 +1147,10 @@ async function modEv(id,s){const lab=s==="published"?"publié":"refusé";
   if(!r.ok){alert("❌ Échec ("+r.status+") : "+((d&&(d.message||d.hint))||"erreur inconnue")+((d&&d.code)?" ["+d.code+"]":""));return}
   if(!Array.isArray(d)||!d.length){alert("❌ Aucun changement : ce compte n'a pas le droit de modifier cet événement. Connectez-vous avec un compte admin et vérifiez que 03-database-policies.sql a été exécuté.");return}
   alert("✅ Événement "+lab+".");loadMine();loadEvents()}catch(x){alert("❌ Erreur réseau : "+(x&&x.message||x))}}
-async function loadOrders(eid){try{try{ORD[eid]=await rpcA("org_orders",{p_event:eid})}catch(e){ORD[eid]=await api("orders?event_id=eq."+eid+"&select=*&order=created_at.desc")}try{PAYO[eid]=await api("payouts?event_id=eq."+eid+"&select=*&order=created_at.desc")}catch(e){PAYO[eid]=[]}drawOrders(eid)}catch(x){if(x)alert("Erreur de chargement")}}
+async function loadOrders(eid){try{try{ORD[eid]=await rpcA("org_orders",{p_event:eid})}catch(e){ORD[eid]=await api("orders?event_id=eq."+eid+"&select=*&order=created_at.desc")}try{PAYO[eid]=await api("payouts?event_id=eq."+eid+"&select=*&order=created_at.desc")}catch(e){PAYO[eid]=[]}drawOrders(eid);autoPoll(eid,loadOrders)}catch(x){if(x)alert("Erreur de chargement")}}
+const AP={},APN={};
+function autoPoll(eid,fn){clearTimeout(AP[eid]);const pend=(ORD[eid]||[]).some(o=>o.status==="pending"&&!o.hold&&o.kind==="online");if(!pend){APN[eid]=0;return}if((APN[eid]=(APN[eid]||0)+1)>40)return;
+ AP[eid]=setTimeout(async()=>{try{await fnCall({action:"sync"})}catch(e){}fn(eid)},15000)}
 const PLAT_PCT=10,PROV_PCT=3,PAYO={};
 const mnyF=(v,c)=>nf(Math.round(v*100)/100)+" "+cur(c);
 function orgSum(eid){const g={};(ORD[eid]||[]).filter(o=>o.kind==="online"&&o.status==="confirmed").forEach(o=>Object.entries(o.amounts||{}).forEach(([c,v])=>{c=c==="CDF"?"FC":c;g[c]=(g[c]||0)+v}));
@@ -1159,7 +1162,7 @@ window.ODB=false;
 async function odbLoad(eid){try{ORD[eid]=await rpcA("org_orders",{p_event:eid})}catch(e){try{ORD[eid]=await api("orders?event_id=eq."+eid+"&select=*&order=created_at.desc")}catch(x){ORD[eid]=[]}}try{PAYO[eid]=await api("payouts?event_id=eq."+eid+"&select=*&order=created_at.desc")}catch(e){PAYO[eid]=[]}}
 async function odbOpen(){let d=$("odb");if(!d){d=document.createElement("div");d.id="odb";document.body.appendChild(d)}
  window.ODB=true;d.style.display="block";document.body.style.overflow="hidden";d.innerHTML='<div class="odw"><p class="odm">⏳ Chargement de votre dashboard…</p></div>';
- try{if(!MYEV||!MYEV.length)await loadMine();await Promise.all((MYEV||[]).map(e=>odbLoad(e.id)));odbDraw()}catch(e){d.innerHTML='<div class="odw"><button class="odx" onclick="odbClose()">← Retour</button><p class="odm">Impossible de charger le dashboard. Vérifiez votre connexion.</p></div>'}}
+ try{if(!MYEV||!MYEV.length)await loadMine();await Promise.all((MYEV||[]).map(e=>odbLoad(e.id)));odbDraw();(MYEV||[]).forEach(e=>autoPoll(e.id,async id=>{await odbLoad(id);if(window.ODB&&$("odb")&&$("odb").style.display!=="none")odbDraw()}))}catch(e){d.innerHTML='<div class="odw"><button class="odx" onclick="odbClose()">← Retour</button><p class="odm">Impossible de charger le dashboard. Vérifiez votre connexion.</p></div>'}}
 function odbClose(){window.ODB=false;const d=$("odb");if(d)d.style.display="none";document.body.style.overflow=""}
 function odbDraw(){const d=$("odb"),st={published:"Publié",pending:"En attente de validation",rejected:"Refusé"};
  d.innerHTML=`<div class="odw"><div class="odt"><img alt="" src="${$("mainLogo").src}"><div><b>Dashboard</b><small>Organisateur</small></div><button class="odx" onclick="odbClose()">Page publique</button></div>
@@ -1215,7 +1218,7 @@ async function savePay(eid){const a=+$("pv_a").value;if(!(a>0)){alert("Montant i
 function drawOrders(eid){const l=ORD[eid]||[],box=$((window.ODB?"odb_":"ord_")+eid);if(window.ODB)setTimeout(odbSummary,0);if(!box)return;let c={},p=0,conf=0;
  l.forEach(o=>{if(o.status==="confirmed"){conf+=o.total_qty;Object.entries(o.amounts||{}).forEach(([k,v])=>c[k]=(c[k]||0)+v)}if(o.status==="pending")p+=o.total_qty});
  box.innerHTML=`<p class="sm" style="margin:8px 0">${conf} billet(s) confirmé(s) • ${p} en attente • ${amtTxt(c)}</p>${orgBox(eid)}${sellerBox(eid)}<div class="g"><input id="vc_${eid}" placeholder="Code du billet (EV-...)"><button class="btn dk" style="margin:0" onclick="verifyOrd('${eid}')">Vérifier</button></div><div id="vr_${eid}"></div>`+
- l.map(o=>`<div class="x3"><b>${esc(o.name)}</b> <span class="sm">${ocode(o)} • ${o.kind==="cash"?"Espèces":o.kind==="online"?"En ligne":"Réservation"} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):esc(o.status)}${o.used?" • ✔ entré":""}</span><div class="sm">${esc(o.phone)} • ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")} • ${amtTxt(o.amounts)}</div>${o.seller?`<div class="sm">Vendeur : ${esc(o.seller)}</div>`:""}
+ l.map(o=>`<div class="x3"><b>${esc(o.name)}</b> <span class="sm">${ocode(o)} • ${o.kind==="cash"?"Espèces":o.kind==="online"?"En ligne":"Réservation"} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span><div class="sm">${esc(o.phone)} • ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")} • ${amtTxt(o.amounts)}</div>${o.seller?`<div class="sm">Vendeur : ${esc(o.seller)}</div>`:""}
  ${o.status!=="confirmed"?`<button class="ab" onclick="setOrd('${eid}','${o.id}','confirmed')">✓ Confirmer</button>${o.kind==="cash"?`<button class="ab" onclick="waOrd('${eid}','${o.id}')">💬 Envoyer le code</button>`:""}`:`<button class="ab" onclick="waOrd('${eid}','${o.id}')">💬 Envoyer le code</button>`}${o.status!=="cancelled"?`<button class="ab" onclick="setOrd('${eid}','${o.id}','cancelled')">✕ Annuler</button>`:""}${o.proof_path?`<button class="ab" onclick="ordProof('${o.proof_path}')">📸 Capture</button>`:""}</div>`).join("")}
 async function setOrd(eid,id,s){try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:s})});loadOrders(eid)}catch(x){if(x)alert("Échec de la mise à jour")}}
 function waOrd(eid,id){const o=ORD[eid].find(x=>x.id===id),ev=DBEV.find(x=>x.id===eid)||{title:""},cat=(o.items||[]).map(i=>i.name+" × "+i.qty).join(", ");

@@ -8,6 +8,7 @@ const KEY = Deno.env.get("SIMPLYPAYE_API_KEY") ?? "";
 const SITE = (Deno.env.get("SITE_URL") ?? "").replace(/\/$/, "");
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
 const SEND_CALLBACK = Deno.env.get("SIMPLYPAYE_CALLBACK") === "1";
+const SEND_CHANNEL = Deno.env.get("SIMPLYPAYE_CHANNEL") === "1"; // envoie le champ channel (opérateur) à SimplyPaye, seulement si leur API l'accepte
 const MAIN_HOLD_HOURS = Math.min(Math.max(Number(Deno.env.get("HOLD_HOURS") ?? 48), 1), 168);
 let SELF = "simplypaye"; // nom reel de la fonction, detecte automatiquement (ex. hyper-worker)
 const db = createClient(SB_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
@@ -46,6 +47,15 @@ const phone243 = (p: string) => {
   if (d.startsWith("0")) d = "243" + d.slice(1);
   return /^243\d{9}$/.test(d) ? d : "";
 };
+const OPS_OK = ["mpesa", "airtel", "orange", "africell"];
+const opByNumber = (p: unknown) => {
+  let d = String(p ?? "").replace(/\D/g, "");
+  if (d.startsWith("243")) d = d.slice(3); else if (d.startsWith("0")) d = d.slice(1);
+  const m: Record<string, string> = { "81": "mpesa", "82": "mpesa", "83": "mpesa", "97": "airtel", "98": "airtel", "99": "airtel", "84": "orange", "85": "orange", "89": "orange", "90": "africell", "91": "africell" };
+  return m[d.slice(0, 2)] || "";
+};
+// L'opérateur est déduit du numéro : plus aucun message de désaccord n'est nécessaire.
+const pickOp = (b: Row) => OPS_OK.includes(String(b.op)) ? String(b.op) : OPS_OK.includes(String(b.method)) ? String(b.method) : opByNumber(b.mm);
 const tableOf = (kind: string) => (kind === "event" ? "orders" : "reservations");
 const codeOf = (kind: string, id: string) => (kind === "event" ? "EV-" : "LRR-") + id.slice(0, 8).toUpperCase();
 const descOf = (kind: string, row: Row) =>
@@ -91,26 +101,40 @@ const PAID = ["0", "success", "successful", "completed", "paid", "approved", "su
 const FAILED = ["2", "failed", "fail", "declined", "error", "rejected"];
 const CANCELLED = ["3", "cancelled", "canceled"];
 
+let LAST_RAW: unknown = null;
 async function spStatus(orderNumber: string) {
   const r = await fetch(`${API}/checkstatus-ordernumber/${encodeURIComponent(orderNumber)}`, { headers: spHeaders() });
-  return (await r.json().catch(() => ({}))) as Record<string, string>;
+  const j = (await r.json().catch(() => ({}))) as Record<string, any>;
+  LAST_RAW = { http: r.status, ...j };
+  return j;
+}
+// SimplyPaye peut renvoyer l'état à la racine ou dans un sous-objet (simply_pay, data, transaction...).
+// On lit d'abord les sous-objets (l'état réel du paiement), puis la racine.
+const STATE_KEYS = ["status", "state", "transaction_status", "transactionStatus", "payment_status", "paymentStatus", "statut"];
+function statesOf(s: Record<string, any>): string[] {
+  const out: string[] = [];
+  const pull = (o: any) => { if (o && typeof o === "object") for (const k of STATE_KEYS) if (o[k] !== undefined && o[k] !== null) out.push(String(o[k]).trim().toLowerCase()); };
+  for (const sub of [s?.simply_pay, s?.data, s?.transaction, s?.payment, s?.result, s?.order]) pull(sub);
+  pull(s);
+  return out;
 }
 
 async function verify(kind: string, row: Row) {
   if (row.status === "confirmed") return { status: "success", ticket: ticketOf(kind, row) };
   if (row.status === "cancelled") return { status: "cancelled" };
-  if (!row.pay_ref) return { status: "pending" };
+  if (!row.pay_ref) return { status: "pending", note: "Référence SimplyPaye absente : en attente du rappel (callback) ou à vérifier à la main." };
   const s = await spStatus(row.pay_ref);
   console.log("checkstatus", row.pay_ref, JSON.stringify(s)); // visible dans Edge Functions > Logs
-  const st = String(s.status ?? s.code ?? "1").trim().toLowerCase();
-  const ref = String(s.reference ?? "").trim().toUpperCase();
+  const ref = String(s.reference ?? s?.simply_pay?.reference ?? s?.data?.reference ?? "").trim().toUpperCase();
   if (/^(LRR|EV)-/.test(ref) && ref !== codeOf(kind, row.id)) return { status: "pending" };
-  if (PAID.includes(st)) {
-    await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed");
-    return { status: "success", ticket: ticketOf(kind, row) };
+  for (const st of statesOf(s)) {
+    if (PAID.includes(st)) {
+      await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed");
+      return { status: "success", ticket: ticketOf(kind, row) };
+    }
+    if (FAILED.includes(st)) return { status: "failed" };
+    if (CANCELLED.includes(st)) return { status: "cancelled" };
   }
-  if (FAILED.includes(st)) return { status: "failed" };
-  if (CANCELLED.includes(st)) return { status: "cancelled" };
   return { status: "pending" };
 }
 
@@ -142,7 +166,7 @@ async function startProvider(kind: string, row: Row, method: string, mmRaw: stri
   const body: Record<string, unknown> = method === "card"
     ? { shortCode: MC, amount: total, currency, description: `Billet ${title || "Le Restau du Rire"} ${code}`.slice(0, 100),
         approve: `${SITE}/?pay=ok`, cancel: `${SITE}/?pay=cancel`, decline: `${SITE}/?pay=decline` }
-    : { merchantCode: MC, phone: mm, amount: String(total), currency, reference: code, ...(op ? { channel: op } : {}) };
+    : { merchantCode: MC, phone: mm, amount: String(total), currency, reference: code, ...(op && SEND_CHANNEL ? { channel: op } : {}) };
   if (SEND_CALLBACK) {
     const cb = `${SB_URL}/functions/v1/${SELF}?cb=1&ref=${code}`;
     if (method === "card") body.callback = cb; else body.callbackUrl = cb;
@@ -162,11 +186,11 @@ async function startProvider(kind: string, row: Row, method: string, mmRaw: stri
   if (!ok) console.log("simplypaye refus", tries, JSON.stringify(d));
   if (!ok && method !== "card" && (r.status >= 500 || String(d?.message || "").includes("GET method"))) {
     // Reponse illisible de la passerelle : la demande de paiement a pu partir quand meme sur le telephone du client.
-    await db.from(tableOf(kind)).update({ pay_provider: "simplypaye", payer: mm || "Mobile Money", rec: "SimplyPaye (à vérifier)" }).eq("id", row.id);
+    await db.from(tableOf(kind)).update({ pay_provider: "simplypaye", payer: mm || "Mobile Money", rec: "SimplyPaye (à vérifier)", ...(kind === "event" ? { kind: "online" } : {}) }).eq("id", row.id);
     return { ambiguous: true };
   }
   if (!ok) return { error: (txt(d?.message, 160) + (String(d?.message || "").includes("GET method") ? " [diag: " + tries.slice(0, 260) + "]" : "")) || "Paiement refusé par SimplyPaye. Vérifiez le numéro et réessayez." };
-  await db.from(tableOf(kind)).update({ pay_ref: orderNumber ?? d?.reference ?? null, pay_provider: "simplypaye", payer: mm || "Carte", rec: "SimplyPaye" }).eq("id", row.id);
+  await db.from(tableOf(kind)).update({ pay_ref: orderNumber ?? d?.reference ?? null, pay_provider: "simplypaye", payer: mm || "Carte", rec: "SimplyPaye", ...(kind === "event" ? { kind: "online" } : {}) }).eq("id", row.id);
   return { paymentUrl };
 }
 
@@ -232,7 +256,7 @@ async function build(kind: string, b: Row, mode: "pay" | "free" | "hold") {
     if (mode === "free" && totalAll !== 0) return { error: "Cette commande n'est pas gratuite" };
     if (mode === "hold" && totalAll === 0) return { error: "Billets gratuits : réservez directement, sans attente." };
     if (mode === "pay" && (totalAll <= 0 || Object.keys(amounts).length > 1)) return { error: Object.keys(amounts).length > 1 ? "Payez les billets en FC et en $ séparément." : "Montant invalide" };
-    Object.assign(base, { event_id: ev.id, kind: "reservation", address: addr, items, total_qty: n, amounts });
+    Object.assign(base, { event_id: ev.id, kind: mode === "pay" ? "online" : "reservation", address: addr, items, total_qty: n, amounts });
   }
   if (hold) base.expires_at = new Date(Date.now() + hours * 3600e3).toISOString();
   return { row: base, wa, title, hours };
@@ -299,13 +323,26 @@ Deno.serve(async (req) => {
   if (b.action === "status") {
     const { data: row } = await db.from(tableOf(kind)).select("*").eq("id", txt(b.id, 60)).maybeSingle();
     if (!row || row.pay_provider !== "simplypaye") return fail("Commande introuvable", 404);
-    return json(await verify(kind, row));
+    const v: Record<string, unknown> = await verify(kind, row);
+    if (b.debug) v.raw = LAST_RAW; // utilisé par « Vérifier les paiements en attente » (Dashboard admin)
+    return json(v);
+  }
+
+  // Test de liaison SimplyPaye (Dashboard admin > « Tester SimplyPaye ») : lecture seule, aucun paiement créé
+  if (b.action === "probe") {
+    const essais: Row[] = [];
+    try {
+      const r = await fetch(`${API}/checkstatus-ordernumber/PROBE-TEST`, { headers: spHeaders() });
+      const raw = await r.text();
+      essais.push({ essai: 1, statut: r.status, chemin: "/checkstatus-ordernumber", type: r.headers.get("content-type") ?? "", reponse: raw.slice(0, 200) });
+    } catch (e) { essais.push({ essai: 1, erreur: txt((e as Error).message, 160) }); }
+    return json({ ok: true, essais });
   }
 
   // Paiement immédiat
   if (b.action === "pay") {
     const method = b.method === "card" ? "card" : "mobile";
-    const op = ["mpesa", "airtel", "orange", "africell"].includes(String(b.method)) ? String(b.method) : "";
+    const op = pickOp(b);
     if (method === "mobile" && !phone243(b.mm)) return fail("Numéro Mobile Money invalide (format 2438XXXXXXXX)");
     const r = await build(kind, b, "pay");
     if (r.error) return fail(r.error);
@@ -369,7 +406,7 @@ Deno.serve(async (req) => {
       title = ev.title;
     }
     const method = b.method === "card" ? "card" : "mobile";
-    const op = ["mpesa", "airtel", "orange", "africell"].includes(String(b.method)) ? String(b.method) : "";
+    const op = pickOp(b);
     const p = await startProvider(kind, row, method, b.mm, title, op);
     if (p.error) return fail(p.error, 502);
     return json({ id: row.id, code: codeOf(kind, row.id), kind, method, payment_url: p.paymentUrl ?? null });
