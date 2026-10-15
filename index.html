@@ -814,7 +814,7 @@ function csvSellers(){const l=bySeller();if(!l.length){alert("Aucune vente à ex
  const s=[H3,...l.map(o=>[o.name,o.c,o.p,...T.map(t=>o.cat[t[0]]),o.fc,o.usd])].map(r=>r.map(v=>`"${String(v??"").replace(/"/g,'""')}"`).join(",")).join("\n");
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["\ufeff"+s],{type:"text/csv;charset=utf-8;"}));a.download="rapport-vendeurs-restau-du-rire.csv";a.click()}
 /* ===== PAIEMENT AUTOMATIQUE SIMPLYPAYE ===== */
-const FNN=["dynamic-action","simplypaye","bright-worker"]; let FNI=0; /* noms possibles de la fonction de paiement dans Supabase */
+const FNN=["simplypaye","hyper-worker","dynamic-action","bright-worker"]; let FNI=0; /* noms possibles de la fonction de paiement dans Supabase */
 
 async function probePay(){const o=$("prb");o.innerHTML='<p class="sm">⏳ Test en cours…</p>';
  try{const d=await fnCall({action:"probe"});
