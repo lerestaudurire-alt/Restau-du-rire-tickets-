@@ -1,0 +1,22 @@
+CORRECTIFS V4 (a lire en premier)
+
+1. PAIEMENT SIMPLYPAYE
+   - supabase/functions/simplypaye/index.ts : le suivi de paiement envoie maintenant ?merchantCode=... (consigne SimplyPaye).
+   - Redeployez la fonction. DESACTIVEZ "Verify JWT" (sinon le callback de SimplyPaye est refuse).
+   - Le callback est actif par defaut. Si vous aviez le secret SIMPLYPAYE_CALLBACK=0, supprimez-le ou mettez 1.
+   - Donnez a SimplyPaye l'URL complete : https://ebzctmnlriumujgygnby.supabase.co/functions/v1/<nom-de-la-fonction>
+   - Les adresses SimplyPaye ne s'ouvrent pas dans un navigateur (POST + cle X-API-Key obligatoires) : c'est normal.
+   - A confirmer avec SimplyPaye : la devise USD est-elle acceptee (le code envoie CDF pour les FC, USD pour les $) ?
+
+2. DIAGNOSTIC "Fonction de paiement : Non installee"
+   - Le site cherche la fonction sous les noms : simplypaye, hyper-worker, dynamic-action, bright-worker.
+   - Si votre fonction porte un autre nom, ajoutez-le dans la liste FNN de site/index.html (et capacitor-app/www/index.html),
+     ou renommez/recreez la fonction en "simplypaye".
+
+3. SITE
+   - Mettez TOUT le dossier site/ sur GitHub/Netlify (index.html + sw.js mis a jour, cache v30).
+   - Rouvrez le site avec ?v=4 a la fin de l'adresse.
+
+4. VIDEOS (dossier videos/)
+   - 1-presentation-restau-du-rire-tickets.mp4 (vertical 1080x1920, 37 s)
+   - 2-pub-style-keecash-restau-du-rire.mp4 (4:5 1080x1350, 21 s)

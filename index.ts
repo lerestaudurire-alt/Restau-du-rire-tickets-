@@ -103,7 +103,7 @@ const CANCELLED = ["3", "cancelled", "canceled"];
 
 let LAST_RAW: unknown = null;
 async function spStatus(orderNumber: string) {
-  const r = await fetch(`${API}/checkstatus-ordernumber/${encodeURIComponent(orderNumber)}`, { headers: spHeaders() });
+  const r = await fetch(`${API}/checkstatus-ordernumber/${encodeURIComponent(orderNumber)}?merchantCode=${encodeURIComponent(MC)}`, { headers: spHeaders() });
   const j = (await r.json().catch(() => ({}))) as Record<string, any>;
   LAST_RAW = { http: r.status, ...j };
   return j;
@@ -384,7 +384,7 @@ Deno.serve(async (req) => {
   if (b.action === "probe") {
     const essais: Row[] = [];
     try {
-      const r = await fetch(`${API}/checkstatus-ordernumber/PROBE-TEST`, { headers: spHeaders() });
+      const r = await fetch(`${API}/checkstatus-ordernumber/PROBE-TEST?merchantCode=${encodeURIComponent(MC)}`, { headers: spHeaders() });
       const raw = await r.text();
       essais.push({ essai: 1, statut: r.status, chemin: "/checkstatus-ordernumber", type: r.headers.get("content-type") ?? "", reponse: raw.slice(0, 200) });
     } catch (e) { essais.push({ essai: 1, erreur: txt((e as Error).message, 160) }); }

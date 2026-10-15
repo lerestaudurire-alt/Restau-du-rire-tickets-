@@ -7,7 +7,7 @@ ORDRE D'INSTALLATION (base Supabase deja en service)
    stock limite "Sold out" (blocage de la survente), diagnostic.
 2. SUPABASE > Edge Functions > votre fonction de paiement : collez supabase/functions/simplypaye/index.ts > Deploy.
    Secrets : SIMPLYPAYE_MERCHANT_CODE, SIMPLYPAYE_API_KEY (cle complete), SITE_URL, MAIN_OPEN=1.
-   (SIMPLYPAYE_CALLBACK : laisser desactive tant que SimplyPaye n'autorise pas votre adresse.)
+   (SIMPLYPAYE_CALLBACK : SimplyPaye a autorise votre adresse Supabase. Supprimez ce secret ou mettez-le a 1 pour activer le callback.)
 3. GITHUB : mettez TOUT le dossier site/ a la racine du depot (index.html, sw.js, icones, manifest, robots, sitemap).
    Puis fermez/rouvrez le site avec ?v=2 a la fin de l'adresse.
 4. TESTS avant de partager : reservation (avec adresse) ; achat en especes (categorie + photo du ticket) ;
