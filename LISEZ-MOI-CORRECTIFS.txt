@@ -40,3 +40,13 @@ DÉPLOIEMENT
    nouveau message n'est envoyé). Dès qu'un paiement est confirmé, les demandes identiques en attente sont annulées.
    LIMITE : une demande déjà envoyée à l'opérateur ne peut pas être rappelée ; elle expire d'elle-même.
 DÉPLOIEMENT : coller supabase/functions/simplypaye/index.ts > Deploy ; remplacer site/index.html et site/sw.js ; ?v=5
+
+
+=== CORRECTIFS v3 : confirmation automatique sans référence + callback activé par défaut ===
+- SimplyPaye a confirmé : le 502 venait de montants CDF trop bas (tests de 100 FC). Utilisez des montants normaux.
+- Le callback est maintenant ACTIVÉ PAR DÉFAUT (plus besoin du secret SIMPLYPAYE_CALLBACK=1). Leur autorisation du domaine Supabase est faite.
+- Le callback lit la référence SimplyPaye (orderNumber) et confirme le billet après vérification auprès de l'API.
+- Sans référence enregistrée, on interroge SimplyPaye avec le code EV-/LRR- ; accepté seulement si SimplyPaye renvoie exactement ce code.
+- Les paiements récents sans référence sont revérifiés automatiquement. Plus d'états « payé » reconnus.
+- Logs utiles (Edge Functions > Logs) : "callback recu" et "checkstatus".
+DÉPLOIEMENT : coller supabase/functions/simplypaye/index.ts > Deploy. Rien d'autre à changer.

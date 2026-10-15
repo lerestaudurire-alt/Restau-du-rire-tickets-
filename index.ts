@@ -7,7 +7,7 @@ const MC = Deno.env.get("SIMPLYPAYE_MERCHANT_CODE") ?? "";
 const KEY = Deno.env.get("SIMPLYPAYE_API_KEY") ?? "";
 const SITE = (Deno.env.get("SITE_URL") ?? "").replace(/\/$/, "");
 const SB_URL = Deno.env.get("SUPABASE_URL")!;
-const SEND_CALLBACK = Deno.env.get("SIMPLYPAYE_CALLBACK") === "1";
+const SEND_CALLBACK = Deno.env.get("SIMPLYPAYE_CALLBACK") !== "0"; // callback ACTIVÉ par défaut (domaine autorisé par SimplyPaye). Mettre le secret SIMPLYPAYE_CALLBACK=0 pour le couper.
 const SEND_CHANNEL = Deno.env.get("SIMPLYPAYE_CHANNEL") === "1"; // envoie le champ channel (opérateur) à SimplyPaye, seulement si leur API l'accepte
 const MAIN_HOLD_HOURS = Math.min(Math.max(Number(Deno.env.get("HOLD_HOURS") ?? 48), 1), 168);
 let SELF = "simplypaye"; // nom reel de la fonction, detecte automatiquement (ex. hyper-worker)
@@ -97,7 +97,7 @@ async function spPost(path: string, body: unknown) {
   }
   throw new Error("Trop de redirections SimplyPaye");
 }
-const PAID = ["0", "success", "successful", "completed", "paid", "approved", "succes", "succès"];
+const PAID = ["0", "success", "successful", "completed", "paid", "approved", "succes", "succès", "complete", "done", "validated", "accepted", "paye", "payé", "successfull"];
 const FAILED = ["2", "failed", "fail", "declined", "error", "rejected"];
 const CANCELLED = ["3", "cancelled", "canceled"];
 
@@ -117,6 +117,15 @@ function statesOf(s: Record<string, any>): string[] {
   for (const sub of [s?.simply_pay, s?.data, s?.transaction, s?.payment, s?.result, s?.order]) pull(sub);
   pull(s);
   return out;
+}
+
+// Cherche la référence SimplyPaye (orderNumber) à la racine ou dans un sous-objet (réponse API ou corps du callback).
+function orderNumberOf(s: Record<string, any>): string {
+  for (const o of [s, s?.simply_pay, s?.data, s?.transaction, s?.payment, s?.result, s?.order]) {
+    if (!o || typeof o !== "object") continue;
+    for (const k of ["orderNumber", "order_number", "ordernumber", "orderNo"]) if (o[k]) return String(o[k]).trim().slice(0, 80);
+  }
+  return "";
 }
 
 // Délais : on ne déclare JAMAIS un échec tant que le client a peut-être encore le temps de saisir son code secret.
@@ -141,15 +150,23 @@ async function cleanupDuplicates(kind: string, row: Row) {
   } catch (_) { /* sans gravité */ }
 }
 
-async function verify(kind: string, row: Row) {
+async function verify(kind: string, row: Row, hint = "") {
   if (row.status === "confirmed") return { status: "success", ticket: ticketOf(kind, row) };
   if (row.status === "cancelled") return { status: "cancelled" };
-  if (!row.pay_ref) return { status: "pending", note: "Référence SimplyPaye absente : en attente du rappel (callback) ou à vérifier à la main." };
   const age = Date.now() - new Date(row.created_at || Date.now()).getTime();
-  const s = await spStatus(row.pay_ref);
+  const code = codeOf(kind, row.id);
+  // Sans référence enregistrée (cas du 502 au lancement) : on essaie avec la référence du callback, sinon avec notre code EV-/LRR-.
+  const lookup = row.pay_ref || hint || code;
+  const s = await spStatus(lookup);
   console.log("checkstatus", row.pay_ref, "age=" + Math.round(age / 1000) + "s", JSON.stringify(s)); // visible dans Edge Functions > Logs
   const ref = String(s.reference ?? s?.simply_pay?.reference ?? s?.data?.reference ?? "").trim().toUpperCase();
-  if (/^(LRR|EV)-/.test(ref) && ref !== codeOf(kind, row.id)) return { status: "pending" };
+  if (/^(LRR|EV)-/.test(ref) && ref !== code) return { status: "pending" };
+  if (!row.pay_ref) {
+    // Sécurité : sans référence enregistrée, SimplyPaye doit nous renvoyer EXACTEMENT notre code, sinon on n'accepte rien.
+    if (ref !== code) return { status: "pending", note: "Référence SimplyPaye absente : en attente du rappel (callback) ou à vérifier à la main." };
+    const found = hint || orderNumberOf(s);
+    if (found) { await db.from(tableOf(kind)).update({ pay_ref: found }).eq("id", row.id); row.pay_ref = found; }
+  }
   const states = statesOf(s);
   // 1) Payé : prioritaire sur tout le reste
   if (states.some((st) => PAID.includes(st))) {
@@ -176,7 +193,7 @@ async function reconcilePending() {
   const since = new Date(Date.now() - 48 * 3600 * 1000).toISOString();
   for (const k of ["main", "event"]) {
     const { data } = await db.from(tableOf(k)).select("*").eq("status", "pending").eq("pay_provider", "simplypaye")
-      .not("pay_ref", "is", null).gte("created_at", since).limit(10);
+      .gte("created_at", since).order("created_at", { ascending: false }).limit(10);
     for (const row of data || []) { try { await verify(k, row); } catch (_) { /* on reessaiera */ } }
   }
 }
@@ -334,12 +351,14 @@ Deno.serve(async (req) => {
   // Callback SimplyPaye : on revérifie auprès de l'API, on ne fait pas confiance au contenu
   if (url.searchParams.get("cb")) {
     const b = await req.json().catch(() => ({}));
-    const ref = txt(url.searchParams.get("ref") || b.reference || b.ref, 40);
+    console.log("callback recu", JSON.stringify(b).slice(0, 500)); // visible dans Edge Functions > Logs
+    const ref = txt(url.searchParams.get("ref") || b.reference || b.ref || b?.simply_pay?.reference || b?.data?.reference, 40);
+    const hint = orderNumberOf(b);
     const kind = ref.startsWith("EV-") ? "event" : "main";
     if (ref) {
       const { data } = await db.from(tableOf(kind)).select("*").order("created_at", { ascending: false }).limit(500);
       const row = (data || []).find((r: Row) => codeOf(kind, String(r.id)) === ref);
-      if (row) await verify(kind, row);
+      if (row) await verify(kind, row, hint);
     }
     return json({ ok: true });
   }
