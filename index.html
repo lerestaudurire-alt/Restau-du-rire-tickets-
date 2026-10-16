@@ -1042,7 +1042,7 @@ function fmtRange(e){if(!e)return"";const L=evDates(e);if(L.length<2)return fmtD
 function fmtDate(iso){if(!iso)return"";const d=new Date(iso);return d.toLocaleDateString(lang==="en"?"en-GB":"fr-FR",{weekday:"short",day:"numeric",month:"short",year:"numeric"})+" • "+d.toLocaleTimeString(lang==="en"?"en-GB":"fr-FR",{hour:"2-digit",minute:"2-digit"})}
 function minPrice(e){const t=(e.tickets||[]).filter(x=>x.price>=0).sort((a,b)=>a.price-b.price)[0];return t?(t.price>0?nf(t.price)+" "+(t.currency==="USD"?"$":"FC"):"Gratuit"):"—"}
 function allEvents(){const L=EDITION.ouvert?[{cat:"spectacle",country:"CD",title:"LE RESTAU DU RIRE — ÉDITION 1.5",date:"dim. 27 déc. 2026 • 15:59",place:"Salle Concordia, Bukavu",price:"5 000 FC",ts:"2026-12-27T15:59:00+02:00",img:EDITION.affiche,off:true,href:"nav('reservation')"}]:[];
- DBEV.forEach(e=>L.push({cat:e.category,country:e.country,title:e.title,date:fmtRange(e),place:[e.venue,e.city].filter(Boolean).join(", "),price:minPrice(e),ts:(evDates(e)[0]||null),img:e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"",off:false,left:evLeft(e),href:"nav('event/"+e.id+"')"}));return L}
+ DBEV.forEach(e=>L.push({cat:e.category,country:e.country,title:e.title,date:fmtRange(e),place:[e.venue,e.city].filter(Boolean).join(", "),price:minPrice(e),ts:(evDates(e)[0]||null),img:e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"",off:false,left:evLeft(e),href:"nav('event/"+evUrlKey(e)+"')"}));return L}
 function evCard(e){const d=e.ts?new Date(e.ts):null,ok=d&&!isNaN(d),loc=lang==="en"?"en-GB":"fr-FR",
  day=ok?d.getDate():"•",mon=ok?d.toLocaleDateString(loc,{month:"short"}).replace(".","").toUpperCase():"";
  return `<article class="ev3" onclick="${e.href}"><div class="ev3-p"><img class="lgo" alt="" src="${$("mainLogo").src}">${e.img?`<img class="pic" src="${esc(e.img)}" alt="" onerror="this.remove()">`:""}<div class="ev3-d"><b>${day}</b><span>${mon}</span></div>${e.off?'<span class="ev3-v">✔ Officiel</span>':""}</div>
@@ -1156,9 +1156,17 @@ const cmsg=m=>{const t=$("cst");if(t)t.textContent=m;alert(m)};
 async function submitEvent(){const t=$("cst");if(t)t.textContent="⏳ Vérification…";
  if(!tok||!myId()){cmsg("⚠️ Connectez-vous ou créez un compte avant d'envoyer votre événement.");nav("account");return}
  try{await _createEvent()}catch(x){cmsg("❌ "+((x&&x.message)||x));const b=$("cbtn");if(b)b.disabled=false}}
+/* Liens lisibles : #event/nom-de-l-evenement (au lieu du numéro) */
+function slugify(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’`]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)||"evenement"}
+const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x||""));
+function evSlug(e,list){if(!e)return"";const b=slugify(e.title);const same=(list||DBEV||[]).filter(x=>slugify(x.title)===b).sort((a,c)=>String(a.created_at||a.id).localeCompare(String(c.created_at||c.id)));const i=same.findIndex(x=>x.id===e.id);return i>0?b+"-"+(i+1):b}
+function evUrlKey(e){return e?evSlug(e,(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:DBEV)):""}
+function findEvBySlug(sl,list){const m={};for(const x of list||[]){const k=evSlug(x,list);m[k]=x}return m[sl]||null}
 async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc/expire_holds",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"})}catch(x){}el.innerHTML='<p class="sm" style="padding:20px">⏳</p>';
- let e=DBEV.find(x=>x.id===id);
- if(!e){try{const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id)+"&select=*",{});const l=await r.json();e=l[0]}catch(x){}}
+ let e=isUuid(id)?DBEV.find(x=>x.id===id):findEvBySlug(decodeURIComponent(id||""),DBEV);
+ if(!e){try{if(isUuid(id)){const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id)+"&select=*",{});const l=await r.json();e=l[0]}else{const r=await af(SB+"/rest/v1/events?select=*&status=eq.published&order=created_at",{});const l=await r.json();e=findEvBySlug(decodeURIComponent(id||""),l)}}catch(x){}}
+ if(e&&isUuid(id)){const sl=evSlug(e,DBEV.some(x=>x.id===e.id)?DBEV:[e]);try{history.replaceState(null,"",location.pathname+location.search+"#event/"+sl)}catch(x){}}
+ if(e)id=e.id;
  if(!e){el.innerHTML='<div class="x2"><p>Événement introuvable.</p><button class="btn dk" onclick="nav(\'home\')">Retour</button></div>';return}
  let sold={};try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id})});if(r.ok)sold=await r.json()}catch(x){}
  EV={e,sold,qty:{},mode:e.modes&&e.modes.reservation===false?"cash":"res"};
@@ -1325,13 +1333,13 @@ const RRN=[["Amani Michael","+243 997 998 460"],["Daniel Mugisho","+243 975 340 
 function drawEPay(){const pn=pnOf(EV.e),c=$("epch");if(!c)return;EV.pi=Math.min(EV.pi||0,Math.max(pn.length-1,0));
  c.innerHTML=pn.map((p,i)=>`<button type="button" class="pch${i===EV.pi?" on":""}" onclick="EV.pi=${i};drawEPay()">${opImg(p.op)}${esc((p.name||"").split(" ")[0]||p.number)}</button>`).join("");
  const p=pn[EV.pi];$("epc").innerHTML=p?`<b>${esc(p.name)}</b><span style="font-size:20px;font-weight:900;color:var(--ink)">${esc(p.number)}</span>${p.op?`<span style="display:inline-flex;align-items:center;gap:6px">${opImg(p.op)}${esc(p.op)}</span>`:""}<button type="button" class="ab" onclick="copyNum('${esc(p.number)}')">📋 Copier</button>`:""}
-function shareEv(){const u=location.origin+location.pathname+"#event/"+EV.e.id,t=EV.e.title;if(navigator.share)navigator.share({title:t,text:t,url:u}).catch(()=>{});else window.open("https://wa.me/?text="+encodeURIComponent(t+"\n"+u),"_blank")}
+function shareEv(){const u=location.origin+location.pathname+"#event/"+evUrlKey(EV.e),t=EV.e.title;if(navigator.share)navigator.share({title:t,text:t,url:u}).catch(()=>{});else window.open("https://wa.me/?text="+encodeURIComponent(t+"\n"+u),"_blank")}
 function icsEv(){const e=EV.e,f=d=>d.toISOString().replace(/[-:]/g,"").slice(0,15)+"Z",L=evDates(e),loc=[e.venue,e.city].filter(Boolean).join(" ").replace(/[,;]/g," ");
  const ev=L.map((s,i)=>["BEGIN:VEVENT","UID:"+e.id+"-"+i+"@restau-du-rire","DTSTAMP:"+f(new Date()),"DTSTART:"+f(s),"DTEND:"+f(new Date(s.getTime()+3*36e5)),"SUMMARY:"+e.title.replace(/[,;]/g," ")+(L.length>1?" ("+(i+1)+"/"+L.length+")":""),"LOCATION:"+loc,"END:VEVENT"].join("\r\n"));
  const ics=["BEGIN:VCALENDAR","VERSION:2.0",...ev,"END:VCALENDAR"].join("\r\n");
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));a.download="evenement.ics";a.click()}
 const progUrl=t=>location.origin+location.pathname+"#progress/"+t;
-const buyUrl=id=>location.origin+location.pathname+"#event/"+id;
+const buyUrl=id=>{const e=(MYEV||[]).find(x=>x.id===id)||(ALLEV||[]).find(x=>x.id===id)||DBEV.find(x=>x.id===id);return location.origin+location.pathname+"#event/"+(e?evUrlKey(e):id)};
 function copyBuy(id){const u=buyUrl(id);navigator.clipboard.writeText(u).then(()=>alert("✅ Lien d'achat copié :\n"+u)).catch(()=>prompt("Copiez ce lien :",u))}
 function waBuy(id){const e=MYEV.find(x=>x.id===id)||ALLEV.find(x=>x.id===id)||{title:""};window.open("https://wa.me/?text="+encodeURIComponent("🎟️ Réservez vos billets pour *"+e.title+"* :\n"+buyUrl(id)),"_blank")}
 function copyLink(t){const u=progUrl(t);navigator.clipboard.writeText(u).then(()=>alert("Lien copié : "+u)).catch(()=>prompt("Copiez ce lien :",u))}
