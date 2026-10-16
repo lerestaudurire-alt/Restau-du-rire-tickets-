@@ -365,7 +365,7 @@ body.pubmode{background:var(--bg)}
 #pub .hm-s input{border:0;background:transparent;height:52px;padding:0 14px 0 46px;font-size:16px;margin:0;color:var(--ink)}
 #pub .stub{display:flex;margin:26px 0 8px;background:#fff;border:1px solid #dfe7e4;border-radius:16px;overflow:hidden;box-shadow:0 6px 18px rgba(14,47,43,.07)}
 #pub .stub-a{display:flex;align-items:center;gap:8px;flex:0 0 38%;padding:14px;background:var(--ink);color:#fff;font-size:22px}#pub .stub-a .sm{color:#fff;font-weight:800;font-size:13px;line-height:1.3}
-#pub .stub-b{flex:1;padding:14px;border-left:2px dashed #cfe0da}#pub .stub-b b{font-size:14px}#pub .stub-b p{margin-top:4px}
+#pub .stub-b{flex:1;padding:14px}#pub .stub-b b{font-size:14px}#pub .stub-b p{margin-top:4px}
 #pub .cats{display:flex;gap:14px;overflow-x:auto;margin:22px -12px 6px;padding:4px 14px 10px;scrollbar-width:none}#pub .cats::-webkit-scrollbar{display:none}
 #pub .cat{display:flex;flex-direction:column;align-items:center;gap:6px;flex:none;border:0;background:none;color:var(--mut);font-weight:800;font-size:13px;cursor:pointer;width:68px}
 #pub .cat i{display:flex;align-items:center;justify-content:center;width:58px;height:58px;border-radius:50%;background:#fff;border:2px solid #dfe7e4;font-style:normal;font-size:26px}
@@ -425,7 +425,7 @@ body.pubmode{background:var(--bg)}
 <div id="v-home" class="view">
 <section class="hm"><span class="hm-k">🎭 La scène vous attend</span><h1>Votre place,<br><em>votre fou rire.</em></h1><p>Choisissez votre soirée, réglez en quelques gestes et gardez votre billet numérique dans la poche.</p>
 <div class="hm-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="qs1" placeholder="Un spectacle, un artiste, une ville ?" oninput="setQ(this.value)"></div></section>
-<div class="stub" id="rrfun"><div class="stub-a"><span>⏳</span><div class="sm" id="rrcd"></div></div><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
+<div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
 <div class="cats" id="ctabs"></div>
 <div class="sech"><h2>Prochains rendez-vous</h2><span class="sm" id="evcount"></span></div>
 <div class="list" id="evl"></div>
@@ -1432,10 +1432,9 @@ const J=[["Un bon billet, c'est comme une bonne blague : mieux vaut l'avoir avan
 function draw(){
  const en=(typeof lang!=="undefined"&&lang==="en");
  const d=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
- const j=J[d%J.length],t=new Date("2026-12-27T15:59:00+02:00").getTime(),diff=Math.ceil((t-Date.now())/864e5);
- const a=document.getElementById("rrjoke"),c=document.getElementById("rrcd");
+ const j=J[d%J.length];
+ const a=document.getElementById("rrjoke");
  if(a)a.textContent=en?j[1]:j[0];
- if(c)c.textContent=diff>1?(en?("⏳ "+diff+" days until Edition 1.5"):("⏳ J-"+diff+" avant l'Édition 1.5 du Restau du Rire")):diff===1?(en?"⏳ Edition 1.5 is tomorrow!":"⏳ L'Édition 1.5 , c'est demain !"):diff===0?(en?"🎉 Edition 1.5 is today!":"🎉 L'Édition 1.5, c'est aujourd'hui !"):"";
 }
 draw();addEventListener("hashchange",draw);document.addEventListener("click",()=>setTimeout(draw,60));
 })();
