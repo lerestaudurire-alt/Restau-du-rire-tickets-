@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Redirection…</title>
+<script>
+(function(){var p=location.pathname,k="/evenement/",i=p.indexOf(k);
+if(i>-1){var b=p.slice(0,i+1),s=p.slice(i+k.length).replace(/\/+$/,"");
+location.replace(location.origin+b+"?e="+s+location.hash);}
+else{var seg=p.split("/")[1];location.replace(location.origin+(seg&&seg.indexOf(".")<0?"/"+seg+"/":"/"));}})();
+</script></head><body style="font-family:sans-serif;text-align:center;padding:40px">
+<p>Redirection…</p><p><a href="./">Retour à l'accueil</a></p></body></html>
