@@ -679,7 +679,7 @@ async function af(url,o={}){const g=()=>fetch(url,{...o,headers:H(tok,o.headers|
 const jwt=()=>{try{return JSON.parse(atob(tok.split(".")[1].replace(/-/g,"+").replace(/_/g,"/")))}catch(e){return{}}};
 const myId=()=>jwt().sub||"",myEmail=()=>jwt().email||"";
 function updateUI(){if($("mnAuth")){$("mnAuth").hidden=!!tok;$("mnMe").hidden=!tok}if($("joinCta"))$("joinCta").hidden=!!tok;$("navAdmin").hidden=!(role==="admin"||role==="staff")}
-async function api(p,o={}){const r=await af(SB+"/rest/v1/"+p,{...o,headers:{"Content-Type":"application/json",...(o.headers||{})}});if(r.status===401){logout();alert("Session expirée, reconnectez-vous.");throw 0}if(!r.ok)throw new Error(await r.text());return r.status===204?null:r.json()}
+async function api(p,o={}){const r=await af(SB+"/rest/v1/"+p,{...o,headers:{"Content-Type":"application/json",...(o.headers||{})}});if(r.status===401){logout();alert("Session expirée, reconnectez-vous.");throw 0}if(!r.ok)throw new Error(await r.text());if(r.status===204)return null;const tx=await r.text();return tx?JSON.parse(tx):null}
 async function load(){try{try{rows=await rpcA("admin_rows")}catch(e){rows=await api("reservations?select=*&order=created_at.desc")}draw()}catch(e){if(e)alert("Erreur de chargement")}}
 setInterval(()=>{if(tok&&!$("adm").hidden){load();rpcA("admin_overview").then(drawOvw).catch(()=>{})}},30000);
 
