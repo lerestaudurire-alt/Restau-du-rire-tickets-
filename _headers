@@ -3,5 +3,11 @@
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
-  Permissions-Policy: camera=(self), geolocation=(), microphone=()
-  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Permissions-Policy: camera=(self), geolocation=(), microphone=(), payment=(self)
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Cross-Origin-Opener-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net; object-src 'none'; frame-src 'none'; frame-ancestors 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests
+
+/sw.js
+  Cache-Control: no-cache

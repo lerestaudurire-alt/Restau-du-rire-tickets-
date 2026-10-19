@@ -15,7 +15,7 @@ const db = createClient(SB_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 
 // Origines autorisées : le site + l'application mobile Capacitor (Android/iOS). Ajoutez ALLOWED_ORIGINS="https://autre.site" si besoin.
 const ALLOWED = new Set([
-  SITE, "capacitor://localhost", "https://localhost", "http://localhost",
+  SITE, (() => { try { return new URL(SITE).origin; } catch { return SITE; } })(), "capacitor://localhost", "https://localhost", "http://localhost",
   ...(Deno.env.get("ALLOWED_ORIGINS") ?? "").split(",").map((x) => x.trim().replace(/\/$/, "")).filter(Boolean),
 ].filter(Boolean));
 let CORS: Record<string, string> = {

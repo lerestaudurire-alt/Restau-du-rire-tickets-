@@ -1,0 +1,44 @@
+RESTAU DU RIRE TICKETS — MISE À JOUR V5 (tout est original, rien copié)
+
+CE QUI EST NOUVEAU
+1. « Publier » propose maintenant 2 choix : Publier mes billets / Lancer une cotisation
+   (aussi sur l'accueil et dans le menu).
+2. Bandeau animé sous l'en-tête : le nom, la salle de l'Édition 1.5, la prochaine soirée,
+   les cotisations en cours, en alternance.
+3. Page événement : public (Tout public, Famille, 16+...), mots-clés #, description
+   dépliable « Lire la suite », bouton « Inviter des amis » (WhatsApp), badges de sécurité.
+   Les organisateurs choisissent le public et les mots-clés dans le formulaire de création.
+4. Organisateurs : touchez leur nom = page publique (soirées + S'abonner + nombre d'abonnés),
+   badge vert « vérifié », section « De vos organisateurs suivis » sur l'accueil.
+5. Nouveautés pour la RDC (rares ailleurs) :
+   - « Mes billets sur ce téléphone » : le billet + QR s'affichent SANS internet.
+   - Mode économie de data (pied de page) : plus d'affiches, moins de données.
+   - Bandeau « hors ligne » quand le réseau tombe.
+6. Pied de page en accordéon, bouton retour en haut.
+7. SÉCURITÉ
+   - Limites anti-spam côté base (contributions, cotisations, newsletter, abonnements, événements).
+   - Limites de taille et de valeur sur les textes et montants.
+   - Fichiers : images seulement (preuves : + PDF), 5 Mo max.
+   - Journal d'audit (qui a validé/changé quoi) lisible par l'admin uniquement.
+   - Session fermée après 30 min d'inactivité ; anti-clickjacking ; CSP + en-têtes renforcés (_headers).
+
+À FAIRE (3 étapes)
+1. Supabase > SQL Editor : collez et lancez  supabase/sql/19-securite-verifies.sql  (une seule fois).
+2. Remplacez le contenu du site par le dossier site/ (GitHub/Netlify). Rechargez 2 fois.
+3. Supabase : collez et lancez aussi supabase/sql/20-double-verification-admin.sql (après le 19).
+4. Fonction de paiement : recollez supabase/functions/simplypaye/index.ts puis Deploy.
+5. (Conseillé) secret STRICT_CORS = 1 (n'accepte que votre site ; ajoutez ALLOWED_ORIGINS si vous avez 2 adresses).
+6. Double vérification admin : Mon espace > Double vérification > Activer (Supabase > Authentication > Multi-Factor : TOTP activé).
+   Ensuite seulement, pour l'imposer : update public.security_settings set v='on' where k='admin_mfa';
+   (retour arrière : même commande avec 'off').
+
+VÉRIFIER UN ORGANISATEUR (badge vert) : dans le SQL Editor
+   insert into public.verified_owners(owner) values ('OWNER_ID');
+   (OWNER_ID = valeur owner_id de ses événements)
+CONTRÔLE SÉCURITÉ : select * from public.security_report();  -> doit renvoyer 0 ligne.
+
+LIMITES HONNÊTES
+- Aucun site n'est « impiratable » : la vraie protection est côté Supabase (RLS, limites, audit), ajoutée ici.
+- QR : le générateur est maintenant intégré au site (plus de dépendance). Pour LIRE un QR, le site utilise le détecteur du téléphone (Chrome Android) ; sinon il charge jsQR depuis cdnjs au moment du scan seulement.
+- Non fait : QR rotatif (nécessite de modifier le contrôle d'entrée sur votre vraie base, impossible à tester ici) et CSP sans 'unsafe-inline' (réécriture complète des boutons). Un billet déjà scanné reste refusé à l'entrée.
+- Les 10 affiches officielles ne sont pas dans ce lot.
