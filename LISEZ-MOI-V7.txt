@@ -1,0 +1,8 @@
+MISE A JOUR V7 (par-dessus la version COMPLET)
+
+1. Supabase > SQL Editor : lancez 21-avis-alertes-fidelite.sql puis 22-revente-places-tables-parrainage-souvenirs.sql (relancables sans risque).
+2. Remplacez index.html et sw.js du dossier site/ sur GitHub, puis rouvrez le site avec ?v=7 a la fin de l'adresse.
+
+PUBLIC : avis apres le spectacle (livre d'or), « Me prevenir pour la prochaine edition », revente officielle au prix d'origine, tables de groupe, plan de salle (choix des places), photos souvenirs (page d'un evenement) ; « Mes places » : historique + points, offrir/revendre un billet, parrainage.
+ORGANISATEUR et ADMIN (dashboard) : sous chaque evenement, « Outils » : rappels et demande d'avis par WhatsApp, personnes a prevenir, moderation des avis, plan de salle, commission des vendeurs, photos souvenirs.
+Corrige aussi l'envoi d'affiche quand la session a expire (erreur « exp claim »).

@@ -1,0 +1,36 @@
+LE RESTAU DU RIRE TICKETS - MISE A JOUR V6 (aucun SQL a relancer)
+
+INSTALLATION : remplacez TOUT le dossier site/ sur GitHub (index.html + sw.js), puis ouvrez le site avec ?v=6 a la fin de l'adresse.
+(L'appli Capacitor : dossier capacitor-app/www/ est deja identique.)
+
+1. NOM DE L'ORGANISATEUR OBLIGATOIRE
+- Creation d'evenement : champ « Votre nom ou celui de votre organisation * » obligatoire (2 lettres minimum), memorise pour la prochaine fois.
+- Creation de cotisation : meme regle.
+- Le nom est affiche partout : cartes (« par X »), page evenement (« Publie par X » + bouton S'abonner), bandeaux. Un meme organisateur garde son nom le plus recent.
+
+2. EN-TETE ET BANDEAU QUI DEFILENT (comme Billet Reduc / la une de la RTNC)
+- En-tete : le logo defile avec « par [organisateur] » sur la page d'un evenement. Un appui long met en pause.
+- Bandeau rouge « A LA UNE » sous l'en-tete : defilement continu des prochains evenements (avec l'organisateur), de l'edition officielle et des cotisations. Toucher une info ouvre la page.
+
+3. FONCTIONS PROFESSIONNELLES (type Eventbrite / Ticketmaster / Weezevent / Fnac)
+Dans « Options professionnelles » (creation d'evenement, facultatif) :
+- Ouverture et fermeture de la vente (compte a rebours, vente bloquee avant/apres sur la page publique)
+- Maximum de billets par commande
+- Age minimum, ouverture des portes, politique de remboursement
+- Artistes / programme (touches = filtre par artiste), infos pratiques, bande-annonce video, groupe WhatsApp de l'evenement
+Sur la page evenement : J-N avant l'evenement, bouton Itineraire (Google Maps), partage, calendrier.
+Accueil : filtres rapides (Top coups de coeur, Ce week-end, Gratuit, Petits prix, villes), « Pour vous » (recommandations selon vos coeurs et organisateurs suivis).
+Menu + pied de page : Top coups de coeur, Ce week-end, Gratuit, Petits prix, Mes reco', Les artistes, Toutes les villes, La carte cadeau.
+
+4. FONCTIONS QUE LES BILLETTERIES AFRICAINES N'ONT PAS (ou rarement)
+- Visuel « WhatsApp Status » : affiche + date + lieu + QR code, genere en un appui, pret pour le statut WhatsApp / Instagram.
+- « Cotiser entre amis » : transforme un billet en cotisation de groupe (utilise votre module Cotisations, prerempli).
+- Groupe WhatsApp de l'evenement : les fans se retrouvent avant la soiree.
+- Liste d'attente par WhatsApp quand une categorie est Sold out.
+- Carte cadeau commandee par WhatsApp (apercu en direct).
+
+LIMITES A CONNAITRE
+- Ouverture/fermeture de la vente et limite par commande sont appliquees sur la page publique. Pour un blocage cote serveur (paiement en ligne), il faut ajouter la regle dans la fonction de paiement / la base.
+- Codes promo et prix « early bird » : non ajoutes volontairement (ils doivent etre verifies par le serveur de paiement pour eviter la fraude).
+- « Top avis » (notes des spectateurs) demande une table dans Supabase : possible dans une prochaine version.
+- Le nom d'organisateur est obligatoire dans l'application ; la base de donnees ne l'impose pas (les anciens evenements sans nom gardent « Organisateur »).
