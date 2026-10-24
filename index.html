@@ -1808,6 +1808,12 @@ html.low .ev3 .pic{display:none}
 #pub .cdg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}#pub .cdg>div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 4px;text-align:center}
 #pub .cdg b{display:block;font:900 28px/1 system-ui,sans-serif;color:var(--gd);font-variant-numeric:tabular-nums}#pub .cdg small{display:block;margin-top:5px;font-size:11px;color:#d6e6e1}
 #pub .sbk label{display:block}
+</style><style>
+#pub .lmb{margin:0 0 10px;padding:10px 12px;border-radius:14px;background:#dc2626;color:#fff;font-weight:800;animation:lmp 1.6s infinite}#pub .lmb.t{background:#0e2f2b;animation:none}
+@keyframes lmp{50%{opacity:.75}}#pub .bl.lm{background:#dc2626;color:#fff}
+#pub .lmh{margin:14px 0 4px;padding:12px;border-radius:18px;background:#fff4f2;border:1.5px solid #dc2626}#pub .lmh b{display:block;margin-bottom:6px;color:#b91c1c}
+#pub .lmh a{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #f3c9c4;cursor:pointer;font-weight:700}#pub .lmh i{font-style:normal;color:#dc2626;white-space:nowrap}
+#pub .spl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}#pub .spi{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;border:1px solid #dfe7e4;border-radius:12px;background:#fff;color:inherit;text-decoration:none}#pub .spi img{max-height:40px;max-width:110px;object-fit:contain}
 </style></head><body>
 
 <!-- ========== PAGE PUBLIQUE ========== -->
@@ -1818,7 +1824,7 @@ html.low .ev3 .pic{display:none}
 <div id="v-home" class="view">
 <section class="hm"><span class="hm-k">🎭 La scène vous attend</span><h1>Votre place,<br><em>votre fou rire.</em></h1><p>Choisissez votre soirée, réglez en quelques gestes et gardez votre billet numérique dans la poche.</p>
 <div class="hm-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="qs1" placeholder="Un spectacle, un artiste, une ville ?" oninput="setQ(this.value)"></div></section>
-<div class="cdw" id="cdw" hidden><div class="cdt"><span>⏳ Prochain événement</span><b id="cdn"></b></div><div class="cdg"><div><b id="cdD">00</b><small>Jours</small></div><div><b id="cdH">00</b><small>Heures</small></div><div><b id="cdM">00</b><small>Minutes</small></div><div><b id="cdS">00</b><small>Secondes</small></div></div></div>
+<div id="lastmin"></div><div class="cdw" id="cdw" hidden><div class="cdt"><span>⏳ Prochain événement</span><b id="cdn"></b></div><div class="cdg"><div><b id="cdD">00</b><small>Jours</small></div><div><b id="cdH">00</b><small>Heures</small></div><div><b id="cdM">00</b><small>Minutes</small></div><div><b id="cdS">00</b><small>Secondes</small></div></div></div>
 <div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
 <div class="cats" id="ctabs"></div>
 <div class="sech"><h2>Prochains rendez-vous</h2><span class="sm" id="evcount"></span></div>
@@ -2443,7 +2449,7 @@ function evCard(e){const d=e.ts?new Date(e.ts):null,ok=d&&!isNaN(d),loc=LOCN(),
  day=ok?d.getDate():"•",mon=ok?d.toLocaleDateString(loc,{month:"short"}).replace(".","").toUpperCase():"";
  return `<article class="ev3" onclick="${e.href}"><div class="ev3-p"><img class="lgo" alt="" src="${$("mainLogo").src}">${e.img?`<img class="pic" src="${esc(e.img)}" alt="" onerror="this.remove()">`:""}<div class="ev3-d"><b>${day}</b><span>${mon}</span></div>${e.off?'<span class="ev3-v">✔ Officiel</span>':""}</div>
  <div class="ev3-b"><span class="ev3-c">${esc(catLabel(e.cat))}</span><div class="ev3-t"><h3>${esc(e.title)}</h3>${heartBtn(e.id)}</div><p>${ic("cal")}${esc(e.date)}</p><p>${ic("pin")}${esc(e.place)}</p>
- ${e.left==null?"":`<span class="bl${e.left?"":" fl"}">${e.left?e.left+(e.left>1?" billets restants":" billet restant"):"SOLD OUT"}</span>`}
+ ${e.left==null?"":`<span class="bl${e.left?(e.left<=20?" lm":""):" fl"}">${e.left?(e.left<=20?"🔥 Plus que "+e.left+" !":e.left+(e.left>1?" billets restants":" billet restant")):"SOLD OUT"}</span>`}
  <div class="ev3-f"><span class="sm">Dès <b>${esc(e.price)}</b></span><span class="ev3-go">Réserver</span></div></div></article>`}
 function catsAll(){const used=[...new Set((DBEV||[]).map(e=>e.category).filter(Boolean))];const base=["spectacle","concert","festival","formation"];const all=[...new Set([...base,...used])];return[["all","Tout","🎫"],...all.map(k=>[k,catLabel(k),CATI[k]||"🎟️"])]}
 function drawCats(){$("ctabs").innerHTML=catsAll().map(c=>`<button class="cat${c[0]===cat?" on":""}" onclick="setCat('${c[0]}')"><i>${c[2]}</i><span>${esc(c[1])}</span></button>`).join("")}
@@ -2520,7 +2526,7 @@ function renderCreate(){const el=$("v-create");
  <label>Titre *</label><input id="ct" placeholder="Ex : Gala d'humour"><label>Nom de l'organisateur (affiché aux visiteurs)</label><input id="co" placeholder="Ex : Mad Mad Production">
  <div class="g"><div><label>Modèle de l'événement *</label><select id="cg">${Object.entries(CATN).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div><div><label>Pays *</label><select id="cy">${COUNTRIES.filter(x=>x[0]!=="ALL").map(x=>`<option value="${x[0]}"${x[0]===cty?" selected":""}>${x[1]}</option>`).join("")}</select></div></div>
  <div class="g"><div><label>Ville *</label><input id="cv"></div><div><label>Lieu / salle *</label><input id="cl"></div></div><div id="cls"></div><button type="button" class="btn dk" id="cadds" onclick="addSalle()">➕ Ajouter une autre salle</button><p class="sm" style="margin:6px 0 8px">Votre événement a lieu dans 2 ou 3 salles ? Ajoutez-les ici : chaque salle a ses propres dates (3 salles au maximum). Un seul événement, une seule affiche, un seul lien d'achat.</p>
- <label>Date et heure *</label><input id="cd" type="datetime-local"><input id="cdp" placeholder="Lieu de cette date (facultatif, sinon le lieu ci-dessus)" style="margin-top:6px"><div id="cdx"></div><button type="button" class="btn dk" onclick="addDT()">➕ Ajouter une autre date</button><p class="sm" style="margin:6px 0 8px">Festival ou spectacle sur plusieurs jours ? Ajoutez chaque date (ex : 1, 2, 3 et 4) : même salle ou salles différentes. Le dernier jour est le jour J. Les dates ci-dessus sont celles de la salle principale.</p><label>Description de l'événement</label><textarea id="cx"></textarea><label>Description de la billetterie</label><textarea id="ctd" placeholder="Ex : comment acheter, conditions d'entrée, remboursement, places numérotées…"></textarea>
+ <label>Date et heure *</label><input id="cd" type="datetime-local"><input id="cdp" placeholder="Lieu de cette date (facultatif, sinon le lieu ci-dessus)" style="margin-top:6px"><div id="cdx"></div><button type="button" class="btn dk" onclick="addDT()">➕ Ajouter une autre date</button><p class="sm" style="margin:6px 0 8px">Festival ou spectacle sur plusieurs jours ? Ajoutez chaque date (ex : 1, 2, 3 et 4) : même salle ou salles différentes. Le dernier jour est le jour J. Les dates ci-dessus sont celles de la salle principale.</p><label>🧭 Plan d'accès (facultatif)</label><input id="cmap" placeholder="Lien Google Maps (facultatif)"><textarea id="cacc" rows="2" placeholder="Conseils : repère, parking, transport…"></textarea><label>Description de l'événement</label><textarea id="cx"></textarea><label>Description de la billetterie</label><textarea id="ctd" placeholder="Ex : comment acheter, conditions d'entrée, remboursement, places numérotées…"></textarea>
  <label>Affiche (image)</label><input id="cp2" type="file" accept="image/*">
  <h3>🎟️ Catégories de billets *</h3><p class="sm">Prix à <b>0</b> = billet gratuit : le client réserve et reçoit son billet tout de suite, sans paiement.</p><div class="note" style="margin:8px 0">🔢 Pour chaque catégorie, indiquez le <b>nombre total de billets</b> : il comprend les ventes <b>en ligne ET en espèces</b>. Quand il est atteint, la catégorie affiche <b>Sold out</b> sur la billetterie.</div><div id="trs"></div><button class="btn dk" onclick="addTR()">➕ Ajouter une catégorie</button>
  <h3>💳 Modes de vente</h3>
@@ -2574,8 +2580,8 @@ async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc
  <div class="c2i" style="border-radius:24px;overflow:hidden;margin-bottom:14px"><img class="lgo" alt="" src="${$("mainLogo").src}">${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.remove()">`:""}<span class="tg3">${esc((catLabel(e.category)).toUpperCase())}</span><div class="pov">${e.owner_id?fpov(e.owner_id):""}${heartBig(e.id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(e.title)}</h2>${orgRow(e)}${chipsRow(e)}<div style="margin-bottom:12px"><button class="btn dk" style="margin:0" onclick="icsEv()">📅 Ajouter au calendrier</button> <button class="btn dk" style="margin:0 0 0 6px" onclick="inviteFriends()">👥 Inviter des amis</button></div>
  <div class="sgm" id="evtabs"><a data-t="tk" class="on" onclick="evTab('tk')">Billets</a><a data-t="dt" onclick="evTab('dt')">Détails</a></div><div id="evdt" hidden><div class="x2"><p class="evp">${ic("cal")}${esc(fmtRange(e))}</p><p class="evp">${ic("pin")}${esc([e.venue,e.city].filter(Boolean).join(", "))}</p>${e.description?`<p class="sm dsc" style="margin-top:8px;white-space:pre-line">${esc(e.description)}</p>${e.description.length>220?`<button class="more" onclick="const p=this.previousElementSibling;p.classList.toggle('open');this.textContent=p.classList.contains('open')?'Réduire':'Lire la suite'">Lire la suite</button>`:""}`:""}</div></div>
- <div id="evtk">${dateBlock(e)}<div class="x2"><h2>🎟️ Billets</h2>${e.ticket_info?`<p class="sm" style="white-space:pre-line;margin:6px 0 10px">${esc(e.ticket_info)}</p>`:""}<div id="evt"></div><div class="sum" id="evs"></div></div>
- <div class="sgm" style="margin:0 0 12px"><a data-m="res" onclick="setMode('res')">Réservation</a><a data-m="cash" onclick="setMode('cash')">Espèces</a><a data-m="online" onclick="setMode('online')">En ligne</a>${(e.modes||{}).hold?`<a data-m="hold" onclick="setMode('hold')">Sans paiement</a>`:""}</div>${secBadges()}<div id="evform"></div></div>`;
+ <div id="evtk">${lastMinBlock(e)}${dateBlock(e)}<div class="x2"><h2>🎟️ Billets</h2>${e.ticket_info?`<p class="sm" style="white-space:pre-line;margin:6px 0 10px">${esc(e.ticket_info)}</p>`:""}<div id="evt"></div><div class="sum" id="evs"></div></div>
+ <div class="sgm" style="margin:0 0 12px"><a data-m="res" onclick="setMode('res')">Réservation</a><a data-m="cash" onclick="setMode('cash')">Espèces</a><a data-m="online" onclick="setMode('online')">En ligne</a>${(e.modes||{}).hold?`<a data-m="hold" onclick="setMode('hold')">Sans paiement</a>`:""}</div>${secBadges()}<div id="evform"></div></div>${accessBlock(e)}${sponsorsBlock(e)}`;
  drawTk();setMode(EV.mode);if(EV.dl)pickDate(0)}
 function left(t){return t.stock?Math.max(t.stock-(EV.sold[t.id]||0)-(EV.qty[t.id]||0),0):null}
 const cur=c=>c==="USD"?"$":"FC";
@@ -3487,7 +3493,7 @@ window.p5Copy=copy;
 const _myobs=new MutationObserver(()=>{const m=$("myev");if(!m||$("p5gp"))return;const b=m.querySelector('button[onclick="odbOpen()"]');if(b)b.insertAdjacentHTML("afterend",'<button class="btn" id="p5gp" style="margin-top:8px" onclick="p5Manage()">⚙️ Gestion pro : promos, équipe d\'entrée, ambassadeurs…</button>')});
 const _mv=$("myev");if(_mv)_myobs.observe(_mv,{childList:true,subtree:true});
 let CUR="",TAB="door";
-const TABS=[["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["stat","📊 Stats"],["rem","🔔 Rappels"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
+const TABS=[["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
 window.p5Manage=async function(){let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.display="block";document.body.style.overflow="hidden";
  if(!MYEV||!MYEV.length){try{await loadMine()}catch(x){}}
  const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");
@@ -3739,7 +3745,7 @@ window.p7Print=async function(bid,pl){pl=P7L[pl]?pl:(P7L[lang]?lang:"fr");const 
  if(!bk||!l.length){alert("Aucun ticket à imprimer.");return}
  const d=window.evDates?evDates(e)[0]:null,when=d?d.toLocaleDateString(P7LOC[pl],{weekday:"long",day:"numeric",month:"long",year:"numeric"})+" · "+T(d):"",place=[e.venue,e.city].filter(Boolean).join(", ");
  const css=`<style>.p7pg{display:grid;grid-template-columns:repeat(2,95mm);gap:0;justify-content:start;margin:0 auto;width:190mm}@media screen and (max-width:700px){.p7pg{zoom:.46}}.p7t{box-sizing:border-box;width:95mm;height:55mm;border:1px dashed #888;padding:3mm;display:flex;gap:3mm;page-break-inside:avoid;font:12px/1.25 system-ui,sans-serif;color:#111;background:#fff}.p7t .i{flex:1;min-width:0}.p7t h3{margin:0 0 1mm;font-size:13px;line-height:1.15}.p7t .n{font:900 22px Georgia,serif;margin-top:1mm}.p7t .q{width:30mm;text-align:center}.p7t .q img{width:28mm;height:28mm}.p7t .q b{display:block;font-size:9px;letter-spacing:.4px}.p7t .s{width:17mm;border-left:1px dashed #888;padding-left:2mm;font-size:9px}.p7t .s u{display:block;margin-top:5mm;border-bottom:1px solid #444}@media print{@page{size:A4;margin:8mm}}</style>`;
- const tk=l.map(t=>`<div class="p7t"><div class="i"><h3>${esc(e.title||"")}</h3><div>${esc(when)}</div><div>${esc(place)}</div><div style="margin-top:1mm"><b>${esc(bk.ticket_name||"")}</b> · ${bk.price>0?nf(bk.price)+" "+cur(bk.currency):L7.free}</div><div class="n">${L7.no} ${String(t.serial).padStart(4,"0")}</div><div style="font-size:9px;color:#555">${L7.valid} · ${esc(team(e))}</div></div><div class="q"><img alt="" src="${qrImg(t.code,140)}"><b>${esc(t.code)}</b></div><div class="s">${L7.stub}<br>${L7.no} ${String(t.serial).padStart(4,"0")}<u></u><span>${L7.name}</span></div></div>`).join("");
+ const tk=l.map(t=>`<div class="p7t"><div class="i"><h3>${esc(e.title||"")}</h3><div>${esc(when)}</div><div>${esc(place)}</div><div style="margin-top:1mm"><b>${esc(bk.ticket_name||"")}</b> · ${bk.price>0?nf(bk.price)+" "+cur(bk.currency):L7.free}</div><div class="n">${L7.no} ${String(t.serial).padStart(4,"0")}</div><div style="font-size:9px;color:#555">${L7.valid} · ${esc(team(e))}</div><div style="font-size:8px;color:#555">${esc(((e.modes||{}).sponsors||[]).map(x=>x.name).filter(Boolean).slice(0,4).join(" · "))}</div></div><div class="q"><img alt="" src="${qrImg(t.code,140)}"><b>${esc(t.code)}</b></div><div class="s">${L7.stub}<br>${L7.no} ${String(t.serial).padStart(4,"0")}<u></u><span>${L7.name}</span></div></div>`).join("");
  overlay(`${css}<div class="bx" style="max-width:none"><div class="no" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap"><button class="p4b o" onclick="document.body.classList.add('p5print');window.print()">🖨️ Imprimer / enregistrer en PDF</button><button class="p4b" onclick="p5RcClose()">Fermer</button><select onchange="p5RcClose();p7Print('${bid}',this.value)" style="width:auto;padding:6px 10px">${Object.keys(P7L).map(k=>`<option value="${k}"${k===pl?" selected":""}>${P7L[k].nm}</option>`).join("")}</select><span class="sm" style="align-self:center">${l.length} tickets · 10 par page A4 · découpez le long des pointillés</span></div><div class="p7pg">${tk}</div></div>`)};
 
 /* ================= 🏪 CAISSE A LA PORTE ================= */
@@ -3818,6 +3824,173 @@ function fillPO(){if(!$("cpo"))return;try{syncPN()}catch(x){}const cur=$("cpo").
 const _dp9=drawPN;drawPN=function(){const r=_dp9.apply(this,arguments);fillPO();return r};
 const _ex9=window.evExtra;window.evExtra=function(){const r=_ex9?_ex9():{};try{syncPN();const pl=PN.filter(p=>p.number.trim()),p=pl[+(($("cpo")||{}).value)||0];if(p)r.payout={op:p.op||"",name:p.name||"",number:p.number}}catch(x){}return r};
 applyLang();drawEvents();
+
+</script>
+<script>
+/* ===== V11 : 10 nouvelles fonctions ===== */
+(function(){
+const ra=window.p5ra,rpub=window.p5rp,CUR=()=>window.p5Cur(),EVT=()=>window.p5Ev()||{};
+const ld=k=>{try{return localStorage.getItem(k)}catch(e){return null}},sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
+const jl=(k,d)=>{try{return JSON.parse(ld(k))||d}catch(e){return d}};
+const LC=()=>P7LOC[lang]||"fr-FR";
+const orders=async()=>(await ra("org_orders",{p_event:CUR()}))||[];
+const okU=u=>/^https?:\/\/\S+$/i.test(u||"");
+const qtyOf=o=>+o.total_qty||(o.items||[]).reduce((a,i)=>a+(+i.qty||0),0);
+const cs=o=>{const c={};Object.entries(o.amounts||{}).forEach(([k,v])=>{k=k==="CDF"?"FC":k;c[k]=(c[k]||0)+(+v||0)});return c};
+const addAmt=(t,o)=>Object.entries(cs(o)).forEach(([k,v])=>t[k]=(t[k]||0)+v);
+const BASEU=()=>location.origin+location.pathname;
+async function saveModes(patch){const e=EVT(),m=Object.assign({},e.modes||{},patch);await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m})});e.modes=m;const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(d)d.modes=m}
+const T={};
+
+/* ---------- 1. RAPPELS WHATSAPP (veille, jour J, merci) en 4 langues ---------- */
+const RT={
+j1:{fr:"Bonjour {nom}, c'est demain ! « {titre} » : {date}, {lieu}. Présentez votre QR code ({code}) à l'entrée et arrivez tôt. — {org}",
+en:"Hello {nom}, it's tomorrow! “{titre}”: {date}, {lieu}. Show your QR code ({code}) at the entrance and come early. — {org}",
+ln:"Mbote {nom}, ezali lobi ! « {titre} » : {date}, {lieu}. Lakisa QR code na yo ({code}) na ekotelo mpe yaka noki. — {org}",
+sw:"Habari {nom}, ni kesho ! « {titre} » : {date}, {lieu}. Onyesha QR code yako ({code}) mlangoni na ufike mapema. — {org}"},
+j0:{fr:"Bonjour {nom}, c'est AUJOURD'HUI ! « {titre} » : {date}, {lieu}. N'oubliez pas votre QR code ({code}). À tout à l'heure ! — {org}",
+en:"Hello {nom}, it's TODAY! “{titre}”: {date}, {lieu}. Don't forget your QR code ({code}). See you soon! — {org}",
+ln:"Mbote {nom}, ezali LEO ! « {titre} » : {date}, {lieu}. Obosana QR code na yo te ({code}). Tokomonana na sima ! — {org}",
+sw:"Habari {nom}, ni LEO ! « {titre} » : {date}, {lieu}. Usisahau QR code yako ({code}). Tuonane baadaye ! — {org}"},
+thx:{fr:"Bonjour {nom}, merci d'être venu(e) à « {titre} » ! Votre avis compte : donnez-le dans « Mes places ». À très bientôt ! — {org}",
+en:"Hello {nom}, thank you for coming to “{titre}”! Your opinion matters: leave it in “My tickets”. See you soon! — {org}",
+ln:"Mbote {nom}, matondi mpo ya koya na « {titre} » ! Likanisi na yo ezali na ntina : pesa yango na « Bilete na ngai ». Tokomonana lisusu ! — {org}",
+sw:"Habari {nom}, asante kwa kuja « {titre} » ! Maoni yako ni muhimu : yatoe kwenye « Tiketi zangu ». Tuonane tena ! — {org}"}};
+const orgN=e=>(window.p4org&&window.p4org(e))||e.organizer_name||"Le Restau du Rire";
+function rmMsg(o,m,l){const e=EVT(),d=evDates(e)[0],lo=P7LOC[l]||"fr-FR",when=d?d.toLocaleDateString(lo,{weekday:"long",day:"numeric",month:"long"})+" "+d.toLocaleTimeString(lo,{hour:"2-digit",minute:"2-digit"}):"";
+ return $("rm9_t").value.replace(/\{nom\}/g,String(o.name||"").split(" ")[0]).replace(/\{titre\}/g,e.title||"").replace(/\{date\}/g,when).replace(/\{lieu\}/g,[e.venue,e.city].filter(Boolean).join(", ")).replace(/\{code\}/g,o.code||"").replace(/\{org\}/g,orgN(e))}
+T.rem=async function(b){const l=(await orders()).filter(o=>o.status==="confirmed"&&o.phone);window.RM9={l};
+ b.innerHTML=`<div class="p5cd"><b>🔔 Rappels WhatsApp</b><small>${l.length} acheteur(s) confirmé(s). Choisissez le moment et la langue, puis touchez « Suivant » : WhatsApp s'ouvre avec le message prêt.</small>
+ <div class="p5row"><select id="rm9_m" onchange="p9RmSet()"><option value="j1">📅 La veille (J-1)</option><option value="j0">🎉 Le jour J</option><option value="thx">🙏 Merci après l'événement</option></select><select id="rm9_l" onchange="p9RmSet()">${Object.keys(P7L).map(k=>`<option value="${k}"${k===lang?" selected":""}>${P7L[k].nm}</option>`).join("")}</select></div>
+ <textarea id="rm9_t" rows="5"></textarea><button class="btn dk" onclick="p9RmNext()">▶️ Envoyer au suivant</button><small id="rm9_c"></small></div><div id="rm9_l2"></div>`;p9RmSet()};
+const rmKey=()=>"lrr_rm9_"+CUR()+"_"+$("rm9_m").value;
+window.p9RmSet=function(){$("rm9_t").value=RT[$("rm9_m").value][$("rm9_l").value];p9RmDraw()};
+window.p9RmDraw=function(){const sent=jl(rmKey(),[]),l=window.RM9.l;$("rm9_c").textContent=sent.length+" / "+l.length+" envoyé(s)";
+ $("rm9_l2").innerHTML=l.map(o=>`<div class="p5cd"><b>${esc(o.name)}</b> <small>${esc(o.code||"")} ${sent.includes(o.id)?"· ✅ envoyé":""}</small><button class="p4b g" onclick="p9RmOne('${o.id}')">💬 Envoyer</button></div>`).join("")||'<p class="sm">Aucun acheteur confirmé.</p>'};
+window.p9RmOne=function(id){const o=window.RM9.l.find(x=>x.id===id);if(!o)return;const s=jl(rmKey(),[]);if(!s.includes(id)){s.push(id);sv(rmKey(),JSON.stringify(s))}window.open("https://wa.me/"+ph(o.phone)+"?text="+encodeURIComponent(rmMsg(o,$("rm9_m").value,$("rm9_l").value)),"_blank","noopener");p9RmDraw()};
+window.p9RmNext=function(){const s=jl(rmKey(),[]),o=window.RM9.l.find(x=>!s.includes(x.id));if(!o){alert("✅ Tout le monde a reçu ce rappel.");return}p9RmOne(o.id)};
+
+/* ---------- 2. PASS SAISON ---------- */
+T.pass=async function(b){const others=(MYEV||[]).filter(e=>e.id!==CUR()&&(e.status==="published"||e.status==="pending")),e=EVT(),tk=e.tickets||[];
+ b.innerHTML=`<div class="p5cd"><b>🎫 Pass saison</b><small>1) Créez le pass comme un événement normal (ex : « Pass saison 2026 »), avec son prix, et vendez-le. 2) Pour chaque spectacle, activez ici les détenteurs du pass : ils reçoivent une invitation avec QR code pour cet événement.</small>
+ <select id="ps9_e"><option value="">— Choisir l'événement « pass » —</option>${others.map(x=>`<option value="${x.id}">${esc(x.title)}</option>`).join("")}</select>
+ <select id="ps9_t">${tk.map(t=>`<option value="${esc(t.id)}">Catégorie : ${esc(t.name)}</option>`).join("")}</select>
+ <button class="btn dk" onclick="p9PassLoad()">👀 Voir les détenteurs du pass</button></div><div id="ps9_r"></div>`};
+window.p9PassLoad=async function(){const pid=$("ps9_e").value;if(!pid){alert("Choisissez l'événement pass.");return}try{const [P,C]=await Promise.all([ra("org_orders",{p_event:pid}),orders()]);const have=new Set(C.filter(o=>o.kind==="invitation").map(o=>String(o.phone||"").replace(/\D/g,"")));
+ const H=P.filter(o=>o.status==="confirmed"&&o.phone),todo=H.filter(o=>!have.has(String(o.phone).replace(/\D/g,"")));window.PS9={todo,pid};
+ $("ps9_r").innerHTML=`<div class="p5cd"><b>${H.length} détenteur(s) confirmé(s)</b><small>${todo.length} pas encore activé(s) pour cet événement.</small>${todo.length?`<button class="btn wa" onclick="p9PassGo()">✅ Activer ${todo.length} détenteur(s) ici</button>`:""}</div>`+H.map(o=>`<div class="p5cd"><b>${esc(o.name)}</b><small>${have.has(String(o.phone).replace(/\D/g,""))?"✅ déjà activé":"⏳ à activer"} · ${qtyOf(o)} place(s)</small></div>`).join("")}catch(x){alert("❌ "+x.message)}};
+window.p9PassGo=async function(){const r=window.PS9;if(!r||!r.todo.length)return;try{const n=await ra("import_guests",{p_event:CUR(),p_rows:r.todo.map(o=>({name:o.name,phone:o.phone,qty:qtyOf(o),ticket:$("ps9_t").value||null}))});alert("✅ "+n+" détenteur(s) activé(s). Ils apparaissent dans « Invités » avec leur QR code.");p9PassLoad()}catch(x){alert("❌ "+x.message)}};
+
+/* ---------- 3. PARRAINAGE RECOMPENSE ---------- */
+T.ref=async function(b){const e=EVT(),R=(e.modes||{}).referral||{n:3,reward:"1 billet offert"};let A=[],rep=[];try{[A,rep]=await Promise.all([api("ambassadors?event_id=eq."+CUR()+"&select=*&order=created_at"),ra("ambassador_report",{p_event:CUR()})])}catch(x){}
+ const RP={};rep.forEach(r=>RP[String(r.code).toUpperCase()]=r);const given=jl("lrr_refgiven_"+CUR(),{});window.RF9={A,R};
+ b.innerHTML=`<div class="p5cd"><b>🎁 Parrainage récompensé</b><small>Chaque acheteur reçoit un lien perso. Quand ses amis achètent avec ce lien, il gagne une récompense.</small>
+ <div class="p5row"><input id="rf9_n" type="number" min="1" value="${+R.n||3}" placeholder="Nb d'amis"><input id="rf9_r" value="${esc(R.reward||"1 billet offert")}" placeholder="Récompense"></div>
+ <button class="btn dk" onclick="p9RefSave()">💾 Enregistrer la règle</button><button class="btn wa" onclick="p9RefAll()">🪄 Créer les liens de tous les acheteurs</button></div>`+
+ (A.map(a=>{const r=RP[String(a.code).toUpperCase()]||{},due=Math.floor((r.qty||0)/(+R.n||3))-(given[a.code]||0);return`<div class="p5cd"><b>${esc(a.name)}</b> <span class="p5k">${esc(a.code)}</span><small>${r.qty||0} billet(s) vendu(s) par son lien · récompenses dues : <b>${Math.max(due,0)}</b> (${esc(R.reward||"")})</small><button class="p4b g" onclick="p9RefSend('${esc(a.code)}')">💬 Lui envoyer son lien</button>${due>0?`<button class="p4b o" onclick="p9RefGive('${esc(a.code)}')">✅ Récompense donnée</button>`:""}</div>`}).join("")||'<p class="sm">Aucun lien pour le moment. Touchez « Créer les liens de tous les acheteurs ».</p>')};
+window.p9RefSave=async function(){try{await saveModes({referral:{n:Math.max(1,+$("rf9_n").value||3),reward:$("rf9_r").value.trim().slice(0,60)||"1 billet offert"}});toast("Enregistré ✅")}catch(x){alert("❌ "+x.message)}};
+window.p9RefAll=async function(){try{const O=(await orders()).filter(o=>o.status==="confirmed"&&o.phone&&o.kind!=="invitation"),have=new Set((window.RF9.A||[]).map(a=>String(a.phone||"").replace(/\D/g,""))),seen=new Set();let n=0;
+ for(const o of O){const p=String(o.phone).replace(/\D/g,"");if(have.has(p)||seen.has(p))continue;seen.add(p);const base=String(o.name).split(" ")[0].toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"AMI";
+  for(let t=0;t<4;t++){const code=base+String(Math.floor(Math.random()*90)+10);try{await api("ambassadors",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({event_id:CUR(),name:o.name,code,phone:o.phone,commission_pct:0})});n++;break}catch(x){}}}
+ alert("✅ "+n+" lien(s) créé(s).");window.p5Tab("ref")}catch(x){alert("❌ "+x.message)}};
+window.p9RefSend=function(code){const a=(window.RF9.A||[]).find(x=>x.code===code),e=EVT(),R=window.RF9.R,lk=BASEU()+"?ref="+encodeURIComponent(code)+"#event/"+evUrlKey(e);
+ const t=`Bonjour ${String(a.name).split(" ")[0]} 🎭 Voici votre lien personnel pour « ${e.title} » : ${lk}\nPour chaque ${R.n||3} billets achetés par vos amis avec ce lien, vous gagnez : ${R.reward||"1 billet offert"} !`;
+ window.open("https://wa.me/"+ph(a.phone)+"?text="+encodeURIComponent(t),"_blank","noopener")};
+window.p9RefGive=function(code){const g=jl("lrr_refgiven_"+CUR(),{});g[code]=(g[code]||0)+1;sv("lrr_refgiven_"+CUR(),JSON.stringify(g));window.p5Tab("ref")};
+
+/* ---------- 4. TIRAGE AU SORT ---------- */
+const rnd=n=>{const a=new Uint32Array(1);crypto.getRandomValues(a);return a[0]%n};
+T.draw=async function(b){const O=(await orders()).filter(o=>o.status==="confirmed"&&o.kind!=="invitation");window.DR9={O};const H=jl("lrr_draw_"+CUR(),[]);
+ b.innerHTML=`<div class="p5cd"><b>🎰 Tirage au sort</b><small>${O.length} participant(s) confirmé(s). Le tirage est aléatoire et ne tombe jamais deux fois sur la même personne.</small>
+ <div class="p5row"><select id="dr9_p"><option value="all">Tous les acheteurs</option><option value="in">Seulement ceux déjà entrés</option></select><input id="dr9_n" type="number" min="1" max="20" value="1" placeholder="Nb de gagnants"></div>
+ <label class="sm"><input id="dr9_w" type="checkbox" style="width:auto"> 1 billet = 1 chance (plus on a de billets, plus on a de chances)</label>
+ <input id="dr9_g" placeholder="Lot à gagner (ex : un T-shirt, 50 $)"><button class="btn wa" onclick="p9Draw()">🎰 TIRER AU SORT</button></div><div id="dr9_r"></div>
+ ${H.length?`<div class="p5cd"><b>🏆 Déjà tirés</b>${H.map(h=>`<small>${esc(h.name)} · ${esc(h.gift||"")} · ${esc(h.at)}</small>`).join("")}</div>`:""}`};
+window.p9Draw=function(){const H=jl("lrr_draw_"+CUR(),[]),won=new Set(H.map(h=>h.id));let P=window.DR9.O.filter(o=>!won.has(o.id)&&($("dr9_p").value==="all"||o.used));if(!P.length){alert("Aucun participant disponible.");return}
+ const k=Math.min(Math.max(1,+$("dr9_n").value||1),P.length,20),W=[];let pool=$("dr9_w").checked?P.flatMap(o=>Array(Math.max(1,qtyOf(o))).fill(o)):P.slice();
+ while(W.length<k&&pool.length){const w=pool[rnd(pool.length)];W.push(w);pool=pool.filter(o=>o.id!==w.id)}
+ const box=$("dr9_r");let i=0;const t=setInterval(()=>{box.innerHTML=`<div class="p5cd" style="text-align:center"><div style="font:900 26px system-ui">🎰 ${esc(P[rnd(P.length)].name)}</div></div>`;if(++i>22){clearInterval(t);fin()}},110);
+ function fin(){const g=$("dr9_g").value.trim().slice(0,60),at=new Date().toLocaleString(LC());W.forEach(w=>H.push({id:w.id,name:w.name,gift:g,at}));sv("lrr_draw_"+CUR(),JSON.stringify(H));
+  box.innerHTML=W.map(w=>{const msg=`🎉 Félicitations ${String(w.name).split(" ")[0]} ! Vous avez gagné${g?" : "+g:""} au tirage de « ${EVT().title||""} » ! Présentez-vous avec votre billet ${w.code||""}.`;return`<div class="p5cd" style="text-align:center;border:2px solid var(--gd)"><div style="font-size:34px">🏆</div><b style="font-size:20px">${esc(w.name)}</b><small>${esc(w.code||"")} · ${esc(String(w.phone).replace(/\d(?=\d{3})/g,"•"))}</small><a class="p4b g" target="_blank" rel="noopener" href="https://wa.me/${ph(w.phone)}?text=${encodeURIComponent(msg)}" style="text-decoration:none;display:inline-block">💬 Prévenir le gagnant</a></div>`}).join("")}};
+
+/* ---------- 8. MEILLEURS VENDEURS ---------- */
+T.lead=async function(b){const O=(await orders()).filter(o=>o.status==="confirmed"&&o.seller),M={};O.forEach(o=>{const raw=String(o.seller).trim().replace(/\s+/g," "),k=raw.toLowerCase(),m=M[k]=M[k]||{name:raw,q:0,amt:{}};m.q+=qtyOf(o);addAmt(m.amt,o)});
+ const L=Object.values(M).sort((a,c)=>c.q-a.q),mx=L.length?L[0].q:1,pz=jl("lrr_prime_"+CUR(),{});window.LD9={L};
+ b.innerHTML=`<div class="p5cd"><b>🏆 Classement des vendeurs</b><small>Billets confirmés par vendeur. Motivez l'équipe avec des primes.</small>
+ <div class="p5row"><input id="ld9_1" placeholder="🥇 Prime 1er" value="${esc(pz[1]||"")}"><input id="ld9_2" placeholder="🥈 Prime 2e" value="${esc(pz[2]||"")}"></div><input id="ld9_3" placeholder="🥉 Prime 3e" value="${esc(pz[3]||"")}">
+ <button class="btn dk" onclick="p9LdShare()">💬 Partager le classement sur WhatsApp</button></div>`+
+ (L.map((m,i)=>`<div class="p5cd"><b>${["🥇","🥈","🥉"][i]||(i+1)+"."} ${esc(m.name)}</b> <span class="p5k">${m.q} billet(s)</span><small>${esc(amtTxt(m.amt))}</small><div style="height:8px;border-radius:8px;background:#e5ece9;overflow:hidden"><div style="height:100%;width:${Math.round(m.q/mx*100)}%;background:var(--gd)"></div></div></div>`).join("")||'<p class="sm">Aucune vente avec vendeur pour le moment.</p>')};
+window.p9LdShare=function(){const pz={1:$("ld9_1").value,2:$("ld9_2").value,3:$("ld9_3").value};sv("lrr_prime_"+CUR(),JSON.stringify(pz));const L=window.LD9.L.slice(0,10),e=EVT();
+ const t=`🏆 Classement des vendeurs — ${e.title||""}\n`+L.map((m,i)=>`${["🥇","🥈","🥉"][i]||(i+1)+"."} ${m.name} : ${m.q} billet(s)${pz[i+1]?" → prime : "+pz[i+1]:""}`).join("\n");window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank","noopener")};
+
+/* ---------- 5 + 9. SPONSORS ET PLAN D'ACCES ---------- */
+T.spons=async function(b){const m=EVT().modes||{},S=(m.sponsors||[]).slice(0,6),a=m.access||{};while(S.length<3)S.push({});
+ b.innerHTML=`<div class="p5cd"><b>🏷️ Sponsors / partenaires</b><small>Affichés sur la page de l'événement et imprimés sur les tickets papier. Le nombre de clics est compté.</small>${S.map((s,i)=>`<div class="sp9r p5row"><input class="sn" placeholder="Nom du sponsor" value="${esc(s.name||"")}"><input class="su" placeholder="Site (https://...)" value="${esc(s.url||"")}"><input class="sl" placeholder="Logo : lien d'image (https://...)" value="${esc(s.logo||"")}"></div>`).join("")}<button class="btn dk" onclick="document.getElementById('sp9x').insertAdjacentHTML('beforebegin','<div class=\\'sp9r p5row\\'><input class=\\'sn\\' placeholder=\\'Nom du sponsor\\'><input class=\\'su\\' placeholder=\\'Site (https://...)\\'><input class=\\'sl\\' placeholder=\\'Logo : lien d\\'image\\'></div>')">➕ Ajouter un sponsor</button><span id="sp9x"></span></div>
+ <div class="p5cd"><b>🧭 Plan d'accès</b><small>Affiché sur la page de l'événement avec un bouton « Itinéraire ».</small><input id="ac9_m" placeholder="Lien Google Maps (facultatif)" value="${esc(a.map||"")}"><textarea id="ac9_t" rows="3" placeholder="Conseils : repère, parking, transport, heure d'arrivée conseillée…">${esc(a.tips||"")}</textarea></div>
+ <button class="btn wa" onclick="p9SponSave()">💾 Enregistrer</button><div id="sp9_h"></div>`;
+ try{const f=await ra("event_funnel",{p_event:CUR()}),H=(f.hits||[]).filter(h=>/^sponsor\d+$/.test(h.src));if(H.length)$("sp9_h").innerHTML='<div class="p5cd"><b>👁️ Clics sponsors</b>'+H.map(h=>`<small>${esc((m.sponsors||[])[+h.src.slice(7)]?.name||h.src)} : ${h.n} clic(s)</small>`).join("")+"</div>"}catch(x){}};
+window.p9SponSave=async function(){const S=[...document.querySelectorAll(".sp9r")].map(r=>({name:r.querySelector(".sn").value.trim().slice(0,40),url:r.querySelector(".su").value.trim(),logo:r.querySelector(".sl").value.trim()})).filter(s=>s.name).map(s=>({name:s.name,url:okU(s.url)?s.url:"",logo:okU(s.logo)?s.logo:""})),m=$("ac9_m").value.trim();
+ try{await saveModes({sponsors:S,access:{map:okU(m)?m:"",tips:$("ac9_t").value.trim().slice(0,500)}});toast("Enregistré ✅")}catch(x){alert("❌ "+x.message)}};
+
+/* ---------- 7. RAPPORT FINAL ---------- */
+T.final=async function(b){b.innerHTML=`<div class="p5cd"><b>📄 Rapport de fin d'événement</b><small>Résumé prêt à envoyer aux partenaires : billets, entrées, taux de présence, recettes, ventes par jour, par catégorie, par vendeur et numéros de réception. Imprimez-le ou enregistrez-le en PDF.</small><button class="btn wa" onclick="p9Report()">📄 Générer le rapport</button></div>`};
+window.p9Report=async function(){try{const e=EVT(),O=(await orders()).filter(o=>o.status==="confirmed"),all=await orders();
+ let tot=0,ent=0,rev={},kind={},day={},cat={},sel={},rc={},hr={};const dk=i=>new Date(i).toLocaleDateString(LC(),{day:"2-digit",month:"short"});
+ O.forEach(o=>{const q=qtyOf(o);tot+=q;if(o.used){ent+=q;if(o.entered_at){const h=new Date(o.entered_at).getHours();hr[h]=(hr[h]||0)+q}}
+  addAmt(rev,o);const k=o.kind||"reservation";kind[k]=(kind[k]||0)+q;const d=dk(o.created_at);(day[d]=day[d]||{q:0,a:{}}).q+=q;addAmt(day[d].a,o);
+  (o.items||[]).forEach(i=>cat[i.name]=(cat[i.name]||0)+(+i.qty||0));if(o.seller){const s=String(o.seller).trim();(sel[s]=sel[s]||{q:0,a:{}}).q+=q;addAmt(sel[s].a,o)}
+  const r=window.recText?recText(o,e):"";if(r){(rc[r]=rc[r]||{n:0,a:{}}).n++;addAmt(rc[r].a,o)}});
+ const bar=(n,mx)=>`<span style="display:inline-block;height:9px;border-radius:5px;background:#0e2f2b;width:${Math.max(3,Math.round(n/(mx||1)*120))}px"></span>`;
+ const rows=(obj,fn)=>Object.entries(obj).map(([k,v])=>`<tr><td>${esc(k)}</td><td>${fn(v)}</td></tr>`).join("");
+ const mxd=Math.max(1,...Object.values(day).map(x=>x.q)),mxh=Math.max(1,...Object.values(hr));
+ const sp=((e.modes||{}).sponsors||[]).map(s=>s.name).join(" · ");
+ const html=`<style>.p9r{font:13px/1.4 system-ui,sans-serif;color:#111;background:#fff;padding:14px}.p9r h1{font-size:20px;margin:0}.p9r h3{margin:16px 0 6px;font-size:14px;border-bottom:2px solid #0e2f2b}.p9r table{width:100%;border-collapse:collapse}.p9r td{padding:4px 6px;border-bottom:1px solid #ddd;vertical-align:middle}.p9k{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.p9k div{border:1.5px solid #0e2f2b;border-radius:10px;padding:8px;text-align:center}.p9k b{display:block;font-size:20px}</style>
+ <div class="bx" style="max-width:none"><div class="no" style="display:flex;gap:8px;margin-bottom:12px"><button class="p4b o" onclick="document.body.classList.add('p5print');window.print()">🖨️ Imprimer / PDF</button><button class="p4b" onclick="p5RcClose()">Fermer</button></div>
+ <div class="p9r"><h1>${esc(e.title||"")}</h1><div>${esc(fmtRange(e))} · ${esc([e.venue,e.city].filter(Boolean).join(", "))}</div><div style="color:#555">Rapport généré le ${new Date().toLocaleString(LC())} · ${esc(orgN(e))}</div>
+ <div class="p9k"><div><b>${tot}</b>billets vendus</div><div><b>${ent}</b>entrées</div><div><b>${tot?Math.round(ent/tot*100):0} %</b>présence</div></div>
+ <h3>💰 Recettes confirmées</h3><div><b>${esc(amtTxt(rev)||"—")}</b></div>
+ <h3>📅 Ventes par jour</h3><table>${rows(day,v=>bar(v.q,mxd)+" "+v.q+" billet(s) · "+esc(amtTxt(v.a)))}</table>
+ <h3>🎟️ Par catégorie</h3><table>${rows(cat,v=>v+" billet(s)")}</table>
+ <h3>🛒 Par mode de vente</h3><table>${rows(kind,v=>v+" billet(s)")}</table>
+ ${Object.keys(sel).length?`<h3>🏆 Meilleurs vendeurs</h3><table>${Object.entries(sel).sort((a,c)=>c[1].q-a[1].q).slice(0,10).map(([k,v],i)=>`<tr><td>${i+1}. ${esc(k)}</td><td>${v.q} billet(s) · ${esc(amtTxt(v.a))}</td></tr>`).join("")}</table>`:""}
+ ${Object.keys(rc).length?`<h3>💰 Argent reçu sur</h3><table>${rows(rc,v=>v.n+" commande(s) · "+esc(amtTxt(v.a)))}</table>`:""}
+ ${Object.keys(hr).length?`<h3>🚪 Heures d'entrée</h3><table>${Object.keys(hr).sort((a,c)=>a-c).map(h=>`<tr><td>${h} h</td><td>${bar(hr[h],mxh)} ${hr[h]}</td></tr>`).join("")}</table>`:""}
+ ${sp?`<h3>🏷️ Partenaires</h3><div>${esc(sp)}</div>`:""}</div></div>`;
+ let d=$("p5rc");if(!d){d=document.createElement("div");d.id="p5rc";d.className="p5rc";document.body.appendChild(d)}d.innerHTML=html}catch(x){alert("❌ "+x.message)}};
+
+window.P7T=Object.assign(window.P7T||{},T);
+})();
+
+/* ---------- 6. BILLETS CADEAUX ---------- */
+(function(){
+let G=null;
+const gOn=()=>{const g=$("gfc");return !!(g&&g.checked)};
+const gOk=()=>{const n=($("gfn")||{}).value||"",p=($("gfp")||{}).value||"";return n.trim().length>=3&&p.replace(/\D/g,"").length>=8};
+const _sm=setMode;setMode=function(m){_sm.apply(this,arguments);try{if((m==="res"||m==="online"||m==="hold")&&!$("gfc")&&$("op")){const row=$("op").closest(".g")||$("op");row.insertAdjacentHTML("afterend",'<label class="ck" style="margin-top:8px"><input type="checkbox" id="gfc" onchange="document.getElementById(\'gfb\').hidden=!this.checked"><span>🎁 C\'est un cadeau : le billet est pour quelqu\'un d\'autre</span></label><div id="gfb" hidden><input id="gfn" placeholder="Nom complet du bénéficiaire *"><input id="gfp" type="tel" placeholder="WhatsApp du bénéficiaire * (+243…)"><input id="gfm" maxlength="200" placeholder="Petit message (facultatif)"><p class="sm">Le billet et le QR code seront au nom du bénéficiaire : il le retrouvera dans « Mes places » avec son nom et son numéro.</p></div>')}}catch(e){}};
+const wrap=n=>{const f=window[n];if(typeof f!=="function")return;window[n]=function(){if(gOn()){if(!gOk()){alert("Indiquez le nom complet et le WhatsApp du bénéficiaire du cadeau.");return}G={de:($("on")||{}).value||"",tel:($("op")||{}).value||"",msg:($("gfm")||{}).value||"",rn:$("gfn").value.trim(),rp:$("gfp").value.trim()}}else G=null;return f.apply(this,arguments)}};
+["submitOrder","evGo","evHold"].forEach(wrap);
+const _f=window.fetch;window.fetch=function(u,o){try{if(G&&typeof u==="string"&&o&&o.method==="POST"&&typeof o.body==="string"){const b=JSON.parse(o.body);
+ if(u===SB+"/rest/v1/orders"&&b&&b.event_id){b.address=Object.assign({},b.address||{},{cadeau_de:G.de,cadeau_tel:G.tel,cadeau_msg:G.msg});b.name=G.rn;b.phone=G.rp;o=Object.assign({},o,{body:JSON.stringify(b)})}
+ else if(u.indexOf("/functions/v1/")>0&&b&&b.customer&&b.event_id){b.customer=Object.assign({},b.customer,{name:G.rn,phone:G.rp,cadeau_de:G.de});o=Object.assign({},o,{body:JSON.stringify(b)})}}}catch(e){}return _f.call(this,u,o)};
+const _rl=recLine;recLine=function(o,e){let s=_rl(o,e);if(o&&o.address&&o.address.cadeau_de)s+=`<div class="sm">🎁 Cadeau offert par <b>${esc(o.address.cadeau_de)}</b>${o.address.cadeau_tel?" ("+esc(o.address.cadeau_tel)+")":""}${o.address.cadeau_msg?" : « "+esc(o.address.cadeau_msg)+" »":""}</div>`;return s};
+})();
+
+/* ---------- 9 + 5 + 10 : blocs sur la page événement et l'accueil ---------- */
+function accessBlock(e){if(!e.venue)return"";const a=(e.modes||{}).access||{},q=encodeURIComponent([String(e.venue).split(" • ")[0],e.city].filter(Boolean).join(", ")),u=(a.map&&/^https?:\/\//.test(a.map))?a.map:"https://www.google.com/maps/search/?api=1&query="+q;
+ return`<div class="x2"><h3>🧭 Comment venir</h3>${a.tips?`<p class="sm" style="white-space:pre-line;margin:6px 0">${esc(a.tips)}</p>`:""}<a class="btn dk" target="_blank" rel="noopener" href="${esc(u)}" style="display:block;text-align:center;text-decoration:none;margin:6px 0 0">🧭 Itinéraire</a></div>`}
+function sponsorsBlock(e){const L=((e.modes||{}).sponsors||[]).filter(s=>s&&s.name);if(!L.length)return"";
+ return`<div class="x2"><h3>🏷️ Nos partenaires</h3><div class="spl">${L.map((s,i)=>{const inn=s.logo?`<img alt="${esc(s.name)}" src="${esc(s.logo)}" onerror="this.replaceWith(document.createTextNode(this.alt))">`:`<b>${esc(s.name)}</b>`;return s.url&&/^https?:\/\//.test(s.url)?`<a class="spi" target="_blank" rel="noopener sponsored" href="${esc(s.url)}" onclick="sponHit('${esc(e.id)}',${i})">${inn}</a>`:`<span class="spi">${inn}</span>`}).join("")}</div></div>`}
+function sponHit(id,i){try{window.p5rp("track_hit",{p_event:id,p_src:"sponsor"+i})}catch(x){}}
+function lastMinBlock(e){const left=evLeft(e),end=(e.modes||{}).sales_end,t=end?new Date(end).getTime():0;let h="";
+ if(left!=null&&left>0&&left<=20)h+=`<div class="lmb">🔥 Plus que <b>${left}</b> place${left>1?"s":""} !</div>`;
+ if(t&&t>Date.now()&&t-Date.now()<72*3600e3)h+=`<div class="lmb t">⏳ Fin de la vente dans <b data-end="${t}"></b></div>`;return h}
+function lmTick(){document.querySelectorAll("[data-end]").forEach(el=>{let d=Math.max(0,Math.floor((+el.dataset.end-Date.now())/1000));const H=Math.floor(d/3600);d%=3600;const M=Math.floor(d/60),S=d%60,p=n=>String(n).padStart(2,"0");el.textContent=p(H)+":"+p(M)+":"+p(S)})}
+function lmDraw(){const b=$("lastmin");if(!b)return;let L=[];try{L=allEvents().filter(e=>e.left!=null&&e.left>0&&e.left<=20&&(cty==="ALL"||e.country===cty)).sort((a,c)=>a.left-c.left).slice(0,5)}catch(x){}
+ b.innerHTML=L.length?`<div class="lmh"><b>🔥 Dernières places</b>${L.map(e=>`<a onclick="${e.href}"><span>${esc(e.title)}</span><i>Plus que ${e.left} !</i></a>`).join("")}</div>`:""}
+setInterval(lmTick,1000);
+const _de11=drawEvents;drawEvents=function(){const r=_de11.apply(this,arguments);lmDraw();return r};
+const _ex11=window.evExtra;window.evExtra=function(){const r=_ex11?_ex11():{};const m=($("cmap")||{}).value||"",t=($("cacc")||{}).value||"";if(m||t)r.access={map:/^https?:\/\//.test(m.trim())?m.trim():"",tips:t.trim().slice(0,500)};return r};
+lmDraw();
 
 </script>
 </body></html>

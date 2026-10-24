@@ -1,0 +1,14 @@
+LE RESTAU DU RIRE TICKETS - V10
+INSTALLATION : remplacer le dossier site/ (index.html + sw.js) sur GitHub, puis ouvrir le site avec ?v=10 à la fin de l'adresse.
+Aucun SQL à lancer. Aucune fonction Supabase à redéployer.
+
+1. ⏳ COMPTE A REBOURS (accueil) : jours / heures / minutes / secondes avant le prochain événement (respecte le pays choisi). Un clic ouvre l'événement.
+2. 💰 « ARGENT REÇU SUR » dans les deux tableaux de bord (Mes événements et Gestion pro) : pour chaque commande on voit l'opérateur, le nom et le numéro
+   (ex : Airtel Money — Sagesse Burume — 099…). Réservation = numéro choisi par le client ; paiement en ligne = numéro de versement choisi à la création
+   (« Numéro qui reçoit l'argent des paiements en ligne ») ; espèces = vendeur.
+3. 🌍 ACHAT DEPUIS L'ÉTRANGER : mode « En ligne » avec choix du pays, carte Visa/Mastercard en dollars, e-mail obligatoire hors d'Afrique.
+   Si l'organisateur n'a pas activé le paiement en ligne : bouton WhatsApp vers l'organisateur.
+4. 📅 SALLES + DATES : chaque salle ajoutée a ses propres dates (ex : salle A le 1 et 2, salle B le 3 et 4, ou 4 dates dans la même salle).
+   Un seul événement = une seule affiche, un seul lien d'achat, une seule carte sur l'accueil.
+5. 🗣️ LINGALA et SWAHILI : menu langue (en-tête + menu) et choix de la langue sur les tickets imprimés (papier et caisse) : FR / EN / LN / SW.
+   Les textes non encore traduits restent en français. Faites relire les traductions par un locuteur natif avant la mise en ligne.

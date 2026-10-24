@@ -1,0 +1,15 @@
+LE RESTAU DU RIRE TICKETS - V11 (10 nouvelles fonctions)
+INSTALLATION : remplacer le dossier site/ (index.html + sw.js), ouvrir le site avec ?v=11. AUCUN SQL (les SQL 21, 22, 23 doivent être installés).
+OU TROUVER : Mes événements > ⚙️ Gestion pro > faire défiler les onglets.
+
+1. 🔔 Rappels WhatsApp : veille (J-1), jour J, merci après l'événement ; FR / EN / Lingala / Swahili ; bouton « Envoyer au suivant » ; ✅ envoyés mémorisés.
+2. 🎫 Pass saison : vendez « Pass saison » comme un événement ; pour chaque spectacle, « Activer les détenteurs » les ajoute en invités avec QR code.
+3. 🎁 Parrainage : liens perso pour tous les acheteurs (1 clic), règle « N amis = 1 billet offert », récompenses dues, envoi WhatsApp.
+4. 🎰 Tirage au sort : aléatoire, sans doublon, option « 1 billet = 1 chance », WhatsApp au gagnant, historique.
+5. 🏷️ Sponsors : onglet « Sponsors & accès » ; affichés sur la page de l'événement et sur les tickets papier ; clics comptés.
+6. 🎁 Billets cadeaux : case « C'est un cadeau » (réservation, en ligne, sans paiement) ; billet au nom du bénéficiaire ; cadeau visible dans les dashboards.
+7. 📄 Rapport final : onglet « Rapport final » (PDF/impression) : billets, entrées, présence, recettes, jours, catégories, vendeurs, numéros de réception, heures d'entrée, partenaires.
+8. 🏆 Meilleurs vendeurs : classement, barres, primes 1er/2e/3e, partage WhatsApp.
+9. 🧭 Plan d'accès : champ à la création + onglet « Sponsors & accès » ; bouton « Itinéraire » (Google Maps) sur la page de l'événement.
+10. 🔥 Dernière minute : « Plus que N places ! » (≤ 20) sur l'accueil, les cartes et la page événement ; compte à rebours si la fin de vente est dans moins de 72 h.
+NB : pour un cadeau payé en ligne, le billet est au nom du bénéficiaire ; le nom de l'acheteur est enregistré seulement pour les réservations.
