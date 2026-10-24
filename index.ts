@@ -302,11 +302,30 @@ async function build(kind: string, b: Row, mode: "pay" | "free" | "hold") {
       amounts[t.currency] = (amounts[t.currency] || 0) + t.price * qty; n += qty;
       items.push({ id: t.id, name: t.name, qty, price: t.price, currency: t.currency });
     }
+    // V7 : prix final calculé par la base (paliers early bird, remise groupe, code promo, options) = source de vérité
+    const v7: Row = {};
+    {
+      const promo = b.promo ? txt(b.promo, 40) : "";
+      const { data: pr, error: pe } = await db.rpc("p4_price", { p_event: ev.id, p_items: items, p_options: Array.isArray(b.options) ? b.options : [], p_promo: promo || null });
+      if (pe) {
+        if (!/could not find|does not exist|schema cache/i.test(pe.message || "")) return { error: pe.message || "Prix indisponible" };
+      } else if (pr) {
+        for (const k of Object.keys(amounts)) delete amounts[k];
+        Object.assign(amounts, pr.amounts || {});
+        if (pr.discount && Object.keys(pr.discount).length) v7.discount = pr.discount;
+        if (Array.isArray(pr.options) && pr.options.length) v7.options = pr.options;
+        if (promo) v7.promo_code = promo.toUpperCase();
+        if (b.ref) v7.ref_code = txt(b.ref, 30);
+        if (b.src) v7.src = txt(b.src, 30);
+        if (Array.isArray(b.seats) && b.seats.length) v7.seats = b.seats.slice(0, 30).map((x: unknown) => txt(x, 12));
+      }
+    }
+    if (b.civility === "Monsieur" || b.civility === "Madame") v7.civility = b.civility;
     const totalAll = Object.values(amounts).reduce((a, v) => a + v, 0);
     if (mode === "free" && totalAll !== 0) return { error: "Cette commande n'est pas gratuite" };
     if (mode === "hold" && totalAll === 0) return { error: "Billets gratuits : réservez directement, sans attente." };
     if (mode === "pay" && (totalAll <= 0 || Object.keys(amounts).length > 1)) return { error: Object.keys(amounts).length > 1 ? "Payez les billets en FC et en $ séparément." : "Montant invalide" };
-    Object.assign(base, { event_id: ev.id, kind: mode === "pay" ? "online" : "reservation", address: addr, items, total_qty: n, amounts });
+    Object.assign(base, { event_id: ev.id, kind: mode === "pay" ? "online" : "reservation", address: addr, items, total_qty: n, amounts , ...v7 });
   }
   if (hold) base.expires_at = new Date(Date.now() + hours * 3600e3).toISOString();
   return { row: base, wa, title, hours };
