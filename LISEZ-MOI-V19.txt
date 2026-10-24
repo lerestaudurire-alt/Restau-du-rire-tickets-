@@ -1,0 +1,10 @@
+LE RESTAU DU RIRE TICKETS - V19 (V14 a V19 cumulees)
+
+1. Remplacer le dossier site/ sur GitHub, ouvrir le site avec ?v=19.
+2. RAPPELS AUTOMATIQUES (facultatif) :
+   - Supabase > Edge Functions : deployer supabase/functions/notify-reminder (meme methode que notify-confirmation).
+   - Les canaux utilisent les memes secrets que notify-confirmation (AT_*, RESEND_KEY, MAIL_FROM).
+   - WhatsApp : ajouter le secret WA_REMINDER_TEMPLATE (modele a 3 variables : nom, titre, quand, approuve par Meta). Sans lui, WhatsApp est ignore.
+   - Sans aucun canal configure, rien n'est envoye : les boutons WhatsApp manuels de l'onglet Rappels restent la solution.
+   - Utilisation : Outils pro > Rappels > choisir J-1 / Jour J / Merci > "Envoyer a tous automatiquement".
+3. NON FAIT (necessite des comptes ou accords externes) : notifications push, revente entre clients, remboursement automatique, billets famille.

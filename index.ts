@@ -255,6 +255,7 @@ async function build(kind: string, b: Row, mode: "pay" | "free" | "hold") {
     commune: txt(c.commune), quartier: txt(c.quartier), avenue: txt(c.avenue), loc: txt(c.loc, 400),
   };
   if (kind === "main" && Object.values(addr).some((v) => !v)) return { error: "Adresse complète obligatoire" };
+  const grp = txt(c.group, 8).toUpperCase().replace(/[^A-Z0-9]/g, ""); // V13 : code d'achat en groupe
   const q: Record<string, number> = {};
   for (const [k, v] of Object.entries(b.qty || {})) {
     const n = Math.floor(Number(v));
@@ -325,7 +326,7 @@ async function build(kind: string, b: Row, mode: "pay" | "free" | "hold") {
     if (mode === "free" && totalAll !== 0) return { error: "Cette commande n'est pas gratuite" };
     if (mode === "hold" && totalAll === 0) return { error: "Billets gratuits : réservez directement, sans attente." };
     if (mode === "pay" && (totalAll <= 0 || Object.keys(amounts).length > 1)) return { error: Object.keys(amounts).length > 1 ? "Payez les billets en FC et en $ séparément." : "Montant invalide" };
-    Object.assign(base, { event_id: ev.id, kind: mode === "pay" ? "online" : "reservation", address: addr, items, total_qty: n, amounts , ...v7 });
+    Object.assign(base, { event_id: ev.id, kind: mode === "pay" ? "online" : "reservation", address: grp ? { ...addr, grp } : addr, items, total_qty: n, amounts , ...v7 });
   }
   if (hold) base.expires_at = new Date(Date.now() + hours * 3600e3).toISOString();
   return { row: base, wa, title, hours };
