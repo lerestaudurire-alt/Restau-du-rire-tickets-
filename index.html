@@ -1513,6 +1513,7 @@ window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageDa
 #evtabs a{border-radius:0;padding:14px 4px;font-size:17px;font-weight:800;color:var(--mut)}
 #evtabs a.on{background:none;color:var(--ink);box-shadow:inset 0 -3px 0 var(--gd)}
 .tkc{background:#fff;border:1px solid #dfe7e4;border-radius:26px;padding:22px 20px;margin-bottom:16px;box-shadow:0 8px 22px rgba(14,47,43,.07)}
+.tkrm{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:#e8f5ee;color:#14633f;font-size:19px;font-weight:900;text-align:center;letter-spacing:.2px}.tkrm.lo{background:#dc2626;color:#fff;animation:lmp 1.6s infinite}.tkrm.out{background:#111;color:#fff;font-size:22px;letter-spacing:2px}
 .tkc-n{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--ink)}
 .tkc-r{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0}
 .tkc-p{font-size:28px;font-weight:900;color:var(--ink)}
@@ -1592,7 +1593,7 @@ window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageDa
 #pub .c2b p{font-size:16px;gap:10px;margin:8px 0;font-weight:700}
 #pub .c2f b{font-size:20px}
 #pub .go{font-size:16px;padding:13px 20px}
-#pub .bl{font-size:14px;padding:7px 14px}
+#pub .bl{font-size:15px;padding:8px 16px}#pub .bl.fl{background:#111;color:#fff;letter-spacing:1.5px}
 #pub .tg3{font-size:13px;padding:8px 14px}
 #pub .chip{font-size:17px;padding:14px 20px}
 #pub .note{border-radius:18px;padding:16px;font-size:16px}
@@ -1608,6 +1609,7 @@ window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageDa
 
 .pmb img,.ckm .lg img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}.pmb,.ckm .lg{overflow:hidden}
 .opl{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:6px}
+.odpro{margin:6px 0 16px}.odpe{width:100%;box-sizing:border-box;margin:0 0 10px;padding:12px;border-radius:12px;border:1px solid #2b2b2e;background:#141416;color:#fff;font:inherit}.odpg{display:grid;grid-template-columns:1fr 1fr;gap:10px}.odpb{display:flex;flex-direction:column;align-items:flex-start;gap:6px;text-align:left;padding:14px;border-radius:16px;border:1px solid #2b2b2e;background:#141416;color:#fff;font:inherit;font-weight:700;font-size:14px;cursor:pointer}.odpb i{font-style:normal;font-size:24px}.odpb:active{background:#1f1f23}
 #odb{display:none;position:fixed;inset:0;z-index:9999;background:#0a0a0b;color:#fff;overflow-y:auto;-webkit-overflow-scrolling:touch}
 #odb .odw{max-width:720px;margin:0 auto;padding:max(16px,env(safe-area-inset-top)) 16px 90px;font-family:inherit}
 #odb .odt{display:flex;align-items:center;gap:14px;margin:6px 0 20px}#odb .odt img{width:62px;height:62px;border-radius:50%;object-fit:cover;border:3px solid #fff}
@@ -1945,8 +1947,6 @@ html.low .ev3 .pic{display:none}
 <div class="top"><div style="display:flex;gap:10px;align-items:center"><img class="lc" alt="Logo"><div><h2 style="margin:0">Dashboard</h2><span class="sm">Édition 1.5</span></div></div>
 <div><button class="ab" onclick="goPublic()">Page publique</button><button class="ab" onclick="logout()">Déconnexion</button></div></div>
 
-<div class="st adm-only"><div>RÉSERVATIONS<b id="s0">0</b></div><div>BILLETS CONFIRMÉS<b id="s1">0</b></div><div>EN ATTENTE<b id="s2">0</b></div><div>STANDARD RESTANTS<b id="s3">0</b></div></div>
-<div class="st adm-only"><div>TOTAL CONFIRMÉ FC<b id="m1">0 FC</b></div><div>TOTAL CONFIRMÉ USD<b id="m2">0 $</b></div><div style="grid-column:span 2">PAR CATÉGORIE (confirmés)<b id="cats" style="font-size:14px"></b></div></div>
 <div class="st adm-only"><div>BILLETS ÉVÉNEMENTS (confirmés)<b id="ev1">0</b></div><div>ENCAISSÉ ÉVÉNEMENTS<b id="ev2" style="font-size:15px">0 FC</b></div><div style="grid-column:span 2" class="sm">Ventes des événements d'organisateurs (hors Édition 1.5). Détail par événement : carte « Pilotage plateforme ».</div></div>
 
 <div class="st adm-only"><div>RÉSERVATIONS EN LIGNE<b id="p1" style="font-size:15px"></b></div><div>ESPÈCES<b id="p2" style="font-size:15px"></b></div><div style="grid-column:span 2">ESPÈCES PAR VENDEUR (confirmés / total)<b id="p3" style="font-size:13px"></b></div></div>
@@ -2085,10 +2085,7 @@ setInterval(()=>{if(tok&&!$("adm").hidden){load();rpcA("admin_overview").then(dr
 function draw(){
  let c=0,p=0,fc=0,usd=0; const cat={}; T.forEach(t=>cat[t[0]]=0);
  rows.forEach(r=>{ if(r.status==="confirmed"){c+=+r.total||0;fc+=+r.fc||0;usd+=+r.usd||0;T.forEach(t=>cat[t[0]]+=+r[t[0]]||0)} if(r.status==="pending")p+=+r.total||0; });
- $("s0").textContent=rows.length;$("s1").textContent=c;$("s2").textContent=p;$("s3").textContent=Math.max(LIM.standard-rows.reduce((a,r)=>a+(r.status==="cancelled"?0:(+r.standard||0)),0),0);
- $("m1").textContent=nf(fc)+" FC";$("m2").textContent=nf(usd)+" $";
- $("cats").textContent=T.map(t=>t[1]+" "+cat[t[0]]).join(" • ")+" • Entrés "+rows.filter(r=>r.used).length;
- const tp=r=>r.type==="cash"?"cash":"reservation", S={reservation:{c:0,p:0},cash:{c:0,p:0}}, V={};
+  const tp=r=>r.type==="cash"?"cash":"reservation", S={reservation:{c:0,p:0},cash:{c:0,p:0}}, V={};
  rows.forEach(r=>{ if(r.status==="cancelled")return; const n=+r.total||0; if(r.status==="confirmed")S[tp(r)].c+=n; else S[tp(r)].p+=n;
   if(tp(r)==="cash"){const k=(r.seller||"?").trim(); V[k]=V[k]||[0,0]; V[k][1]+=n; if(r.status==="confirmed")V[k][0]+=n} });
  $("p1").textContent=S.reservation.c+" confirmés • "+S.reservation.p+" en attente"; $("p2").textContent=S.cash.c+" confirmés • "+S.cash.p+" en attente";
@@ -2587,8 +2584,8 @@ function left(t){return t.stock?Math.max(t.stock-(EV.sold[t.id]||0)-(EV.qty[t.id
 const cur=c=>c==="USD"?"$":"FC";
 function evTotals(){let n=0,amt={};EV.e.tickets.forEach(t=>{const q=EV.qty[t.id]||0;if(q){n+=q;amt[t.currency]=(amt[t.currency]||0)+q*t.price}});return{n,amt}}
 const amtTxt=a=>Object.entries(a||{}).filter(([c,v])=>v>0).map(([c,v])=>nf(v)+" "+cur(c)).join(" + ")||"Gratuit";
-function drawTk(){$("evt").innerHTML=EV.e.tickets.map(t=>{const l=left(t),q=EV.qty[t.id]||0,e=EV.e,rem=t.stock?Math.max(t.stock-(EV.sold[t.id]||0),0):null,so=rem===0,ra=t.stock?rem/t.stock:1,bd=so?'<span class="tkb so">⊘ Sold out</span>':t.stock&&ra<=0.2?'<span class="tkb lo">⚠ Bientôt épuisé</span>':t.stock&&ra<=0.5?'<span class="tkb hi">↗ Forte demande</span>':"";
-  return `<div class="tkc"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div class="tkc-n">${esc(t.name)}</div>${bd}</div><div class="tkc-r"><b class="tkc-p">${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</b>${so?'<span class="tkso">Sold out</span>':""}<div class="stp"${so?' style="display:none"':""}><button type="button" ${q?"":"disabled"} onclick="evq('${t.id}',-1)">−</button><span>${q}</span><button type="button" ${l===0?"disabled":""} onclick="evq('${t.id}',1)">+</button></div></div>${l===0?`<div class="tkc-i"><span>Disponibilité :</span><b class="out">Sold out</b></div>`:""}<button type="button" class="tkc-d" onclick="tkDet(this)">Détails du ticket <i>▾</i></button><div class="tkc-dd" hidden>${t.desc||t.description?esc(t.desc||t.description)+"<br>":""}📅 ${esc(fmtRange(e))}<br>📍 ${esc([e.venue,e.city].filter(Boolean).join(", "))}<br>🎟️ Billet numérique avec QR code, à présenter à l'entrée.</div></div>`}).join("");
+function drawTk(){$("evt").innerHTML=EV.e.tickets.map(t=>{const l=left(t),q=EV.qty[t.id]||0,e=EV.e,rem=t.stock?Math.max(t.stock-(EV.sold[t.id]||0),0):null,so=rem===0,ra=t.stock?rem/t.stock:1,bd=so?'<span class="tkb so">⊘ SOLD OUT</span>':t.stock&&ra<=0.2?'<span class="tkb lo">⚠ Bientôt épuisé</span>':t.stock&&ra<=0.5?'<span class="tkb hi">↗ Forte demande</span>':"",rmn=t.stock?(so?'<div class="tkrm out">🚫 SOLD OUT</div>':l===0?'<div class="tkrm out">🚫 Tout est dans votre panier</div>':l<=20?'<div class="tkrm lo">🔥 Plus que '+l+' billet'+(l>1?'s':'')+' !</div>':'<div class="tkrm">🎟️ '+l+' billet'+(l>1?'s':'')+' restant'+(l>1?'s':'')+'</div>'):"";
+  return `<div class="tkc"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div class="tkc-n">${esc(t.name)}</div>${bd}</div>${rmn}<div class="tkc-r"><b class="tkc-p">${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</b>${so?'<span class="tkso">SOLD OUT</span>':""}<div class="stp"${so?' style="display:none"':""}><button type="button" ${q?"":"disabled"} onclick="evq('${t.id}',-1)">−</button><span>${q}</span><button type="button" ${l===0?"disabled":""} onclick="evq('${t.id}',1)">+</button></div></div>${l===0?`<div class="tkc-i"><span>Disponibilité :</span><b class="out">SOLD OUT</b></div>`:""}<button type="button" class="tkc-d" onclick="tkDet(this)">Détails du ticket <i>▾</i></button><div class="tkc-dd" hidden>${t.desc||t.description?esc(t.desc||t.description)+"<br>":""}📅 ${esc(fmtRange(e))}<br>📍 ${esc([e.venue,e.city].filter(Boolean).join(", "))}<br>🎟️ Billet numérique avec QR code, à présenter à l'entrée.</div></div>`}).join("");
  const T2=evTotals();applyFree();$("evs").innerHTML=`<p><span>Billets</span><b>${T2.n}</b></p><p><span>Total</span><b>${amtTxt(T2.amt)}</b></p>${T2.n?`<button class="btn dk" type="button" onclick="$('evform').scrollIntoView({behavior:'smooth'})">Continuer vers la commande ›</button>`:""}`}
 const isFreeCart=()=>{const T2=evTotals();return T2.n>0&&Object.values(T2.amt).every(v=>v===0)};
 function applyFree(){const w=$("paywrap");if(!w||EV.mode!=="res")return;const f=isFreeCart();w.hidden=f;$("freenote").hidden=!f;const b=$("obtn");if(b)b.textContent=f?"🎁 RÉSERVER GRATUITEMENT":"📲 ENVOYER MA RÉSERVATION"}
@@ -2656,12 +2653,18 @@ async function odbOpen(){let d=$("odb");if(!d){d=document.createElement("div");d
  try{if(!MYEV||!MYEV.length)await loadMine();await Promise.all((MYEV||[]).map(e=>odbLoad(e.id)));odbDraw();(MYEV||[]).forEach(e=>autoPoll(e.id,async id=>{await odbLoad(id);if(window.ODB&&$("odb")&&$("odb").style.display!=="none")odbDraw()}))}catch(e){d.innerHTML='<div class="odw"><button class="odx" onclick="odbClose()">← Retour</button><p class="odm">Impossible de charger le dashboard. Vérifiez votre connexion.</p></div>'}}
 function odbClose(){window.ODB=false;const d=$("odb");if(d)d.style.display="none";document.body.style.overflow=""}
 function odbDraw(){const d=$("odb"),st={published:"Publié",pending:"En attente de validation",rejected:"Refusé"};
- d.innerHTML=`<div class="odw"><div class="odt"><img alt="" src="${$("mainLogo").src}"><div><b>Dashboard</b><small>Organisateur</small></div><button class="odx" onclick="odbClose()">Page publique</button></div>
- <div id="odbsum"></div><h3 class="odh3">Mes événements</h3>`+((MYEV||[]).length?MYEV.map(e=>`<div class="odc"><div class="odh"><b>${esc(e.title)}</b><span class="odbd ${esc(e.status)}">${st[e.status]||esc(e.status)}</span></div><div class="odsm">${esc(fmtRange(e))} • ${esc([e.venue,e.city].filter(Boolean).join(", "))}</div><div id="odm_${e.id}" class="odsm"></div><div id="odcap_${e.id}" class="odsm"></div><div class="odbn"><button class="ab" onclick="odbTog('${e.id}')">📋 Commandes, scanner &amp; rapport</button><button class="ab" onclick="copyBuy('${e.id}')">🔗 Lien d'achat</button><button class="ab" onclick="waBuy('${e.id}')">💬 Partager</button></div><div id="odb_${e.id}" hidden></div></div>`).join(""):'<p class="odm">Vous n\'avez pas encore d\'événement.</p>')+`</div>`;
+ d.innerHTML=`<div class="odw"><div class="odt"><img alt="" src="${$("mainLogo").src}"><div><b>Dashboard</b><small>Organisateur · V12</small></div><button class="odx" onclick="odbClose()">Page publique</button></div>
+ <div id="odbsum"></div>${odbPro()}<h3 class="odh3">Mes événements</h3>`+((MYEV||[]).length?MYEV.map(e=>`<div class="odc"><div class="odh"><b>${esc(e.title)}</b><span class="odbd ${esc(e.status)}">${st[e.status]||esc(e.status)}</span></div><div class="odsm">${esc(fmtRange(e))} • ${esc([e.venue,e.city].filter(Boolean).join(", "))}</div><div id="odm_${e.id}" class="odsm"></div><div id="odcap_${e.id}" class="odsm"></div><div class="odbn"><button class="ab" onclick="odbTog('${e.id}')">📋 Commandes, scanner &amp; rapport</button><button class="ab" onclick="copyBuy('${e.id}')">🔗 Lien d'achat</button><button class="ab" onclick="waBuy('${e.id}')">💬 Partager</button><button class="ab" onclick="p5Manage('tix','${e.id}')">➕ Augmenter les billets</button><button class="ab" onclick="p5Manage('rem','${e.id}')">⚙️ Gestion pro</button></div><div id="odb_${e.id}" hidden></div></div>`).join(""):'<p class="odm">Vous n\'avez pas encore d\'événement.</p>')+`</div>`;
  odbSummary()}
 
+function odbPro(){const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");if(!L.length)return"";
+ const B=[["🔔","Rappels WhatsApp","rem"],["🎫","Pass saison","pass"],["🎁","Parrainage","ref"],["🎰","Tirage au sort","draw"],["🏷️","Sponsors & plan d'accès","spons"],["📄","Rapport final (PDF)","final"],["🏆","Meilleurs vendeurs","lead"],["🎟️","Billets & stock (ajouter des billets)","tix"],["🎁","Billets cadeaux","gift"],["🔥","Dernière minute","tix"]];
+ return `<div class="odpro"><h3 class="odh3">⚙️ Outils pro</h3>${L.length>1?`<select id="odpe" class="odpe">${L.map(e=>`<option value="${e.id}">${esc(e.title)}</option>`).join("")}</select>`:`<input type="hidden" id="odpe" value="${L[0].id}">`}<div class="odpg">${B.map(b=>`<button class="odpb" onclick="odbPro2('${b[2]}')"><i>${b[0]}</i><span>${b[1]}</span></button>`).join("")}</div></div>`}
+function odbPro2(tab){const eid=($("odpe")||{}).value||((MYEV||[])[0]||{}).id,e=(MYEV||[]).find(x=>x.id===eid);if(!e)return;
+ if(tab==="gift"){odbClose();location.hash="#event/"+evUrlKey(e);setTimeout(()=>toast("🎁 Sur le formulaire d'achat, cochez « C'est un cadeau »"),1200);return}
+ p5Manage(tab,eid)}
 function capFill(e){const el=$("odcap_"+e.id);if(!el)return;const T=Array.isArray(e.tickets)?e.tickets:[];if(!T.length){el.textContent="";return}
- let sold=0;const rows=T.map(t=>{let on=0,ot=0;(ORD[e.id]||[]).forEach(o=>{if(["cancelled","rejected","expired","failed"].includes(o.status))return;(o.items||[]).forEach(i=>{if(i.id===t.id){if(o.kind==="online")on+=i.qty;else ot+=i.qty}})});const n=on+ot;sold+=n;return n?`<div style="margin:3px 0">🎟 <b>${esc(t.name)}</b> : ${n} billet${n>1?"s":""} • en ligne ${on} • espèces/réserv. ${ot}${t.stock&&n>=t.stock?" — 🔴 <b>SOLD OUT</b>":""}</div>`:""}).join("");
+ let sold=0;const rows=T.map(t=>{let on=0,ot=0;(ORD[e.id]||[]).forEach(o=>{if(["cancelled","rejected","expired","failed"].includes(o.status))return;(o.items||[]).forEach(i=>{if(i.id===t.id){if(o.kind==="online")on+=i.qty;else ot+=i.qty}})});const n=on+ot;sold+=n;return (n||t.stock)?`<div style="margin:3px 0">🎟 <b>${esc(t.name)}</b> : ${n} billet${n>1?"s":""} • en ligne ${on} • espèces/réserv. ${ot}${t.stock?(n>=t.stock?" — 🔴 <b>SOLD OUT</b>":" • <b style='color:#4ade80'>"+(t.stock-n)+" restant"+((t.stock-n)>1?"s":"")+" / "+t.stock+"</b>"):""}</div>`:""}).join("");
  el.innerHTML=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #2b2b2e"><b>🎭 ${esc(e.title)}</b>${sold?" : <b>"+sold+" billet"+(sold>1?"s":"")+"</b> acheté"+(sold>1?"s":"")+" ou réservé"+(sold>1?"s":""):" • aucun billet acheté ou réservé pour le moment"}</div>${rows}`}
 function capLine(e){const T=Array.isArray(e.tickets)?e.tickets:[],so=SOLD[e.id];if(!so)return"";const sold=T.reduce((a,t)=>a+Math.min(so[t.id]||0,t.stock||1e9),0);if(!sold)return"";const out=T.length&&T.every(t=>t.stock&&(so[t.id]||0)>=t.stock);return `<div class="sm">🎟 ${esc(e.title)} : <b>${sold}</b> billet${sold>1?"s":""} acheté${sold>1?"s":""} ou réservé${sold>1?"s":""} (en ligne + espèces)${out?" — 🔴 SOLD OUT":""}</div>`}
 async function admSold(){await Promise.all((ALLEV||[]).filter(e=>(e.tickets||[]).some(t=>t.stock)).slice(0,40).map(async e=>{try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:e.id})});if(r.ok)SOLD[e.id]=await r.json()}catch(x){}}));drawEvAdm()}
@@ -3348,6 +3351,7 @@ drawQF();
 .p5xr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #f0e9df;font-size:14px}.p5xr:first-of-type{border-top:0}
 .p5xr .stp2{display:flex;align-items:center;gap:10px}.p5xr .stp2 button{width:32px;height:32px;border-radius:50%;border:1.5px solid #d9cfc3;background:#fff;font:900 18px system-ui;cursor:pointer}
 .p5pr summary{cursor:pointer;font-weight:800;font-size:14px}.p5pr input{margin:8px 0 6px;text-transform:uppercase}
+.p9tot{margin:10px 0;padding:14px;border-radius:14px;background:#e8f5ee;color:#14633f;font-size:22px;font-weight:900;text-align:center}.p9tot small{display:inline;font-size:13px;font-weight:700;opacity:.8}.p9tot.lo{background:#dc2626;color:#fff}.p9tot.out{background:#111;color:#fff;letter-spacing:2px}.p9tb{height:10px;background:#e8e2d8;border-radius:6px;overflow:hidden;margin:6px 0}.p9tb i{display:block;height:100%;background:#1f7a4d}
 .p5ov{position:fixed;inset:0;z-index:9000;background:#f6f1ea;color:#1c1b2e;overflow:auto;padding:14px 14px 90px}
 .p5ov h2{font-size:20px;margin:0 0 8px}.p5ov .sm{color:#6f6a7d}
 .p5tb{display:flex;gap:8px;overflow-x:auto;margin:10px -14px;padding:2px 14px 8px;scrollbar-width:none}.p5tb::-webkit-scrollbar{display:none}
@@ -3430,11 +3434,7 @@ const _f=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&o&&
 /* --- formulaire de création : options pro avancées --- */
 const _rc5=renderCreate;
 renderCreate=function(){_rc5();const bx=$("p4box");if(!bx||$("p5ep"))return;const hint=bx.querySelector(".p4hint");
- const html=`<h4 style="margin:14px 0 4px">💸 Prix et promotions</h4>
- <div class="g"><div><label>Early bird : remise %</label><input id="p5ep" type="number" min="1" max="90" placeholder="Ex : 20"></div><div><label>valable jusqu'au</label><input id="p5ed" type="datetime-local"></div></div>
- <div class="g"><div><label>Remise groupe : dès N billets</label><input id="p5bm" type="number" min="2" max="50" placeholder="Ex : 5"></div><div><label>remise %</label><input id="p5bp" type="number" min="1" max="90" placeholder="Ex : 10"></div></div>
- <label>Options payantes (une par ligne : Nom;Prix;FC ou USD;Stock)</label><textarea id="p5ex" rows="3" placeholder="Parking;2000;FC;50&#10;T-shirt officiel;10;USD;100"></textarea>
- <h4 style="margin:14px 0 4px">🪑 Places et paiement</h4>
+ const html=`<h4 style="margin:14px 0 4px">🪑 Places et paiement</h4>
  <label>Places numérotées (une par ligne : n° de catégorie;rangées;colonnes)</label><textarea id="p5sm" rows="2" placeholder="2;10;20   (catégorie 2 : 10 rangées de 20 places)"></textarea>
  <div class="g"><div><label>Paiement en plusieurs fois : jusqu'à</label><select id="p5in"><option value="">Non</option><option>2</option><option>3</option><option>4</option><option>6</option></select></div><div><label>intervalle (jours)</label><input id="p5ie" type="number" min="3" max="45" placeholder="14"></div></div>
  <h4 style="margin:14px 0 4px">📺 Direct et gros événements</h4>
@@ -3493,14 +3493,14 @@ window.p5Copy=copy;
 const _myobs=new MutationObserver(()=>{const m=$("myev");if(!m||$("p5gp"))return;const b=m.querySelector('button[onclick="odbOpen()"]');if(b)b.insertAdjacentHTML("afterend",'<button class="btn" id="p5gp" style="margin-top:8px" onclick="p5Manage()">⚙️ Gestion pro : promos, équipe d\'entrée, ambassadeurs…</button>')});
 const _mv=$("myev");if(_mv)_myobs.observe(_mv,{childList:true,subtree:true});
 let CUR="",TAB="door";
-const TABS=[["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
-window.p5Manage=async function(){let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.display="block";document.body.style.overflow="hidden";
+const TABS=[["tix","🎟️ Billets & stock"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
+window.p5Manage=async function(tab,eid){if(typeof tab==="string"&&TABS.some(t=>t[0]===tab))TAB=tab;if(typeof eid==="string"&&eid)CUR=eid;let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.zIndex=window.ODB?"10000":"";ov.style.display="block";document.body.style.overflow="hidden";
  if(!MYEV||!MYEV.length){try{await loadMine()}catch(x){}}
  const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");
  if(!L.length){ov.innerHTML='<button class="btn" onclick="p5Close()">← Retour</button><h2 style="margin-top:12px">⚙️ Gestion pro</h2><p class="sm">Publiez d\'abord un événement pour accéder aux outils pro.</p>';return}
  if(!CUR||!L.find(e=>e.id===CUR))CUR=L[0].id;draw(L)};
 window.p5Close=()=>{const o=$("p5m");if(o)o.style.display="none";document.body.style.overflow=""};
-function draw(L){const ov=$("p5m");ov.innerHTML=`<button class="btn" onclick="p5Close()">← Retour</button><h2 style="margin-top:12px">⚙️ Gestion pro</h2><select id="p5ev" onchange="p5Pick(this.value)">${L.map(e=>`<option value="${e.id}" ${e.id===CUR?"selected":""}>${esc(e.title)}${e.status==="pending"?" (en attente)":""}</option>`).join("")}</select><div class="p5tb">${TABS.map(t=>`<button class="${TAB===t[0]?"on":""}" onclick="p5Tab('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="p5b"><p class="sm">⏳</p></div>`;load()}
+function draw(L){const ov=$("p5m");ov.innerHTML=`<button class="btn" onclick="p5Close()">← Retour</button><h2 style="margin-top:12px">⚙️ Gestion pro</h2><select id="p5ev" onchange="p5Pick(this.value)">${L.map(e=>`<option value="${e.id}" ${e.id===CUR?"selected":""}>${esc(e.title)}${e.status==="pending"?" (en attente)":""}</option>`).join("")}</select><div class="p5tb">${TABS.map(t=>`<button class="${TAB===t[0]?"on":""}" onclick="p5Tab('${t[0]}')">${t[1]}</button>`).join("")}</div><div id="p5b"><p class="sm">⏳</p></div>`;try{const on=ov.querySelector(".p5tb .on");if(on)on.scrollIntoView({inline:"center",block:"nearest"})}catch(x){}load()}
 window.p5Pick=v=>{CUR=v;load()};window.p5Tab=t=>{TAB=t;document.querySelectorAll(".p5tb button").forEach(b=>b.classList.toggle("on",b.textContent===(TABS.find(x=>x[0]===t)||[])[1]));load()};
 const ev=()=>(MYEV||[]).find(e=>e.id===CUR)||{};window.p5Cur=()=>CUR;window.p5Ev=()=>ev();
 async function load(){const b=$("p5b");if(!b)return;b.innerHTML='<p class="sm">⏳ Chargement…</p>';try{await(Object.assign({promo,door,amb,inv,inst,live,news,stat,rem},window.P7T||{}))[TAB](b)}catch(x){b.innerHTML='<p class="sm">❌ '+esc(x.message||"Erreur de chargement")+' (le SQL 21-fonctions-pro.sql est-il installé ?)</p>'}}
@@ -3839,7 +3839,17 @@ const qtyOf=o=>+o.total_qty||(o.items||[]).reduce((a,i)=>a+(+i.qty||0),0);
 const cs=o=>{const c={};Object.entries(o.amounts||{}).forEach(([k,v])=>{k=k==="CDF"?"FC":k;c[k]=(c[k]||0)+(+v||0)});return c};
 const addAmt=(t,o)=>Object.entries(cs(o)).forEach(([k,v])=>t[k]=(t[k]||0)+v);
 const BASEU=()=>location.origin+location.pathname;
-async function saveModes(patch){const e=EVT(),m=Object.assign({},e.modes||{},patch);await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m})});e.modes=m;const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(d)d.modes=m}
+async function saveEvent(modes,tickets){const e=EVT();let r;
+ try{r=await ra("owner_update_event",{p_event:CUR(),p_modes:modes||null,p_tickets:tickets||null})}
+ catch(x){if(!/owner_update_event|schema cache|Could not find|404/i.test((x&&x.message)||""))throw x;
+  const body={};if(modes)body.modes=Object.assign({},e.modes||{},modes);if(tickets)body.tickets=(e.tickets||[]).map(t=>{const n=tickets.find(z=>z.id===t.id);return n?Object.assign({},t,{stock:n.stock}):t});
+  let rows=null;try{rows=await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify(body)})}catch(y){}
+  if(!rows||!rows.length)throw new Error("La base n'autorise pas encore cette modification sur un événement publié. Lancez UNE fois le fichier 24-modifier-evenement-publie.sql dans Supabase (SQL Editor), puis réessayez.");
+  r=body}
+ if(r&&r.modes)e.modes=r.modes;if(r&&r.tickets)e.tickets=r.tickets;
+ const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(d){if(r&&r.modes)d.modes=r.modes;if(r&&r.tickets)d.tickets=r.tickets}
+ try{drawEvents()}catch(x){}return r}
+async function saveModes(patch){return saveEvent(patch,null)}
 const T={};
 
 /* ---------- 1. RAPPELS WHATSAPP (veille, jour J, merci) en 4 langues ---------- */
@@ -3958,6 +3968,17 @@ window.p9Report=async function(){try{const e=EVT(),O=(await orders()).filter(o=>
  ${sp?`<h3>🏷️ Partenaires</h3><div>${esc(sp)}</div>`:""}</div></div>`;
  let d=$("p5rc");if(!d){d=document.createElement("div");d.id="p5rc";d.className="p5rc";document.body.appendChild(d)}d.innerHTML=html}catch(x){alert("❌ "+x.message)}};
 
+/* ---------- 11. BILLETS & STOCK : augmenter les billets + dernière minute ---------- */
+T.tix=async function(b){const e=EVT(),TK=Array.isArray(e.tickets)?e.tickets:[];let so={};try{so=(await rpub("event_stock",{p_event:CUR()}))||{}}catch(x){}
+ const tot=TK.reduce((a,t)=>a+(+t.stock||0),0),sold=TK.reduce((a,t)=>a+Math.min(+so[t.id]||0,+t.stock||1e9),0),rest=Math.max(tot-sold,0);
+ b.innerHTML=`<div class="p5cd"><b>🎟️ Billets & stock</b><small>Ajoutez des billets quand un événement se remplit. Le total ne peut jamais descendre sous les billets déjà vendus.</small><div class="p9tot ${tot&&rest===0?"out":tot&&rest<=20?"lo":""}">${!tot?"Stock illimité":rest===0?"🚫 SOLD OUT":rest<=20?"🔥 Plus que "+rest+" billet"+(rest>1?"s":"")+" !":"🎟️ "+rest+" billets restants"} <small>sur ${tot||"∞"}</small></div><small>🔥 « Dernière minute » : le message « Plus que N places ! » s'affiche tout seul sur l'accueil, les cartes et la page de l'événement dès qu'il reste 20 billets ou moins.</small></div>`
+ +(TK.map(t=>{const sd=+so[t.id]||0,st=+t.stock||0,rs=Math.max(st-sd,0),pc=st?Math.min(100,Math.round(sd*100/st)):0,id=esc(t.id);
+  const lab=!st?"Illimité":rs===0?"🔴 SOLD OUT":rs<=20?"🔥 Plus que "+rs+" !":rs+" restants";
+  return `<div class="p5cd"><b>${esc(t.name)}</b> <span class="p5k">${lab}</span><small>${sd} vendus ou réservés sur ${st||"∞"} · ${nf(t.price)} ${esc(t.currency==="USD"?"$":"FC")}</small><div class="p9tb"><i style="width:${pc}%"></i></div>${st?`<div class="p5row"><div><small>Ajouter des billets</small><input id="tx_${id}" type="number" min="1" max="100000" placeholder="Ex : 50"></div><div style="align-self:end"><button class="btn dk" onclick="p9TixAdd('${id}')">➕ Augmenter</button></div></div>`:`<small>Cette catégorie n'a pas de limite.</small>`}</div>`}).join("")||'<div class="p5cd"><small>Aucune catégorie de billets.</small></div>')};
+window.p9TixAdd=async function(tid){const i=$("tx_"+tid),n=Math.floor(+((i||{}).value)||0),e=EVT(),t=(e.tickets||[]).find(x=>x.id===tid);
+ if(!t||!(+t.stock>0))return;if(!(n>=1)||n>100000){alert("Indiquez le nombre de billets à ajouter (1 ou plus).");return}
+ if(!confirm("Ajouter "+n+" billet"+(n>1?"s":"")+" à « "+t.name+" » ? Nouveau total : "+(+t.stock+n)))return;
+ try{await saveEvent(null,[{id:tid,stock:+t.stock+n}]);toast("✅ "+n+" billet"+(n>1?"s":"")+" ajouté"+(n>1?"s":""));const bx=$("p5b");if(bx)T.tix(bx);try{loadSold()}catch(x){}}catch(x){alert("❌ "+((x&&x.message)||"Erreur"))}};
 window.P7T=Object.assign(window.P7T||{},T);
 })();
 
