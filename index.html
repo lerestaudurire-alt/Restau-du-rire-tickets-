@@ -4282,13 +4282,320 @@ function cmPdf(){const C=window.CM13,K=Object.keys(C.G),T={};K.forEach(k=>Object
 
 
 <style>
-html.dk{filter:invert(1) hue-rotate(180deg);background:#fff}
-html.dk img,html.dk video,html.dk canvas,html.dk iframe,html.dk .mapov .leaflet-container{filter:invert(1) hue-rotate(180deg)}
 #dkBtn{position:fixed;left:12px;bottom:92px;z-index:60;width:44px;height:44px;border-radius:50%;border:0;background:#0e2f2b;color:#fff;font-size:20px;box-shadow:0 4px 14px rgba(0,0,0,.3);cursor:pointer}
 #kioskOv{position:fixed;inset:0;z-index:99999;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:24px;font-weight:900}
 #kioskOv b{font-size:min(18vw,110px);line-height:1.05}#kioskOv span{font-size:min(6vw,30px);margin-top:14px;font-weight:700}
 #tkprint{display:none}
-@media print{body>*:not(#tkprint){display:none!important}#tkprint{display:block!important;font-family:system-ui,sans-serif;text-align:center;padding:24px;color:#000}html.dk{filter:none}}
+@media print{body>*:not(#tkprint){display:none!important}#tkprint{display:block!important;font-family:system-ui,sans-serif;text-align:center;padding:24px;color:#000}}
+</style>
+<style id="dkcss">
+html.dk .logo{background:#17211f!important}
+html.dk .wh{background:#17211f!important;color:#e8f0ee!important}
+html.dk .dsg{border-color:#2d3f3b!important}
+html.dk .top img{background:#17211f!important}
+html.dk .tkt{background:#17211f!important;color:#e8f0ee!important}
+html.dk .mo{background:#17211f!important}
+html.dk .row2{color:#e8f0ee!important}
+html.dk body.pubmode{background:#1f2d2a!important}
+html.dk #pub{color:#e8f0ee!important}
+html.dk .bar{background:#17211f!important}
+html.dk .bar .lc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .bar .bt{color:#e8f0ee!important}
+html.dk .mbtn{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #menu{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #menu a{color:#e8f0ee!important}
+html.dk #menu a:active{background:#1f2d2a!important}
+html.dk .chips span{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .evc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .evb h3{color:#e8f0ee!important}
+html.dk .evb p{color:#e8f0ee!important}
+html.dk .evf{color:#e8f0ee!important}
+html.dk .evf b{color:#e8f0ee!important}
+html.dk .bn{background:#17211f!important}
+html.dk .bn a.on{color:#e8f0ee!important}
+html.dk #pub .card{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub label{color:#e8f0ee!important}
+html.dk #pub input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub textarea{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .tk{border-color:#2d3f3b!important}
+html.dk #pub .q button{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk #pub .sum{background:#1f2d2a!important;border-color:#2d3f3b!important}
+html.dk #pub .pay{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .soc a{background:#1f2d2a!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .note{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .hd{background:#17211f!important}
+html.dk .lg2{background:#17211f!important}
+html.dk .br{color:#e8f0ee!important}
+html.dk .pl{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .sb input{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .hc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .tabs{background:#17211f!important}
+html.dk .tn{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .big{color:#e8f0ee!important}
+html.dk .evc2{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .evb2 h3{color:#e8f0ee!important}
+html.dk .evb2 p{color:#e8f0ee!important}
+html.dk .evf2 b{color:#e8f0ee!important}
+html.dk .bn a.on span{color:#e8f0ee!important}
+html.dk .sec2{color:#e8f0ee!important}
+html.dk .lg3{background:#17211f!important}
+html.dk .ddm{background:#17211f!important;color:#e8f0ee!important}
+html.dk .ddm a.on{background:#1f2d2a!important}
+html.dk .ddm a:active{background:#1f2d2a!important}
+html.dk .sch{background:#17211f!important}
+html.dk .sch .i{color:#9fb3ae!important}
+html.dk #pub .sch input{color:#e8f0ee!important}
+html.dk .chip{background:#17211f!important;color:#e8f0ee!important}
+html.dk .card2{background:#17211f!important}
+html.dk .tg3{color:#e8f0ee!important}
+html.dk .vf{background:#17211f!important;color:#e8f0ee!important}
+html.dk .c2b::before{background:#17211f!important}
+html.dk .c2b::after{background:#17211f!important}
+html.dk .c2b p{color:#e8f0ee!important}
+html.dk #pub .btn.or2{background:#17211f!important;color:#e8f0ee!important}
+html.dk #seg>button{background:#17211f!important;color:#e8f0ee!important}
+html.dk .sgm{background:#17211f!important}
+html.dk .sgm a{color:#9fb3ae!important}
+html.dk .x2{background:#17211f!important}
+html.dk .x3{border-color:#2d3f3b!important}
+html.dk .pch{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .tiles>div{background:#17211f!important}
+html.dk .tiles span{color:#9fb3ae!important}
+html.dk .pb{background:#1f2d2a!important}
+html.dk .cta2.join{color:#e8f0ee!important}
+html.dk #pchips{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #epch{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .pchips{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .bl{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .bl.fl{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .pm{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .pm.on{background:#17211f!important}
+html.dk .lgchip{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .lgart{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .hlp{border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .hlp.wa{background:#1f2d2a!important}
+html.dk #evtabs a{color:#9fb3ae!important}
+html.dk #evtabs a.on{color:#e8f0ee!important}
+html.dk .tkc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .tkrm{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .tkc-n{color:#e8f0ee!important}
+html.dk .tkc-p{color:#e8f0ee!important}
+html.dk .stp{background:#1f2d2a!important}
+html.dk .stp button{background:#17211f!important;color:#e8f0ee!important}
+html.dk .stp button:disabled{background:#1f2d2a!important}
+html.dk .stp span{color:#e8f0ee!important}
+html.dk .tkc-i{background:#1f2d2a!important;color:#9fb3ae!important}
+html.dk .tkc-i b{color:#e8f0ee!important}
+html.dk .tkc-i b.out{color:#e8f0ee!important}
+html.dk .tkc-dd{color:#9fb3ae!important}
+html.dk #ck{background:#17211f!important;color:#e8f0ee!important}
+html.dk .ckback{color:#e8f0ee!important}
+html.dk .ckc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .ckbrand{background:#1f2d2a!important;border-color:#2d3f3b!important}
+html.dk .ckbrand small{color:#9fb3ae!important}
+html.dk .ckhd .t small{color:#9fb3ae!important}
+html.dk .cksum{background:#17211f!important}
+html.dk .cksum img{background:#1f2d2a!important}
+html.dk .cksum small{color:#9fb3ae!important}
+html.dk .cksel{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .cksel select{color:#e8f0ee!important}
+html.dk .ckchip{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .ckcur{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .ckcur.on{background:#17211f!important}
+html.dk .ckrad{border-color:#2d3f3b!important}
+html.dk .ckrate{color:#9fb3ae!important}
+html.dk .ckrate b{color:#e8f0ee!important}
+html.dk .ckm{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .ckmr{color:#e8f0ee!important}
+html.dk .ckmr .nm span{color:#9fb3ae!important}
+html.dk .ckpay input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .ckgo{color:#e8f0ee!important}
+html.dk .ckfine{color:#9fb3ae!important}
+html.dk #pub .x2{border-color:#2d3f3b!important}
+html.dk #pub .x3{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub input:not([type=checkbox]):not([type=radio]):not([type=file]){background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub input[type=file]{background:#17211f!important}
+html.dk .tkso{color:#e8f0ee!important}
+html.dk #pub .loc{color:#e8f0ee!important}
+html.dk #pub .loc:active{background:#1f2d2a!important}
+html.dk #pub .hm-k{color:#e8f0ee!important}
+html.dk #pub .hm h1{color:#e8f0ee!important}
+html.dk #pub .hm p{color:#9fb3ae!important}
+html.dk #pub .hm-s{background:#17211f!important}
+html.dk #pub .hm-s .i{color:#e8f0ee!important}
+html.dk #pub .hm-s input{color:#e8f0ee!important}
+html.dk #pub .stub{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub .cat{color:#9fb3ae!important}
+html.dk #pub .cat i{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub .cat.on{color:#e8f0ee!important}
+html.dk #pub .ev3{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub .ev3-p .lgo{background:#17211f!important}
+html.dk #pub .ev3-d{background:#17211f!important;color:#e8f0ee!important}
+html.dk #pub .ev3-v{color:#e8f0ee!important}
+html.dk #pub .ev3-b h3{color:#e8f0ee!important}
+html.dk #pub .ev3-b p{color:#9fb3ae!important}
+html.dk #pub .ev3-b p .i{color:#e8f0ee!important}
+html.dk #pub .ev3-f b{color:#e8f0ee!important}
+html.dk #pub .pn{background:#17211f!important}
+html.dk #pub .pn a{color:#9fb3ae!important}
+html.dk #pub .pn a.mid{color:#e8f0ee!important}
+html.dk #pub .fx{background:#17211f!important}
+html.dk #pub .fx-h b{color:#e8f0ee!important}
+html.dk #pub .fx-h span{color:#9fb3ae!important}
+html.dk #pub .fx-t a{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk #pub .fx-t small{color:#9fb3ae!important}
+html.dk #pub .fx-d summary{color:#e8f0ee!important}
+html.dk #pub .fx-d a{color:#9fb3ae!important}
+html.dk #pub .fx-c{color:#9fb3ae!important}
+html.dk #pub .fx-c em{color:#e8f0ee!important}
+html.dk #pub .mnb .i{color:#e8f0ee!important}
+html.dk .mn{background:#17211f!important;color:#e8f0ee!important}
+html.dk .mn-a button{background:#17211f!important;color:#e8f0ee!important}
+html.dk .mn-s{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .mn-s label{color:#9fb3ae!important}
+html.dk .mn-s select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .fz section{background:#1f2d2a!important;border-color:#2d3f3b!important}
+html.dk #pub .fz h4{color:#e8f0ee!important}
+html.dk #pub .fz a{color:#9fb3ae!important}
+html.dk .lk{color:#e8f0ee!important}
+html.dk .lk.on{color:#e8f0ee!important}
+html.dk .lk span{color:#e8f0ee!important}
+html.dk .ib{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .ib.on{color:#e8f0ee!important}
+html.dk #ckm .bx{background:#17211f!important;color:#e8f0ee!important}
+html.dk #ckm .sw i::after{background:#17211f!important}
+html.dk #ckm .ac .b{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk #shs .bx{background:#17211f!important}
+html.dk #shs h3{color:#e8f0ee!important}
+html.dk #shs a{color:#e8f0ee!important}
+html.dk #shs button.row{color:#e8f0ee!important}
+html.dk #shs .x{background:#1f2d2a!important}
+html.dk .fol.on{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .orgr .ot small{color:#9fb3ae!important}
+html.dk .orgr .ot b{color:#e8f0ee!important}
+html.dk .ch{background:#17211f!important;color:#e8f0ee!important}
+html.dk .ib.dk .n{background:#17211f!important;color:#e8f0ee!important}
+html.dk .dc{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .dc small{color:#9fb3ae!important}
+html.dk .dc span{color:#9fb3ae!important}
+html.dk .dc.on{background:#1f2d2a!important}
+html.dk .dpl small{color:#9fb3ae!important}
+html.dk .dpl b{color:#e8f0ee!important}
+html.dk .dpl span{color:#9fb3ae!important}
+html.dk .dpl a{background:#1f2d2a!important}
+html.dk .cch{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .cch.on{background:#1f2d2a!important}
+html.dk .cc{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .cc-p .lgo{background:#17211f!important}
+html.dk .cc-b h3{color:#e8f0ee!important}
+html.dk .amt{color:#e8f0ee!important}
+html.dk .amt+small{color:#9fb3ae!important}
+html.dk .pb b{color:#9fb3ae!important}
+html.dk .pnl small{color:#9fb3ae!important}
+html.dk .qa button{background:#17211f!important;color:#e8f0ee!important}
+html.dk .dn small{color:#9fb3ae!important}
+html.dk .mn-g b{color:#e8f0ee!important}
+html.dk .mn-g small{color:#9fb3ae!important}
+html.dk .nl input{background:#17211f!important;color:#e8f0ee!important}
+html.dk .nl button{color:#e8f0ee!important}
+html.dk .pay span{color:#9fb3ae!important}
+html.dk #ck .cb{background:#17211f!important;color:#e8f0ee!important}
+html.dk #ck .cb p{color:#e8f0ee!important}
+html.dk #ck .b2{background:#17211f!important;color:#e8f0ee!important}
+html.dk .pk a{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .pk a.on{background:#1f2d2a!important}
+html.dk .pk small{color:#9fb3ae!important}
+html.dk .chs .ch.aud{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .chs .ch.tg{background:#17211f!important;border-color:#2d3f3b!important;color:#9fb3ae!important}
+html.dk .sec-b span{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #osh .bx{background:#17211f!important;color:#e8f0ee!important}
+html.dk #wls .bx{background:#17211f!important;color:#e8f0ee!important}
+html.dk .osh-h small{color:#9fb3ae!important}
+html.dk .wl{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .lmh{background:#1f2d2a!important;border-color:#2d3f3b!important}
+html.dk #pub .lmh b{color:#e8f0ee!important}
+html.dk #pub .lmh i{color:#e8f0ee!important}
+html.dk #pub .spi{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .tb-by{color:#9fb3ae!important}
+html.dk .tb-by b{color:#e8f0ee!important}
+html.dk .tk-l i{background:#17211f!important}
+html.dk .p4by{color:#9fb3ae!important}
+html.dk .p4by b{color:#e8f0ee!important}
+html.dk .p4hint{color:#9fb3ae!important}
+html.dk .p4d{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .p4sb{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p4sb.closed{background:#1f2d2a!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p4b{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p4la button{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p4r small{color:#9fb3ae!important}
+html.dk .qf button{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p4am button{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .p5c .p4ok{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p5c .p4hi{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p5x{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .p5xr .stp2 button{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .p9tot{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p9tb{background:#1f2d2a!important}
+html.dk .p5ov{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p5tb button{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5cd{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .p5cd input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5cd select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5cd textarea{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5ov input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5ov select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5ov textarea{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5k{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .p5bar{background:#1f2d2a!important}
+html.dk .p5s{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5s.t{background:#1f2d2a!important;border-color:#2d3f3b!important}
+html.dk .p5q{background:#1f2d2a!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .p5rc{background:#17211f!important;color:#e8f0ee!important}
+html.dk .p7t{background:#17211f!important;color:#e8f0ee!important}
+html.dk .p9r{background:#17211f!important;color:#e8f0ee!important}
+html.dk .eaw{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .eac h2{color:#e8f0ee!important}
+html.dk .eac label{color:#e8f0ee!important}
+html.dk .eac input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .eac select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .eas{color:#e8f0ee!important}
+html.dk .eabox{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk .eabox p{color:#e8f0ee!important}
+html.dk .easeg button{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .eanum{background:#1f2d2a!important}
+html.dk .eaok p{color:#e8f0ee!important}
+html.dk .jvc{background:#17211f!important;color:#e8f0ee!important}
+html.dk .jvc .jvs{color:#e8f0ee!important}
+html.dk .jvov{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk .jvov input{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .jvov select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .hpf button{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .hps select{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .ev3-map{color:#e8f0ee!important}
+html.dk .jva{background:#1f2d2a!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .mgr{background:#17211f!important;color:#e8f0ee!important}
+html.dk .mapov{background:#1f2d2a!important;color:#e8f0ee!important}
+html.dk #mapv{background:#1f2d2a!important}
+html.dk .mzm button{background:#17211f!important;color:#e8f0ee!important}
+html.dk .mcr{background:#17211f!important}
+html.dk .grpc{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk .grpb{background:#1f2d2a!important}
+html.dk .cmr{background:#17211f!important;color:#e8f0ee!important}
+html.dk .cmr input{border-color:#2d3f3b!important}
+html.dk body{color:#e8f0ee!important}
+html.dk th{background:#1f2d2a!important}
+html.dk .jvcv{background:#17211f!important;border-color:#2d3f3b!important}
+html.dk #pub .tb{background:rgba(11,20,18,.96)!important;border-bottom-color:#2d3f3b!important;color:#e8f0ee!important}
+html.dk #pub .tb *{color:#e8f0ee}
+html.dk #pub .tb button{background:transparent!important}
+html.dk,html.dk body{background:#0b1412!important;color:#e8f0ee}
+html.dk input,html.dk select,html.dk textarea{background:#1f2d2a!important;color:#e8f0ee!important;border-color:#2d3f3b!important}
+html.dk [style*="background:#fff"],html.dk [style*="background: #fff"],html.dk [style*="background:#ffffff"]{background:#17211f!important;color:#e8f0ee!important}
+html.dk [style*="color:#000"],html.dk [style*="color:#555"],html.dk [style*="color:#1c1b2e"],html.dk [style*="color:#14224f"]{color:#e8f0ee!important}
+html.dk .sm,html.dk small{color:#9fb3ae}
+html.dk a{color:inherit}
+html.dk .leaflet-tile{filter:invert(.9) hue-rotate(180deg) brightness(.9)}
 </style>
 <script>
 /* ===== V15 : mode sombre, billet PDF, mode kiosque d'entrée ===== */
