@@ -1,0 +1,22 @@
+LE RESTAU DU RIRE TICKETS - V12
+INSTALLATION : remplacer index.html + sw.js dans site/ sur GitHub, puis ouvrir le site avec ?v=12. Aucun SQL. Aucune fonction à redéployer.
+
+ACCUEIL PLUS PRO
+- Bandeau de confiance (nombre d'événements, villes, pays, paiement sécurisé, billet QR sur WhatsApp, achat depuis l'étranger).
+- Filtres : date (aujourd'hui / semaine / mois), prix (gratuit / payant), ville, tri « bientôt complet ».
+- Bouton « 📍 Itinéraire » (Google Maps) sur chaque carte d'événement.
+- Langue automatique : swahili ou anglais si le téléphone est réglé ainsi (première visite seulement).
+- Afrique de l'Est : équivalent en RWF / TZS / KES / UGX / BIF à côté du montant (taux INDICATIFS, constante EAFX à mettre à jour).
+
+DASHBOARD ORGANISATEUR + ADMIN (Journal des ventes)
+- 🎯 Objectif de ventes avec barre de progression (enregistré sur l'événement).
+- 🚪 Compteur « entrés / vendus ».
+- 🌍 Origine des acheteurs (pays).
+- Alertes : commandes en attente depuis plus de 24 h, même référence de transaction ou même capture utilisée deux fois (fraude), billets presque complets ou complets.
+- Boutons par vente : 💬 Relancer (WhatsApp) et ↩️ Annuler / rembourser (annule la commande + message au client; le remboursement d'argent reste manuel).
+- Nouvel onglet « 📣 Message groupé » : audience (confirmés / en attente / tous), message avec {nom}, boutons WhatsApp, copie des numéros.
+ADMIN
+- Bouton « 🌐 Vue globale admin » (dans Mes événements quand on est admin) : ventes aujourd'hui / 7 jours / 30 jours, par canal, meilleurs événements, meilleurs vendeurs, références en double sur tous les événements (40 événements max).
+
+DÉJÀ PRÉSENT AVANT (non refait) : liste d'attente « Me prévenir », scanner QR, rappels, avis, ajout au calendrier, billet cadeau, parrainage, Meilleurs vendeurs.
+PAS FAIT (demande une base de données / un serveur) : vraie carte avec position GPS, paiement de groupe suivi, prix par palier appliqué côté serveur, relevé de commissions PDF.
