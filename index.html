@@ -1835,7 +1835,9 @@ html.low .ev3 .pic{display:none}
 .chT{margin:8px 0}.chT div{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #e3ebe8}.chT span{font-size:22px}.chT b{flex:1}.chT i{font-style:normal;font-weight:800;color:#1f6f5b}
 .chp{display:flex;justify-content:space-between;margin:12px 0 6px;font-weight:800;color:#1f6f5b}.chb{height:8px;border-radius:8px;background:#e3ebe8;overflow:hidden}.chb i{display:block;height:100%;background:#f2c14e;transition:width .3s}
 .chq{margin:16px 0 10px;font-size:19px;line-height:1.3}.whp .cho{display:block;width:100%;margin:8px 0;padding:14px;border-radius:14px;border:2px solid #0e2f2b;background:#fff;color:#0e2f2b;font-size:16px;font-weight:700;text-align:left}.whp .cho:active{background:#f2c14e}
-</style></head><body>
+</style><style>#dkBtn,#f6fab{display:none!important}</style>
+<script>window.mnDkSync=function(){var o=document.documentElement.classList.contains("dk"),b=document.getElementById("mnDk");if(b)b.innerHTML=o?"<span>☀️ Mode clair</span>":"<span>🌙 Mode sombre</span>"};window.addEventListener("load",function(){mnDkSync();var om=window.openMenu;if(typeof om==="function")window.openMenu=function(){var r=om.apply(this,arguments);mnDkSync();return r}});</script>
+</head><body>
 
 <!-- ========== PAGE PUBLIQUE ========== -->
 <div id="pub"><div class="c">
@@ -1952,7 +1954,7 @@ html.low .ev3 .pic{display:none}
 <div class="mn-b"><div class="mn-g"><b id="mnHi">Coucou 👋</b><small id="mnHs"></small></div><div id="mnAuth" class="mn-a"><button onclick="accMode='login';nav('account')">Me connecter</button><button class="g" onclick="accMode='signup';nav('account')">Créer mon espace</button></div><a id="mnMe" class="mn-me" hidden onclick="nav('account')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Mon espace</span></a>
 <div class="mn-s"><label><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg> Langue</label><select id="mlang" onchange="setLang(this.value)"><option value="fr">Français</option><option value="en">English</option><option value="ln">Lingála</option><option value="sw">Kiswahili</option></select><label><svg class="i" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Pays</label><select id="mcty" onchange="setCty(this.value)"></select></div>
 <a class="mn-r" onclick="nav('home')"><svg class="i" viewBox="0 0 24 24"><path d="M4 10l8-6 8 6v10H4z"/><path d="M10 20v-6h4v6"/></svg><span>Prochaines soirées</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="nav('find')"><svg class="i" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 100-4z"/><path d="M13 7v10" stroke-dasharray="2 2"/></svg><span>Mes places</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="nav('cotis')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.500 9.500c0-1 1.100-1.700 2.500-1.700s2.500.7 2.500 1.700c0 2.500-5 1.200-5 3.800 0 1 1.100 1.800 2.500 1.800s2.500-.8 2.500-1.800"/></svg><span>Cotisations</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="nav('cotcreate')"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Lancer une cotisation</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="closeMenu();showInfo('how')"><svg class="i" viewBox="0 0 24 24"><path d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3z"/><path d="M5 17a3 3 0 013-3h11"/></svg><span>Mode d'emploi</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="closeMenu();showInfo('install')"><svg class="i" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg><span>Ajouter à l'écran d'accueil</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" onclick="closeMenu();showInfo('help')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-1 .7-1.5 1.2-1.5 2.5M12 17h.01"/></svg><span>Une question ?</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a>
-<button class="mn-p" onclick="nav('create')"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Publier mes billets</button><button class="mn-p" onclick="nav('cotcreate')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/></svg> Lancer une cotisation</button></div></aside><nav class="pn"><a data-p="home" onclick="nav('home')"><svg class="i" viewBox="0 0 24 24"><path d="M4 10l8-6 8 6v10H4z"/><path d="M10 20v-6h4v6"/></svg><span>Programme</span></a><a data-p="find" onclick="nav('find')"><svg class="i" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 100-4z"/><path d="M13 7v10" stroke-dasharray="2 2"/></svg><span>Mes places</span></a><a data-p="cotis" onclick="nav('cotis')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.5.8-2.5 1.8 0 2.6 5 1.2 5 3.7 0 1.1-1.1 1.9-2.5 1.9-1.1 0-2.100-.5-2.600-1.300M12 6.500V8M12 16v1.500"/></svg><span>Cotisations</span></a><a data-p="create" class="mid" onclick="nav('create')"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Publier</span></a><a data-p="account" onclick="nav('account')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Mon espace</span></a><a id="navAdmin" hidden onclick="goAdmin()"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span>Admin</span></a></nav>
+<a class="mn-r" onclick="closeMenu();setTimeout(function(){var f=document.getElementById('f6fab');if(f)f.click()},260)"><span style="font-size:18px;width:22px;text-align:center">✨</span><span>Plus</span><svg class="i" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></a><a class="mn-r" id="mnDk" onclick="var d=document.getElementById('dkBtn');if(d)d.click();mnDkSync()"><span>🌙 Mode sombre</span></a><button class="mn-p" onclick="nav('create')"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Publier mes billets</button><button class="mn-p" onclick="nav('cotcreate')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/></svg> Lancer une cotisation</button></div></aside><nav class="pn"><a data-p="home" onclick="nav('home')"><svg class="i" viewBox="0 0 24 24"><path d="M4 10l8-6 8 6v10H4z"/><path d="M10 20v-6h4v6"/></svg><span>Programme</span></a><a data-p="find" onclick="nav('find')"><svg class="i" viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 100-4z"/><path d="M13 7v10" stroke-dasharray="2 2"/></svg><span>Mes places</span></a><a data-p="cotis" onclick="nav('cotis')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.5 9.2c-.5-.8-1.4-1.2-2.5-1.2-1.5 0-2.5.8-2.5 1.8 0 2.6 5 1.2 5 3.7 0 1.1-1.1 1.9-2.5 1.9-1.1 0-2.100-.5-2.600-1.300M12 6.500V8M12 16v1.500"/></svg><span>Cotisations</span></a><a data-p="create" class="mid" onclick="nav('create')"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Publier</span></a><a data-p="account" onclick="nav('account')"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg><span>Mon espace</span></a><a id="navAdmin" hidden onclick="goAdmin()"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg><span>Admin</span></a></nav>
 
 </div>
 
@@ -3623,7 +3625,7 @@ async function mine(){const f=$("fres");if(!f||/^\s*⏳/.test(f.textContent))ret
 function mcard(o,i){const past=o.starts_at&&new Date(o.starts_at)<new Date(),conf=o.status==="confirmed",pl=Array.isArray(o.plan)?o.plan:null;
  return`<div style="background:#fff;color:#000;border-radius:12px;padding:12px;margin-top:10px"><b>${esc(o.title)}</b><br><span style="font-size:13px">${o.starts_at?esc(new Date(o.starts_at).toLocaleDateString(LOC(),{day:"numeric",month:"long",year:"numeric"})):""} · ${esc([o.venue,o.city].filter(Boolean).join(", "))}</span><br><span style="font-size:12px">${esc(o.code)} · ${conf?"✅ confirmé":"⏳ "+esc(o.status||"en attente")}${o.used?" · déjà utilisé":""}${o.seats&&o.seats.length?" · places "+esc(o.seats.map(s=>String(s).split("-")[1]).join(", ")):""}${o.discount&&o.discount.promo?" · code "+esc(o.discount.promo):""}${o.transferred?" · transféré":""}</span>
  ${pl?`<div style="margin-top:6px;font-size:12px">${pl.map(p=>`Versement ${p.n} : <b>${nf(p.amount)} ${cur(p.cur)}</b> avant le ${esc(fdt(p.due))} — ${p.paid?"✅ payé":"⏳ à payer"}`).join("<br>")}</div>`:""}
- <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><button class="p4b" onclick="p5Receipt(${i})">🧾 Reçu</button>${conf?`<button class="p4b" onclick="p5TkImg(${i})">🖼️ Billet (image)</button><button class="p4b" onclick="p5TkPdf(${i})">📄 Billet (PDF)</button>`:""}${conf&&!o.used?`<button class="p4b" onclick="p5Transfer(${i})">🔁 Transférer</button>`:""}${conf&&o.streaming?`<button class="p4b o" onclick="p5Watch(${i})">📺 Regarder le direct</button>`:""}${conf&&past&&!o.reviewed?`<button class="p4b o" onclick="p5Review(${i})">⭐ Donner mon avis</button>`:""}</div></div>`}
+ <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><button class="p4b" onclick="p5Receipt(${i})">🧾 Reçu</button>${conf?`<button class="p4b" onclick="p5TkImg(${i})">🖼️ Billet (image)</button><button class="p4b" onclick="p5TkPdf(${i})">📄 Billet (PDF)</button>`:""}${conf&&!o.used?`<button class="p4b" onclick="p5Transfer(${i})">🔁 Transférer</button>`:""}${conf&&o.streaming?`<button class="p4b o" onclick="p5Watch(${i})">📺 Regarder le direct</button>`:""}${conf?`<button class="p4b" onclick="p9Report(${i})">🚩 Signaler un problème</button>`:""}${conf&&!past&&!o.used?`<button class="p4b" onclick="p9Vote(${i})">🗳️ Voter</button>`:""}${conf&&past&&!o.reviewed?`<button class="p4b o" onclick="p5Review(${i})">⭐ Donner mon avis</button>`:""}</div></div>`}
 window.mcard=mcard;
 /* reçu */
 window.p5Receipt=function(i){const o=MY.list[i];let sub={};(o.items||[]).forEach(x=>{sub[x.currency]=(sub[x.currency]||0)+x.price*x.qty});(o.options||[]).forEach(x=>{sub[x.currency]=(sub[x.currency]||0)+x.price*x.qty});
@@ -4962,5 +4964,298 @@ chCard();
 if(typeof LD!=="undefined"){const T=[["Défi pour spectateurs","Mokakoli mpo na batala","Changamoto ya watazamaji"],["Vous avez acheté votre billet ? Répondez aux questions sur le spectacle : selon votre score, gagnez un cadeau garanti (T-shirt, chapeau, carte SIM avec mégas, ticket VIP…).","Osombi bilete na yo ? Pesa eyano na mituna ya likambo : engebene na score na yo, zwa likabo (T-shirt, ngomba, carte SIM na megas, bilete VIP…).","Umenunua tiketi yako ? Jibu maswali kuhusu onyesho : kulingana na alama zako, shinda zawadi (fulana, kofia, laini ya simu yenye megabaiti, tiketi ya VIP…)."],["Relever le défi","Meka mokakoli","Pokea changamoto"],["Commencer le défi","Banda mokakoli","Anza changamoto"],["Votre score","Score na yo","Alama zako"],["TOURNER LA ROUE","ZINGISA NKÓLÓ","ZUNGUSHA GURUDUMU"],["La roue s'arrête sur le palier débloqué par votre score : aucun hasard.","Nkóló ekotelema na etape ya score na yo : esengo te.","Gurudumu litasimama kwenye kiwango ulichofungua kwa alama zako : hakuna bahati."],["Question","Motuna","Swali"],["question(s)","motuna","maswali"],["Classement","Molongo","Orodha"],["Meilleur score","Score malamu","Alama bora"],["cadeaux remportés !","makabo ezwami !","zawadi zimeshindwa !"],["cadeau remporté !","likabo ezwami !","zawadi imeshindwa !"],["Bravo ! Vous gagnez","Bopeto ! Ozwi","Hongera ! Unashinda"],["Merci d'avoir participé !","Matondi mpo ya kosangana !","Asante kwa kushiriki !"],["Vous avez déjà participé","Osangani déjà","Tayari umeshiriki"]];T.forEach(r=>{LD.ln[r[0]]=r[1];LD.sw[r[0]]=r[2]})}
 })();
 
+</script>
+<script>
+/* ===== V27 : compteur « X personnes y vont », programme en direct, itinéraire (fiche événement) ===== */
+(function(){
+const _oe=window.openEvent;if(typeof _oe!=="function")return;
+async function p9Extras(id){const el=$("v-ev");if(!el)return;const old=$("p9x");if(old)old.remove();
+ const e=((typeof DBEV!=="undefined"?DBEV:[])||[]).find(x=>x.id===id)||{};
+ const j=async(u,o)=>{try{const r=await fetch(SB+u,o);return r.ok?await r.json():null}catch(x){return null}};
+ const [n,lv]=await Promise.all([j("/rest/v1/rpc/event_going",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id})}),j("/rest/v1/live_status?event_id=eq."+id+"&select=now_text,next_text,updated_at",{headers:H("")})]);
+ const L=lv&&lv[0]&&(lv[0].now_text||lv[0].next_text)&&(Date.now()-new Date(lv[0].updated_at))<12*3600e3?lv[0]:null;
+ const q=encodeURIComponent([e.venue,e.city].filter(Boolean).join(", "));
+ const mine=typeof myId==="function"&&e.owner_id&&e.owner_id===myId();
+ let h="";
+ if(+n>=5)h+='<div class="p5cd">🎟️ <b>'+(+n)+'</b> personnes y vont</div>';
+ if(L)h+='<div class="p5cd">🎤 <b>En scène :</b> '+esc(L.now_text||"—")+'<br><small>Ensuite : '+esc(L.next_text||"—")+'</small></div>';
+ if(q)h+='<div class="p5cd">🧭 <a href="https://www.google.com/maps/search/?api=1&query='+q+'" target="_blank" rel="noopener">Itinéraire Google Maps</a> · <a href="https://waze.com/ul?q='+q+'" target="_blank" rel="noopener">Waze</a></div>';
+ if(mine)h+='<div class="p5cd"><b>🎤 Programme en direct</b><small>Visible par les spectateurs sur la fiche de l\'événement.</small><div class="p5row"><input id="lv_n" maxlength="80" placeholder="En scène maintenant" value="'+esc(L&&L.now_text||"")+'"><input id="lv_x" maxlength="80" placeholder="Ensuite" value="'+esc(L&&L.next_text||"")+'"></div><button class="p4b o" onclick="p9Live(\''+id+'\')">Mettre à jour</button><div class="p5row" style="margin-top:8px"><button class="p4b" onclick="p9Stats(\''+id+'\')">📊 Statistiques</button><button class="p4b" onclick="p9PollNew(\''+id+'\')">🗳️ Créer un vote</button><button class="p4b" onclick="p9Polls(\''+id+'\')">📈 Résultats</button></div></div>';
+ if(!h)return;const d=document.createElement("div");d.id="p9x";d.style.margin="12px 0";d.innerHTML=h;el.appendChild(d)}
+window.p9Live=async function(id){try{await rpcA("set_live",{p_event:id,p_now:$("lv_n").value,p_next:$("lv_x").value});toast("Programme mis à jour ✅");p9Extras(id)}catch(x){alert(x.message||x)}};
+window.openEvent=async function(id){const r=await _oe.apply(this,arguments);try{await p9Extras(id)}catch(x){}return r};
+})();
+</script>
+<script>
+/* ===== V28 : vote du public, signalement, statistiques de vente ===== */
+(function(){const rp=window.p5rp;
+const box=h=>{mo.classList.add("on");$("mc").innerHTML='<div style="background:#fff;color:#000;border-radius:16px;padding:16px;width:100%;max-width:380px;margin:auto;max-height:80vh;overflow:auto">'+h+'<button class="ab" onclick="closeMo()">Fermer</button></div>'};
+const bars=(rows,max)=>rows.map(r=>'<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin:3px 0"><span style="width:70px;flex:none">'+esc(String(r[0]))+'</span><i style="display:block;height:10px;border-radius:5px;background:#ff6b1a;width:'+Math.max(3,Math.round(r[1]/(max||1)*60))+'%"></i><b>'+r[1]+'</b></div>').join("");
+const res=(R)=>{const c=(R&&R.counts)||[],o=(R&&R.options)||[],m=Math.max(1,...c.map(Number));return '<b>'+esc((R&&R.title)||"")+'</b>'+bars(o.map((x,k)=>[x,+c[k]||0]),m)};
+window.p9Report=function(i){const o=MY.list[i];box('<h3 style="color:#000;margin:0 0 6px">🚩 Signaler un problème</h3><p class="sm">'+esc(o.title)+'</p><textarea id="rp_m" rows="4" maxlength="500" placeholder="Décrivez le problème (QR refusé, double paiement…)" style="width:100%;box-sizing:border-box;padding:10px;border:1.5px solid #ddd;border-radius:10px;color:#000;background:#fff"></textarea><button class="ab" onclick="p9ReportGo('+i+')">Envoyer</button>')};
+window.p9ReportGo=async function(i){const o=MY.list[i];try{const r=await rp("report_issue",{p_phone:MY.phone,p_name:MY.name,p_order:o.id,p_msg:$("rp_m").value});if(r&&r.ok===false){alert(r.error);return}closeMo();toast("Signalement envoyé ✅")}catch(x){alert("❌ "+x.message)}};
+window.p9Vote=async function(i){const o=MY.list[i];let P=[];try{const r=await fetch(SB+"/rest/v1/show_polls?event_id=eq."+o.event_id+"&open=eq.true&select=id,title,options&order=created_at.desc",{headers:H("")});P=r.ok?await r.json():[]}catch(x){}
+ if(!P.length){toast("Aucun vote en cours pour cet événement");return}window.P9=P;
+ box('<h3 style="color:#000;margin:0 0 8px">🗳️ Vote du public</h3>'+P.map((p,pi)=>'<div style="margin-bottom:12px"><b>'+esc(p.title)+'</b>'+p.options.map((x,k)=>'<button class="p4b" style="display:block;width:100%;margin-top:6px" onclick="p9VoteGo('+i+','+pi+','+k+')">'+esc(x)+'</button>').join("")+'</div>').join(""))};
+window.p9VoteGo=async function(i,pi,k){const o=MY.list[i],p=window.P9[pi];try{const r=await rp("cast_vote",{p_phone:MY.phone,p_name:MY.name,p_order:o.id,p_poll:p.id,p_choice:k});if(r&&r.ok===false){alert(r.error);return}const R=await rp("poll_results",{p_poll:p.id});toast("Merci, vote enregistré 🗳️");box(res(R))}catch(x){alert("❌ "+x.message)}};
+window.p9PollNew=async function(id){const t=prompt("Question du vote (ex : Meilleur sketch de la soirée ?)");if(!t)return;const o=(prompt("Choix séparés par des virgules (ex : Jean, Marie, Patrick)")||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,10);if(o.length<2){alert("Il faut au moins 2 choix.");return}try{await api("show_polls",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({event_id:id,title:t.slice(0,120),options:o})});toast("Vote créé ✅ Les spectateurs le voient dans « Mes places »")}catch(x){alert(x.message||x)}};
+window.p9Polls=async function(id){try{const L=await api("show_polls?event_id=eq."+id+"&select=id,title,open&order=created_at.desc");if(!L.length){toast("Aucun vote créé");return}let h='<h3 style="color:#000;margin:0 0 8px">📈 Résultats des votes</h3>';for(const p of L){const R=await rpcA("poll_results",{p_poll:p.id});h+='<div style="margin-bottom:12px">'+res(R)+(p.open?'<button class="p4b" style="margin-top:6px" onclick="p9PollClose(\''+p.id+'\',\''+id+'\')">Fermer ce vote</button>':'<small> (fermé)</small>')+'</div>'}box(h)}catch(x){alert(x.message||x)}};
+window.p9PollClose=async function(pid,id){try{await api("show_polls?id=eq."+pid,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({open:false})});toast("Vote fermé");p9Polls(id)}catch(x){alert(x.message||x)}};
+window.p9Stats=async function(id){try{const S=await rpcA("sales_stats",{p_event:id});const d=(S.by_day||[]).slice(-14),h=(S.by_hour||[]).slice().sort((a,b)=>b.n-a.n).slice(0,5),K={online:"En ligne",cash:"Espèces",paper:"Tickets papier",door:"Caisse porte",reservation:"Réservation",invitation:"Invitation"};
+ box('<h3 style="color:#000;margin:0 0 8px">📊 Statistiques de vente</h3><p><b>'+(S.tickets||0)+'</b> billets · <b>'+(S.orders||0)+'</b> commandes confirmées</p><b>Par jour</b>'+bars(d.map(x=>[String(x.d).slice(5),x.t]),Math.max(1,...d.map(x=>+x.t||0)))+'<b>Heures de pointe</b>'+bars(h.map(x=>[x.h+" h",x.n]),Math.max(1,...h.map(x=>+x.n)))+'<b>Par canal</b>'+bars((S.by_kind||[]).map(x=>[K[x.k]||x.k,x.n]),Math.max(1,...(S.by_kind||[]).map(x=>+x.n))))}catch(x){alert((x.message||x)+"\n(le SQL 31 est-il installé ?)")}};
+})();
+</script>
+<style>
+#shs .bx{max-height:88vh;overflow:auto}
+#shs .shi{width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center}
+#shs .shi svg{width:24px;height:24px}
+#shs .shp{font:600 12px system-ui;color:#6b6b7b;margin:-6px 0 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#shs .shg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:2px 0 12px}
+#shs .shg a{flex-direction:column;gap:6px;border:1px solid #eee;border-radius:14px;padding:12px 4px;font:700 11px system-ui;text-align:center;justify-content:center}
+#shs .shg a .shi{width:30px;height:30px}#shs .shg a .shi svg{width:30px;height:30px}
+html.dk #shs .shg a{border-color:#2a3a37}html.dk #shs .shp{color:#9bb0ac}
+</style>
+<script>
+/* ===== V28 : partage réseaux sociaux, certification automatique, texte promo ===== */
+(function(){
+const I={
+ wa:'<svg viewBox="0 0 24 24"><path fill="#25D366" d="M12 2a10 10 0 00-8.6 15.1L2 22l5-1.3A10 10 0 1012 2zm5.2 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.8s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.9 2.1c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.2-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.2 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1.1c.2-.3.4-.2.6-.1l2 .9c.3.1.5.2.5.3.1.3.1.8-.1 1.4z"/></svg>',
+ fb:'<svg viewBox="0 0 24 24"><path fill="#1877F2" d="M13.5 22v-8.2h2.8l.5-3.3h-3.3V8.4c0-1 .4-1.7 1.8-1.7h1.6V3.8c-.3 0-1.3-.2-2.5-.2-2.6 0-4.3 1.6-4.3 4.4v2.5H7.3v3.3h2.8V22z"/></svg>',
+ x:'<svg viewBox="0 0 24 24"><path fill="currentColor" d="M17.8 3h3l-6.6 7.5L22 21h-6.1l-4.8-6.2L5.6 21h-3l7-8L2 3h6.2l4.3 5.7zm-1 16.2h1.7L7.3 4.7H5.5z"/></svg>',
+ li:'<svg viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4" fill="#0A66C2"/><text x="12" y="17" text-anchor="middle" font-family="Arial" font-weight="700" font-size="12" fill="#fff">in</text></svg>',
+ tg:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#29A9EA"/><path fill="#fff" d="M6 11.7l11-4.400-1.800 9.400-3.200-2.300-1.700 1.600-.3-3.300 5.200-4.700-6.400 4z"/></svg>',
+ em:'<svg viewBox="0 0 24 24"><path fill="#6b7280" d="M3 5h18a1 1 0 011 1v.5l-10 6.500L2 6.500V6a1 1 0 011-1zm-1 4l10 6.500L22 9v9a1 1 0 01-1 1H3a1 1 0 01-1-1z"/></svg>',
+ cp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 14a4 4 0 005.700 0l3-3a4 4 0 00-5.700-5.700l-1 1"/><path d="M14 10a4 4 0 00-5.700 0l-3 3a4 4 0 005.700 5.700l1-1"/></svg>',
+ tx:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg>',
+ up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3m0 0L8 7m4-4l4 4"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>'
+};
+function copy(s){return navigator.clipboard?navigator.clipboard.writeText(s):Promise.reject()}
+function fallbackCopy(s){const i=document.createElement("input");i.value=s;document.body.appendChild(i);i.select();try{document.execCommand("copy")}catch(e){}i.remove()}
+function evFromUrl(u){try{const k=decodeURIComponent((u.split("#event/")[1]||"").split(/[?&]/)[0]);const L=(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:[]).concat(typeof DBEV!=="undefined"?DBEV:[]);return L.find(x=>x.id===k||(typeof evUrlKey==="function"&&evUrlKey(x)===k))||null}catch(e){return null}}
+function promoText(t,u){const e=evFromUrl(u)||{};let d="";try{d=e.starts_at?new Date(e.starts_at).toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):""}catch(x){}
+ const place=[e.venue,e.city].filter(Boolean).join(", ");
+ return "🎉 "+t+(d?"\n📅 "+d:"")+(place?"\n📍 "+place:"")+"\n🎟️ Réservez votre billet en ligne :\n"+u+"\n#billetterie #evenement #"+(e.city?String(e.city).replace(/[^\p{L}\p{N}]/gu,""):"spectacle")}
+window.shareSheet=function(t,u){
+ let m=document.getElementById("shs");
+ if(!m){m=document.createElement("div");m.id="shs";m.onclick=e=>{if(e.target===m)m.hidden=true};document.body.appendChild(m)}
+ const q=encodeURIComponent,L=(h,ic,n)=>`<a target="_blank" rel="noopener" href="${h}"><span class="shi">${ic}</span>${n}</a>`;
+ const links=[
+  L("https://wa.me/?text="+q(t+"\n"+u),I.wa,"WhatsApp"),
+  L("https://www.facebook.com/sharer/sharer.php?u="+q(u),I.fb,"Facebook"),
+  L("https://twitter.com/intent/tweet?text="+q(t)+"&url="+q(u),I.x,"X"),
+  L("https://www.linkedin.com/sharing/share-offsite/?url="+q(u),I.li,"LinkedIn"),
+  L("https://t.me/share/url?url="+q(u)+"&text="+q(t),I.tg,"Telegram"),
+  L("mailto:?subject="+q(t)+"&body="+q(t+"\n\n"+u),I.em,"Email")].join("");
+ const nat=navigator.share?`<button class="row" id="shnat"><span class="shi">${I.up}</span>Plus d'applications…</button>`:"";
+ m.innerHTML=`<div class="bx"><h3>Partager l'événement</h3><div class="shp">${String(t).replace(/</g,"&lt;")}</div><div class="shg">${links}</div>${nat}<button class="row" id="shpr"><span class="shi">${I.tx}</span>Copier le texte prêt à publier</button><button class="row" id="shcp"><span class="shi">${I.cp}</span>Copier le lien</button><button class="x" onclick="document.getElementById('shs').hidden=true">Fermer</button></div>`;
+ m.hidden=false;
+ const ok=msg=>{m.hidden=true;if(typeof toast==="function")toast(msg)};
+ document.getElementById("shcp").onclick=()=>copy(u).then(()=>ok("Lien copié ✅")).catch(()=>{fallbackCopy(u);ok("Lien copié ✅")});
+ document.getElementById("shpr").onclick=()=>{const s=promoText(t,u);copy(s).then(()=>ok("Texte copié ✅")).catch(()=>{fallbackCopy(s);ok("Texte copié ✅")})};
+ const n=document.getElementById("shnat");if(n)n.onclick=()=>navigator.share({title:t,text:t,url:u}).catch(()=>{});
+};
+/* Après l'envoi d'un événement : bouton « Publier sur mes réseaux » + certification */
+const _sl=window.showLink;
+if(typeof _sl==="function")window.showLink=function(e){
+ _sl(e);
+ try{const mc=document.getElementById("mc");
+  if(mc&&e&&e.id){
+   const u=buyUrl(e.id),t=e.title||"Mon événement";
+   const b=document.createElement("div");
+   b.innerHTML='<p style="font-size:13px;margin:14px 0 6px;color:#000"><b>📣 Faites connaître votre événement</b></p><button class="ab" id="pubNet">📤 Publier sur mes réseaux</button><p style="font-size:12px;margin:10px 0 0;color:#0b8f5b">✅ Votre compte organisateur est certifié automatiquement.</p>';
+   mc.appendChild(b);
+   document.getElementById("pubNet").onclick=()=>window.shareSheet(t,u);
+   try{const id=myId();if(id&&typeof VER!=="undefined")VER.add(id)}catch(x){}
+   try{if(typeof loadVer==="function")setTimeout(loadVer,1500)}catch(x){}
+  }}catch(x){}
+};
+})();
+</script>
+<style>
+.plc{background:#fff;border-radius:20px;padding:14px;margin:12px 0;box-shadow:0 2px 12px rgba(0,0,0,.08);color:#1c1b2e}
+.plc h2{margin:0 0 4px;font-size:19px}.plc .sm{margin:0 0 10px;color:#6b6b7b}
+.plsvg{width:100%;height:auto;display:block;border-radius:6px;border:1px solid #d9d2c3;background:#fdfcf8;cursor:zoom-in}
+.plbig{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin:0 0 12px;padding:15px;border:0;border-radius:16px;background:#0e2f2b;color:#fff;font:800 16px system-ui;cursor:pointer}
+.plg{display:flex;align-items:center;gap:10px;padding:11px 4px;border-top:1px solid #eee;cursor:pointer}
+.plg i{width:24px;height:24px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font:800 12px system-ui;font-style:normal}.plg b{font-size:14px}.plg small{display:block;color:#6b6b7b;font-size:12px}
+.plg .pp{margin-left:auto;font-weight:800;white-space:nowrap}
+.plmap{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.plmap a,.plmap button{display:flex;align-items:center;justify-content:center;text-align:center;padding:12px 4px;border:1px solid #e3ddd2;border-radius:12px;background:#fff;color:#1c1b2e;font:700 13px system-ui;text-decoration:none;cursor:pointer}
+.plph{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}.plph img{width:100%;border-radius:12px;display:block;cursor:zoom-in}
+.plflash{animation:plf 1.6s ease}@keyframes plf{0%,60%{box-shadow:0 0 0 4px #d4a017}100%{box-shadow:0 0 0 0 transparent}}
+#plv{position:fixed;inset:0;z-index:100001;background:#0b1513;display:flex;flex-direction:column}#plv[hidden]{display:none}
+#plv .bar{display:flex;align-items:center;gap:8px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;color:#fff;font:800 16px system-ui}
+#plv .bar span{flex:1}#plv .bar button{border:0;border-radius:10px;background:#1f2d2a;color:#fff;font:800 18px system-ui;width:44px;height:40px}
+#plv .bd{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:0 8px calc(14px + env(safe-area-inset-bottom,0px))}
+#plv .bd svg,#plv .bd img{width:100%;max-width:none;border-radius:12px;display:block;background:#f6f2ea}
+html.dk .plc{background:#17211f;color:#e8f0ee}html.dk .plc .sm,html.dk .plg small{color:#9bb0ac}html.dk .plg{border-color:#2a3a37}
+html.dk .plmap a,html.dk .plmap button{background:#1f2d2a;color:#e8f0ee;border-color:#2a3a37}
+</style>
+<script>
+/* ===== V29 : plan de la salle (zones colorées) + photos + carte / itinéraire sur la fiche événement ===== */
+(function(){
+const COL=["#d4a017","#c0392b","#8e44ad","#2980b9","#16a085","#e67e22","#7f8c8d"];
+const rate=t=>(t.currency==="USD"?2500:1)*(+t.price||0);
+function zones(e){return (e.tickets||[]).map((t,i)=>({t,i,r:rate(t)})).sort((a,b)=>b.r-a.r||a.i-b.i)}
+function kind(n){n=String(n||"").toLowerCase();return /vip|table|loge|carr[eé] or|prestige/.test(n)?"tab":/debout|pelouse|fosse|gold|standing/.test(n)?"std":"chr"}
+function isStade(e){return /stade|stadium|parc|esplanade|arena|plein air/i.test([e.venue,e.title].join(" "))}
+function stat(t){const sold=(EV&&EV.sold&&EV.sold[t.id])||0;if(!t.stock)return{so:false,txt:"Disponible",lo:false};const rem=Math.max(t.stock-sold,0);return{so:rem===0,txt:rem===0?"Complet":rem+" place"+(rem>1?"s":"")+" restante"+(rem>1?"s":""),lo:rem>0&&rem/t.stock<=.2}}
+const X=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function svg(e){
+ const Z=zones(e),n=Math.max(Z.length,1),stade=isStade(e),W=360,INK="#23232e",PAPER="#fdfcf8",gap=6,bh=Math.max(64,Math.min(112,Math.floor(300/n))),y0=88,x0=44,w=272,yb=y0+n*(bh+gap)+34,H=yb+8+86;
+ const ttl=X(String(e.title||"").slice(0,34)),ven=X([e.venue,e.city].filter(Boolean).join(", ").slice(0,44));
+ let o=`<svg class="plsvg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la salle" font-family="system-ui,Arial,sans-serif">`;
+ o+=`<defs><pattern id="plg" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#e9e5da" stroke-width=".6"/></pattern><pattern id="plh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8d8d8d" stroke-width="1.6"/></pattern><pattern id="plw" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><line x1="0" y1="0" x2="8" y2="0" stroke="#c9b48a" stroke-width=".7"/></pattern></defs>`;
+ o+=`<rect width="${W}" height="${H}" fill="${PAPER}"/><rect width="${W}" height="${H}" fill="url(#plg)"/>`;
+ /* murs (ou clôture pour un site en plein air) */
+ if(stade){o+=`<rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${INK}" stroke-width="2" stroke-dasharray="9 5"/>`}
+ else{o+=`<rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${INK}" stroke-width="6"/><rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${PAPER}" stroke-width="1.6"/>`}
+ /* scène */
+ o+=`<rect x="62" y="20" width="236" height="48" fill="#efe3c8" stroke="${INK}" stroke-width="2"/><rect x="62" y="20" width="236" height="48" fill="url(#plw)"/><line x1="62" y1="27" x2="298" y2="27" stroke="${INK}" stroke-width=".8" stroke-dasharray="3 2"/><text x="180" y="52" text-anchor="middle" fill="${INK}" font-size="14" font-weight="800" letter-spacing="3">SCÈNE</text>`;
+ [0,1,2].forEach(i=>o+=`<line x1="${150-i*4}" y1="${70+i*4}" x2="${210+i*4}" y2="${70+i*4}" stroke="${INK}" stroke-width="1.2"/>`);
+ /* zones */
+ Z.forEach((z,r)=>{
+  const y=y0+r*(bh+gap),c=COL[Math.min(r,COL.length-1)],s=stat(z.t),k=kind(z.t.name),col=s.so?"#9a9a9a":c,aisle=(!stade&&k!=="std")?24:0,half=(w-aisle)/2,blocks=aisle?[[x0+6,half-10],[x0+half+aisle+4,half-10]]:[[x0+6,w-12]];
+  o+=`<g data-z="${z.i}" style="cursor:pointer"><rect x="${x0}" y="${y}" width="${w}" height="${bh}" fill="${col}" fill-opacity="${s.so?.12:.1}" stroke="${col}" stroke-width="1.4" stroke-dasharray="5 3"/>`;
+  if(s.so)o+=`<rect x="${x0}" y="${y}" width="${w}" height="${bh}" fill="url(#plh)" opacity=".28"/>`;
+  blocks.forEach((b,bi)=>{
+   if(k==="tab"){let tr=0;for(let ry=y+10;ry+30<=y+bh-4;ry+=32,tr++)for(let rx=b[0]+2;rx+40<=b[0]+b[1];rx+=48){o+=`<rect x="${rx}" y="${ry+7}" width="40" height="13" rx="1.5" fill="#d8bf8a" stroke="#6b4e1f" stroke-width=".9"/>`;[8,20,32].forEach(dx=>{o+=`<circle cx="${rx+dx}" cy="${ry+3}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/><circle cx="${rx+dx}" cy="${ry+24}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/>`})}}
+   else if(k==="std"){for(let ry=y+9;ry<y+bh-6;ry+=8)for(let rx=b[0];rx<b[0]+b[1];rx+=8)o+=`<circle cx="${rx+3}" cy="${ry+2}" r="1.7" fill="${col}"/>`}
+   else{let rw=0;for(let ry=y+10;ry+9<=y+bh-8;ry+=12,rw++){for(let rx=b[0]+8;rx+8<=b[0]+b[1];rx+=12)o+=`<rect x="${rx}" y="${ry}" width="8" height="6.5" rx="1.6" fill="#fff" stroke="${col}" stroke-width="1"/><rect x="${rx}" y="${ry+6.5}" width="8" height="2" rx=".8" fill="${col}"/>`;
+     if(bi===0)o+=`<text x="${b[0]}" y="${ry+6.5}" font-size="6" fill="#8a8a8a">${rw+1}</text>`}}
+  });
+  if(aisle)o+=`<line x1="${x0+half+aisle/2}" y1="${y}" x2="${x0+half+aisle/2}" y2="${y+bh}" stroke="#b9b4a6" stroke-width=".7" stroke-dasharray="2 3"/>`;
+  const lbl=X(z.t.name).slice(0,20),pr=z.t.price>0?(typeof nf==="function"?nf(z.t.price):z.t.price)+" "+(z.t.currency==="USD"?"$":"FC"):"Gratuit",cap=z.t.stock?z.t.stock+" places":"";
+  o+=`<rect x="${W/2-76}" y="${y+bh/2-18}" width="152" height="36" fill="#fff" fill-opacity=".96" stroke="${INK}" stroke-width=".8"/><text x="${W/2}" y="${y+bh/2-4}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${INK}">${lbl}</text><text x="${W/2}" y="${y+bh/2+11}" text-anchor="middle" font-size="10" font-weight="700" fill="${s.so?"#b00":"#555"}">${s.so?"COMPLET":pr+(cap?" • "+cap:"")}</text>`;
+  o+=`<circle cx="${x0}" cy="${y}" r="10" fill="${col}" stroke="#fff" stroke-width="1.5"/><text x="${x0}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${r+1}</text></g>`});
+ /* portes avec arc d'ouverture */
+ const gapR=(x,y,ww,hh)=>`<rect x="${x}" y="${y}" width="${ww}" height="${hh}" fill="${PAPER}"/>`;
+ if(!stade){
+  const sy=y0+Math.min(bh*0.5,40);
+  o+=gapR(8,sy-1,6,32)+gapR(W-14,sy-1,6,32)+gapR(148,yb+6,64,8);
+  o+=`<g fill="none" stroke="${INK}" stroke-width="1.2"><path d="M10 ${sy+30}H38"/><path d="M38 ${sy+30}A28 28 0 0 0 10 ${sy+2}" stroke-width=".7" stroke-dasharray="2 2"/><path d="M${W-10} ${sy+30}H${W-38}"/><path d="M${W-38} ${sy+30}A28 28 0 0 1 ${W-10} ${sy+2}" stroke-width=".7" stroke-dasharray="2 2"/>`+
+   `<path d="M150 ${yb+10}V${yb-22}"/><path d="M150 ${yb-22}A32 32 0 0 1 182 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/><path d="M210 ${yb+10}V${yb-22}"/><path d="M210 ${yb-22}A32 32 0 0 0 178 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/></g>`;
+  o+=`<text x="${W/2}" y="${yb+24}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${INK}" letter-spacing="1">ENTRÉE PRINCIPALE</text><text x="12" y="${sy+43}" font-size="7" font-weight="700" fill="${INK}">PORTE</text><text x="${W-12}" y="${sy+43}" text-anchor="end" font-size="7" font-weight="700" fill="${INK}">PORTE</text>`;
+ }else{o+=`<text x="${W/2}" y="${yb+24}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${INK}" letter-spacing="1">▲ ENTRÉE</text>`}
+ /* cartouche */
+ const cy=H-58;
+ o+=`<rect x="10" y="${cy}" width="${W-20}" height="48" fill="#fff" stroke="${INK}" stroke-width="1.6"/><line x1="236" y1="${cy}" x2="236" y2="${cy+48}" stroke="${INK}" stroke-width="1"/><text x="18" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">${stade?"PLAN DU SITE":"PLAN DE LA SALLE"}</text><text x="18" y="${cy+29}" font-size="12" font-weight="800" fill="${INK}">${ttl}</text><text x="18" y="${cy+41}" font-size="8" fill="#555">${ven}</text><text x="244" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">ÉCHELLE</text><text x="244" y="${cy+27}" font-size="9" font-weight="700" fill="${INK}">Schématique</text><text x="244" y="${cy+40}" font-size="7.5" fill="#777">Feuille 1 / 1</text>`;
+ return o+`</svg>`}
+function mapBtns(e){const q=encodeURIComponent([e.venue,e.city,e.country].filter(Boolean).join(", "));if(!e.venue&&!e.city)return"";
+ const a=[e.venue,e.city].filter(Boolean).join(", ");
+ return `<div class="plc"><h2>📍 Lieu et itinéraire</h2><p class="sm" style="margin:0 0 4px;color:inherit;font-weight:700">${X(a)}</p><div class="plmap"><a target="_blank" rel="noopener" href="https://www.google.com/maps/dir/?api=1&destination=${q}">🗺️ Google Maps</a><a target="_blank" rel="noopener" href="https://waze.com/ul?q=${q}&navigate=yes">🚗 Waze</a><a target="_blank" rel="noopener" href="https://maps.apple.com/?daddr=${q}">🍎 Plans</a></div><div class="plmap" style="grid-template-columns:1fr 1fr"><a target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=${q}">👁️ Voir sur la carte</a><button type="button" id="plcpa">📋 Copier l'adresse</button></div></div>`}
+function photos(e){if(!/concordia/i.test([e.venue,e.city].join(" ")))return"";return `<div class="plc"><h2>📸 La salle en photos</h2><div class="plph"><img src="salle-1.jpg" alt="Salle, vue depuis la scène" loading="lazy" data-ph="salle-1.jpg"><img src="salle-2.jpg" alt="Salle, vue depuis le fond" loading="lazy" data-ph="salle-2.jpg"></div></div>`}
+function planBlock(e){if(!e.tickets||!e.tickets.length)return"";const Z=zones(e);
+ const leg=Z.map((z,r)=>{const s=stat(z.t),pr=z.t.price>0?(typeof nf==="function"?nf(z.t.price):z.t.price)+" "+(z.t.currency==="USD"?"$":"FC"):"Gratuit";return `<div class="plg" data-z="${z.i}"><i style="background:${s.so?"#9a9a9a":COL[Math.min(r,COL.length-1)]}">${r+1}</i><div><b>${X(z.t.name)}</b><small>${s.lo?"🔥 ":""}${s.txt}</small></div><span class="pp">${pr}</span></div>`}).join("");
+ return `<div class="plc" id="plblk"><h2>🗺️ Plan de la salle</h2><p class="sm">Touchez une zone pour choisir sa catégorie. Plus la zone est proche de la scène, plus elle est chère.</p>${svg(e)}<button type="button" class="plbig" style="margin:10px 0 4px" id="plfs">🔍 Agrandir le plan</button>${leg}</div>`}
+function viewer(html,title){let v=document.getElementById("plv");if(!v){v=document.createElement("div");v.id="plv";document.body.appendChild(v)}
+ v.innerHTML=`<div class="bar"><span>${X(title)}</span><button type="button" id="plz-">−</button><button type="button" id="plz+">+</button><button type="button" id="plx" aria-label="Fermer">✕</button></div><div class="bd">${html}</div>`;v.hidden=false;
+ let sc=1;const el=()=>v.querySelector(".bd svg,.bd img"),ap=()=>{const t=el();if(t)t.style.width=(sc*100)+"%"};
+ v.querySelector("#plz\\+").onclick=()=>{sc=Math.min(sc+.5,4);ap()};v.querySelector("#plz-").onclick=()=>{sc=Math.max(sc-.5,1);ap()};v.querySelector("#plx").onclick=()=>{v.hidden=true};
+ v.querySelectorAll("[data-z]").forEach(g=>g.onclick=()=>{v.hidden=true;pick(+g.dataset.z)});return v}
+function pick(i){try{evTab("tk")}catch(x){}setTimeout(()=>{const c=document.querySelectorAll("#evt .tkc")[i];if(c){c.scrollIntoView({behavior:"smooth",block:"center"});c.classList.add("plflash");setTimeout(()=>c.classList.remove("plflash"),1700)}},120)}
+function inject(){const e=(typeof EV!=="undefined"&&EV&&EV.e)||null,dt=document.getElementById("evdt"),tk=document.getElementById("evtk");if(!e||!dt||document.getElementById("plblk")||document.getElementById("plbtn"))return;
+ const has=e.tickets&&e.tickets.length;
+ if(has&&tk)tk.insertAdjacentHTML("afterbegin",`<button type="button" class="plbig" id="plbtn">🗺️ Voir le plan de la salle</button>`);
+ dt.insertAdjacentHTML("beforeend",planBlock(e)+mapBtns(e)+photos(e));
+ const btn=document.getElementById("plbtn");if(btn)btn.onclick=()=>{try{evTab("dt")}catch(x){}setTimeout(()=>{const b=document.getElementById("plblk");if(b)b.scrollIntoView({behavior:"smooth",block:"start"})},80)};
+ const sv=dt.querySelector(".plsvg");if(sv)sv.addEventListener("click",ev=>{const g=ev.target.closest&&ev.target.closest("[data-z]");if(g){pick(+g.dataset.z);return}viewer(svg(e),"Plan de la salle")});
+ const fs=document.getElementById("plfs");if(fs)fs.onclick=()=>viewer(svg(e),"Plan de la salle");
+ dt.querySelectorAll(".plg").forEach(g=>g.onclick=()=>pick(+g.dataset.z));
+ dt.querySelectorAll("[data-ph]").forEach(i=>i.onclick=()=>viewer('<img src="'+i.dataset.ph+'" alt="">',"La salle"));
+ const cp=document.getElementById("plcpa");if(cp)cp.onclick=()=>{const a=[e.venue,e.city].filter(Boolean).join(", ");(navigator.clipboard?navigator.clipboard.writeText(a):Promise.reject()).then(()=>toast&&toast("Adresse copiée ✅")).catch(()=>{})}}
+const _oe=window.openEvent;
+if(typeof _oe==="function")window.openEvent=async function(){const r=await _oe.apply(this,arguments);try{inject()}catch(x){console.warn("plan",x)}return r};
+})();
+</script>
+<style>
+#aiFab{position:fixed;right:12px;bottom:92px;z-index:70;display:flex;align-items:center;gap:8px;height:48px;padding:0 18px;border:0;border-radius:24px;background:#0e2f2b;color:#fff;font:800 15px system-ui;box-shadow:0 6px 18px rgba(0,0,0,.3);cursor:pointer}
+#aiFab[hidden],#aiSh[hidden]{display:none}
+#aiSh{position:fixed;inset:0;z-index:100002;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+#aiSh .bx{background:#fff;color:#1c1b2e;width:100%;max-width:560px;height:82vh;border-radius:22px 22px 0 0;display:flex;flex-direction:column;font:400 15px system-ui;overflow:hidden}
+#aiSh .hd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eee}
+#aiSh .hd b{flex:1;font-size:16px}#aiSh .hd small{display:block;font-weight:500;color:#6b6b7b;font-size:12px}
+#aiSh .hd button{border:0;background:#eee;border-radius:10px;width:38px;height:36px;font-size:16px;cursor:pointer}
+#aiSh .ms{flex:1;overflow:auto;padding:14px 14px 6px;-webkit-overflow-scrolling:touch}
+#aiSh .m{max-width:86%;margin:0 0 10px;padding:10px 13px;border-radius:16px;white-space:pre-line;line-height:1.4;word-wrap:break-word}
+#aiSh .m.b{background:#f1ede4;border-bottom-left-radius:4px}#aiSh .m.u{background:#0e2f2b;color:#fff;margin-left:auto;border-bottom-right-radius:4px}
+#aiSh .ac{display:flex;flex-wrap:wrap;gap:6px;margin:-4px 0 10px}
+#aiSh .ac a,#aiSh .ac button,#aiSh .ch button{border:1px solid #d9d2c3;background:#fff;color:#1c1b2e;border-radius:999px;padding:8px 12px;font:700 13px system-ui;text-decoration:none;cursor:pointer}
+#aiSh .ac .wa{background:#25D366;color:#fff;border-color:#25D366}
+#aiSh .ch{display:flex;gap:6px;overflow-x:auto;padding:6px 14px}#aiSh .ch button{white-space:nowrap}
+#aiSh .in{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid #eee}
+#aiSh .in input{flex:1;border:1px solid #d9d2c3;border-radius:999px;padding:11px 14px;font:400 15px system-ui;background:#fff;color:#1c1b2e;min-width:0}
+#aiSh .in button{border:0;border-radius:999px;background:#0e2f2b;color:#fff;font:800 15px system-ui;padding:0 18px}
+html.dk #aiSh .bx{background:#17211f;color:#e8f0ee}html.dk #aiSh .hd,html.dk #aiSh .in{border-color:#2a3a37}
+html.dk #aiSh .m.b{background:#1f2d2a}html.dk #aiSh .hd button{background:#1f2d2a;color:#e8f0ee}
+html.dk #aiSh .in input,html.dk #aiSh .ac a,html.dk #aiSh .ac button,html.dk #aiSh .ch button{background:#1f2d2a;color:#e8f0ee;border-color:#2a3a37}
+</style>
+<script>
+/* ===== V30 : assistant IA par événement (réponses automatiques + guide d'achat) ===== */
+(function(){
+const N=s=>String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const P=t=>t.price>0?nf(t.price)+" "+(t.currency==="USD"?"$":"FC"):"Gratuit";
+const STOP=new Set("pour dans avec cette cette quel quelle quels sont est que qui quoi comment vous nous mon mes les des une aux sur par pas plus fait faire peut puis ceci cela".split(" "));
+let CH=[],busy=false,REMOTE=null;
+function rem(e,t){if(!t.stock)return null;const s=(EV&&EV.sold&&EV.sold[t.id])||0;return Math.max(t.stock-s,0)}
+function ctx(e){return{title:e.title,category:e.category,date:fmtRange(e),venue:e.venue,city:e.city,organizer:(typeof orgName==="function"?orgName(e):e.organizer_name)||"",description:String(e.description||"").slice(0,1500),ticket_info:String(e.ticket_info||"").slice(0,600),whatsapp:e.whatsapp||"",
+ tickets:(e.tickets||[]).map(t=>({name:t.name,price:t.price,currency:t.currency,remaining:rem(e,t)})),
+ modes:{reservation:(e.modes||{}).reservation!==false,cash:!!(e.modes||{}).cash,online:!!(e.modes||{}).online,hold:!!(e.modes||{}).hold}}}
+function hum(e){const n=wnum(e.whatsapp)||SUP;return{l:"💬 Parler à l'organisateur",wa:"https://wa.me/"+n+"?text="+encodeURIComponent("Bonjour, j'ai une question sur « "+e.title+" ».")}}
+function steps(e){const m=e.modes||{},o=["1️⃣ Ouvrez l'onglet « Billets » et choisissez la quantité de chaque catégorie avec + et −."];
+ const ways=[];if(m.reservation!==false)ways.push("• Réservation : validez avec votre nom et votre numéro WhatsApp, puis réglez en suivant les indications (Mobile Money ou virement) et envoyez la capture.");
+ if(m.online)ways.push("• En ligne : paiement automatique, le billet arrive dès que le paiement est confirmé.");
+ if(m.cash)ways.push("• Espèces : payez en main propre auprès d'un vendeur de l'organisateur.");
+ if(m.hold)ways.push("• Sans paiement : votre place est gardée un temps limité, payez avant la fin du délai.");
+ o.push("2️⃣ Choisissez un mode d'achat :\n"+(ways.join("\n")||"• Suivez le mode affiché dans la fiche."));
+ o.push("3️⃣ Votre billet avec son QR code apparaît dans « Mes places » dès que le règlement est validé (votre nom + numéro WhatsApp suffisent pour le retrouver).");
+ o.push("4️⃣ À l'entrée, montrez le QR code.");return o.join("\n\n")}
+function ret(q,e){const toks=N(q).split(/[^a-z0-9]+/).filter(w=>w.length>3&&!STOP.has(w));if(!toks.length)return"";
+ const S=String((e.description||"")+"\n"+(e.ticket_info||"")).split(/[\n.!?]+/).map(x=>x.trim()).filter(x=>x.length>12);
+ const sc=S.map(x=>{const n=N(x);return[toks.filter(w=>n.includes(w)).length,x]}).filter(a=>a[0]>0).sort((a,b)=>b[0]-a[0]).slice(0,2);return sc.map(a=>a[1]).join(". ")}
+function local(q,e){const n=N(q),A=[],tk=e.tickets||[],md=e.modes||{};const has=r=>r.test(n);let t="";
+ if(has(/^(bonjour|salut|hello|coucou|bonsoir|salam|jambo)\b/)&&n.length<25)t="Bonjour 👋 Je suis l'assistant de « "+e.title+" ». Je peux vous expliquer l'événement, les prix, comment acheter ou retrouver votre billet. Que voulez-vous savoir ?";
+ else if(has(/humain|organisateur|contact|appeler|parler a|joindre|responsable/)){t="Bien sûr, vous pouvez écrire directement à l'organisateur sur WhatsApp.";A.push(hum(e))}
+ else if(has(/rembours|annul|report|echang/)){t="Les remboursements, annulations et échanges sont décidés par l'organisateur. Écrivez-lui avec votre code de billet pour qu'il traite votre demande.";A.push(hum(e))}
+ else if(has(/perdu|retrouv|pas recu|n'ai pas|jai pas|ou est mon|mon billet|mes places|mon qr|telecharg/)){t="Pour retrouver votre billet : ouvrez « Mes places » (ou « Retrouver mon billet »), puis saisissez le nom et le numéro WhatsApp utilisés à l'achat. Le billet avec son QR code apparaît dès que le règlement est validé. S'il n'apparaît pas après quelques minutes, écrivez à l'organisateur avec la preuve de paiement.";A.push({l:"🎟️ Mes places",fn:"find"});A.push(hum(e))}
+ else if(has(/enfant|\bage\b|\bans\b|mineur|bebe|moins de|majeur/)){const r=ret("enfant age mineur",e);t=r?"D'après la fiche : "+r:"La fiche ne précise pas de limite d'âge. Demandez à l'organisateur pour être sûr.";if(!r)A.push(hum(e))}
+ else if(has(/groupe|amis|ensemble|plusieurs personnes|chacun paie/)){t="Vous pouvez acheter en groupe : chacun paie sa part. Dans l'onglet Billets, touchez « 👥 Acheter en groupe » et partagez le lien à vos amis.";A.push({l:"👥 Acheter en groupe",fn:"grp"})}
+ else if(has(/reven|transf|donner mon billet|offrir/)){t="Vous pouvez transférer un billet à une autre personne depuis « Mes places » (bouton Transférer, avec son nom et son numéro). La revente vérifiée est aussi disponible via le menu ✨ Plus quand l'organisateur l'autorise.";A.push({l:"🎟️ Mes places",fn:"find"})}
+ else if(has(/prix|tarif|combien|coute|cher|categorie|vip|gratuit/)){t=tk.length?"Voici les tarifs :\n"+tk.map(x=>{const r=rem(e,x);return"• "+x.name+" : "+P(x)+(r===0?" (complet)":r!=null&&r<=20?" (plus que "+r+")":"")}).join("\n")+(e.ticket_info?"\n\nℹ️ "+e.ticket_info:""):"Les tarifs ne sont pas encore indiqués. Contactez l'organisateur.";A.push({l:"🗺️ Voir le plan",fn:"plan"})}
+ else if(has(/dispo|reste|complet|sold|derniere|encore des places/)){t=tk.length?"Disponibilité :\n"+tk.map(x=>{const r=rem(e,x);return"• "+x.name+" : "+(r===0?"complet ❌":r==null?"disponible ✅":r+" place"+(r>1?"s":"")+" restante"+(r>1?"s":""))}).join("\n"):"Je n'ai pas l'information sur les places restantes."}
+ else if(has(/acheter|reserver|reservation|commander|prendre.*(billet|place)|comment.*(billet|place)|inscri|etape|guide|aide/)){t="Voici comment acheter, pas à pas :\n\n"+steps(e);A.push({l:"🎟️ Aller aux billets",fn:"tk"})}
+ else if(has(/pay|mobile money|mpesa|m-pesa|airtel|orange|africell|carte|virement|cash|espece|visa/)){const l=[];if(md.reservation!==false)l.push("• Réservation + Mobile Money/virement sur le numéro de l'organisateur, puis capture envoyée sur WhatsApp");if(md.online)l.push("• Paiement en ligne automatique (carte ou Mobile Money)");if(md.cash)l.push("• Espèces auprès d'un vendeur");if(md.hold)l.push("• Réservation sans paiement immédiat (à régler avant la date limite)");t="Moyens de paiement pour cet événement :\n"+(l.join("\n")||"Voir l'onglet Billets.")+"\n\nChoisissez le mode dans l'onglet Billets, sous les catégories.";A.push({l:"🎟️ Aller aux billets",fn:"tk"})}
+ else if(has(/quand|date|heure|horaire|commence|debut|jour|a quelle|porte|ouvr/)){t="📅 "+fmtRange(e)+(e.venue||e.city?"\n📍 "+[e.venue,e.city].filter(Boolean).join(", "):"");if(/porte|ouvr/.test(n)){const r=ret("ouverture portes ouvrent",e);t+=r?"\n\nℹ️ D'après la fiche : "+r:"\n\nL'heure d'ouverture des portes n'est pas précisée dans la fiche : demandez à l'organisateur."}A.push({l:"📅 Ajouter au calendrier",fn:"ics"})}
+ else if(has(/entree|entrer|scan|controle|arriver|a l'arrivee/)){t="À l'entrée, présentez le QR code de votre billet (sur votre téléphone ou imprimé) à l'accueil : il est scanné et vérifié. Chaque billet ne s'utilise qu'une fois. Arrivez un peu en avance pour éviter la file."}
+ else if(has(/\bou\b|lieu|adresse|salle|comment (venir|aller)|pour venir|itineraire|parking|situe|localis|carte|map|plan/)){t="📍 "+([e.venue,e.city].filter(Boolean).join(", ")||"Lieu non précisé")+"\n\nDans l'onglet Détails, vous trouverez le plan de la salle et les boutons d'itinéraire (Google Maps, Waze, Plans).";A.push({l:"🗺️ Voir le plan et la carte",fn:"plan"})}
+ else if(has(/c'est quoi|cest quoi|explique|presente|parle|programme|artiste|detail|decri|propos|quoi|resume|info/)){t="🎭 "+e.title+"\n📅 "+fmtRange(e)+"\n📍 "+([e.venue,e.city].filter(Boolean).join(", ")||"—")+(e.description?"\n\n"+String(e.description).slice(0,420)+(String(e.description).length>420?"…":""):"")+(tk.length?"\n\n🎟️ À partir de "+P(tk.slice().sort((a,b)=>a.price-b.price)[0]):"")}
+ else{const r=ret(q,e);if(r)t="D'après la fiche de l'événement : "+r;else{t="Je n'ai pas cette information dans la fiche. Je peux vous aider sur les prix, la date, le lieu, comment acheter ou retrouver votre billet. Sinon, l'organisateur peut vous répondre.";A.push(hum(e))}}
+ return{t,A}}
+async function remote(e){if(REMOTE===false)return null;try{const c=new AbortController(),to=setTimeout(()=>c.abort(),14000);
+ const r=await fetch(SB+"/functions/v1/event-assistant",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({event:ctx(e),messages:CH.slice(-8).map(m=>({role:m.r==="u"?"user":"assistant",content:String(m.t).slice(0,500)}))}),signal:c.signal});clearTimeout(to);
+ if(!r.ok){if(r.status===404||r.status===401||r.status===403)REMOTE=false;return null}const j=await r.json();REMOTE=true;return j&&j.reply?String(j.reply).slice(0,1500):null}catch(x){return null}}
+function act(a){const e=EV.e;if(a.fn==="find")location.hash="find";else if(a.fn==="tk"){close();try{evTab("tk")}catch(x){}const c=document.getElementById("evt");if(c)setTimeout(()=>c.scrollIntoView({behavior:"smooth"}),150)}
+ else if(a.fn==="plan"){close();const b=document.getElementById("plbtn");if(b)b.click()}else if(a.fn==="grp"){close();try{grpOpen()}catch(x){}}else if(a.fn==="ics"){try{icsEv()}catch(x){}}}
+function close(){const m=document.getElementById("aiSh");if(m)m.hidden=true}
+function paint(){const ms=document.getElementById("aiMs");if(!ms)return;
+ ms.innerHTML=CH.map((m,i)=>`<div class="m ${m.r}">${esc(m.t)}</div>`+(m.A&&m.A.length?`<div class="ac">${m.A.map((a,j)=>a.wa?`<a class="wa" target="_blank" rel="noopener" href="${esc(a.wa)}">${esc(a.l)}</a>`:`<button type="button" data-i="${i}" data-j="${j}">${esc(a.l)}</button>`).join("")}</div>`:"")).join("")+(busy?'<div class="m b">⏳ …</div>':"");
+ ms.querySelectorAll(".ac button").forEach(b=>b.onclick=()=>act(CH[+b.dataset.i].A[+b.dataset.j]));ms.scrollTop=ms.scrollHeight}
+async function ask(q){q=String(q||"").trim().slice(0,400);if(!q||busy)return;const e=EV.e;CH.push({r:"u",t:q});busy=true;paint();
+ let rep=await remote(e),A=[];const L=local(q,e);if(!rep){rep=L.t}A=L.A;
+ busy=false;CH.push({r:"b",t:rep,A:A.length&&(!REMOTE||rep===L.t||/organisateur|whatsapp/i.test(rep))?A:A.filter(a=>a.wa||a.fn)});paint()}
+function open(){const e=EV&&EV.e;if(!e)return;let m=document.getElementById("aiSh");if(!m){m=document.createElement("div");m.id="aiSh";m.onclick=ev=>{if(ev.target===m)m.hidden=true};document.body.appendChild(m)}
+ if(m.dataset.ev!==e.id){CH=[{r:"b",t:"Bonjour 👋 Je suis l'assistant de « "+e.title+" ». Posez-moi vos questions : explication de l'événement, prix, lieu, comment acheter ou retrouver votre billet. Je vous guide pas à pas."}];m.dataset.ev=e.id}
+ const chips=["Explique-moi l'événement","Quels sont les prix ?","Comment acheter ?","Comment payer ?","Où ça se passe ?","Je n'ai pas reçu mon billet","Que faire à l'entrée ?"];
+ m.innerHTML=`<div class="bx"><div class="hd"><span style="font-size:26px">🤖</span><b>Assistant<small>${esc(e.title)}</small></b><button type="button" id="aiX" aria-label="Fermer">✕</button></div><div class="ms" id="aiMs"></div><div class="ch">${chips.map(c=>`<button type="button">${esc(c)}</button>`).join("")}</div><div class="in"><input id="aiIn" type="text" maxlength="400" placeholder="Posez votre question…" enterkeyhint="send" autocomplete="off"><button type="button" id="aiGo">Envoyer</button></div></div>`;
+ m.hidden=false;paint();document.getElementById("aiX").onclick=close;
+ const inp=document.getElementById("aiIn"),go=()=>{const v=inp.value;inp.value="";ask(v)};document.getElementById("aiGo").onclick=go;inp.onkeydown=ev=>{if(ev.key==="Enter"){ev.preventDefault();go()}};
+ m.querySelectorAll(".ch button").forEach(b=>b.onclick=()=>ask(b.textContent))}
+function inject(){const e=EV&&EV.e,ve=document.getElementById("v-ev");if(!e||!ve)return;
+ let f=document.getElementById("aiFab");if(!f){f=document.createElement("button");f.id="aiFab";f.type="button";f.innerHTML="🤖 Assistant";f.onclick=open}
+ if(f.parentNode!==ve)ve.appendChild(f);f.hidden=false;
+ const tk=document.getElementById("evtk");if(tk&&!document.getElementById("aiBtn")){tk.insertAdjacentHTML("afterbegin",'<button type="button" class="plbig" id="aiBtn" style="background:#fff;color:#0e2f2b;border:2px solid #0e2f2b">🤖 Besoin d\'aide pour acheter ?</button>');document.getElementById("aiBtn").onclick=open}}
+const _o=window.openEvent;
+if(typeof _o==="function")window.openEvent=async function(){const r=await _o.apply(this,arguments);try{inject()}catch(x){console.warn("ai",x)}return r};
+})();
 </script>
 </body></html>
