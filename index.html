@@ -5493,4 +5493,135 @@ orgRow=function(e){let h=_or(e);try{
 .c2i.pf{display:flex!important;justify-content:center;align-items:center;padding:10px 0}
 .c2i.pf img.pic{width:auto!important;max-width:78%!important;height:auto!important;max-height:var(--aff-h)!important;border-radius:10px}
 </style>
+<script>
+/* ===== V24b : reçu + billet en IMAGE (galerie) et en PDF, aux couleurs de l'événement ===== */
+(function(){
+const W=1080,M=60,FF="system-ui,-apple-system,'Segoe UI',sans-serif";
+const lc=()=>{try{return LOC()}catch(e){return "fr-FR"}};
+const money=c=>c==="USD"?"$":"FC";
+const num=v=>{try{return nf(v)}catch(e){return String(v)}};
+const sum=a=>{try{return amtTxt(a)}catch(e){return Object.entries(a||{}).map(([c,v])=>v+" "+money(c)).join(" + ")}};
+const dt=d=>{try{return new Date(d).toLocaleString(lc(),{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
+const evOf=o=>{try{return (DBEV||[]).find(x=>String(x.id)===String(o.event_id))||{}}catch(e){return {}}};
+const posterUrl=e=>e&&e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"";
+const loadImg=u=>new Promise(r=>{if(!u)return r(null);const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u});
+function rr(x,a,b,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(a,b,w,h,r);else x.rect(a,b,w,h)}
+/* couleurs tirées de l'affiche */
+function palette(img){const d={bg:"hsl(172,55%,12%)",bg2:"hsl(172,45%,22%)",accent:"hsl(40,92%,62%)"};if(!img)return d;
+ try{const c=document.createElement("canvas");c.width=c.height=32;const x=c.getContext("2d");x.drawImage(img,0,0,32,32);const p=x.getImageData(0,0,32,32).data;
+  let sx=0,sy=0,sw=0,ss=0;for(let i=0;i<p.length;i+=4){const r=p[i]/255,g=p[i+1]/255,b=p[i+2]/255,mx=Math.max(r,g,b),mn=Math.min(r,g,b),l=(mx+mn)/2,dl=mx-mn;if(dl<.08)continue;
+   const s=dl/(1-Math.abs(2*l-1)||1);let h=mx===r?((g-b)/dl)%6:mx===g?(b-r)/dl+2:(r-g)/dl+4;h*=60;const w=s*(1-Math.abs(2*l-1));const a=h*Math.PI/180;sx+=Math.cos(a)*w;sy+=Math.sin(a)*w;sw+=w;ss+=s*w}
+  if(sw<1)return d;let h=Math.atan2(sy,sx)*180/Math.PI;if(h<0)h+=360;const s=Math.min(.7,Math.max(.35,ss/sw));
+  return{bg:`hsl(${h|0},${(s*100)|0}%,12%)`,bg2:`hsl(${h|0},${(s*100)|0}%,24%)`,accent:`hsl(${(h+(h>40&&h<200?0:20))%360|0},90%,64%)`}}catch(e){return d}}
+function wrap(x,t,mw){const out=[];let l="";String(t||"").split(/\s+/).forEach(w=>{const n=l?l+" "+w:w;if(x.measureText(n).width>mw&&l){out.push(l);l=w}else l=n});if(l)out.push(l);return out}
+function qrCanvas(text,size){try{const t=document.createElement("div");new QRCode(t,{text:String(text),width:size,height:size});return t.querySelector("canvas")}catch(e){return null}}
+
+async function build(o,kind,noimg){
+ const e=evOf(o),img=noimg?null:await loadImg(posterUrl(e)),P=palette(img),H0=5200;
+ const c=document.createElement("canvas");c.width=W;c.height=H0;const x=c.getContext("2d");
+ const g=x.createLinearGradient(0,0,W,H0);g.addColorStop(0,P.bg);g.addColorStop(1,P.bg2);x.fillStyle=g;x.fillRect(0,0,W,H0);
+ let y=M;const ok=o.status==="confirmed";
+ const T=(t,xx,yy,font,col,al)=>{x.font=font;x.fillStyle=col;x.textAlign=al||"left";x.fillText(t,xx,yy)};
+ const lab=t=>{T(t.toUpperCase(),M,y,"800 24px "+FF,P.accent);y+=38};
+ const line=()=>{x.fillStyle="rgba(255,255,255,.18)";x.fillRect(M,y,W-2*M,2);y+=36};
+ T("RESTAU DU RIRE · TICKETS",M,y+28,"800 30px "+FF,P.accent);T(kind==="receipt"?"REÇU":"BILLET",W-M,y+28,"800 30px "+FF,"rgba(255,255,255,.8)","right");y+=70;
+ if(img){const mw=W-2*M,mh=1000,s=Math.min(mw/img.width,mh/img.height),w=img.width*s,h=img.height*s,px=(W-w)/2;x.save();rr(x,px,y,w,h,28);x.clip();x.drawImage(img,px,y,w,h);x.restore();y+=h+44}
+ else{try{const lg=document.getElementById("mainLogo");if(lg&&lg.naturalWidth&&!noimg){const s=Math.min(500/lg.naturalWidth,200/lg.naturalHeight);x.drawImage(lg,(W-lg.naturalWidth*s)/2,y,lg.naturalWidth*s,lg.naturalHeight*s);y+=lg.naturalHeight*s+40}}catch(z){}}
+ /* titre + infos de l'affiche */
+ x.font="800 58px "+FF;wrap(x,o.title||e.title,W-2*M).forEach(l=>{T(l,M,y+50,"800 58px "+FF,"#fff");y+=68});y+=18;
+ const meta=[["Date",o.starts_at?dt(o.starts_at):""],["Lieu",[o.venue||e.venue,o.city||e.city].filter(Boolean).join(", ")],["Organisateur",o.organizer||e.organizer_name||""]];
+ meta.forEach(m=>{if(!m[1])return;lab(m[0]);x.font="600 34px "+FF;wrap(x,m[1],W-2*M).forEach(l=>{T(l,M,y,"600 34px "+FF,"rgba(255,255,255,.92)");y+=44});y+=14});
+ if(kind==="receipt"&&Array.isArray(e.tickets)&&e.tickets.length){lab("Tarifs de l'affiche");e.tickets.forEach(t=>{T(String(t.name||""),M,y,"600 32px "+FF,"rgba(255,255,255,.9)");T(num(t.price)+" "+money(t.currency),W-M,y,"700 32px "+FF,"#fff","right");y+=44});y+=10}
+ if(kind==="receipt"&&e.ticket_info){lab("Informations");x.font="500 28px "+FF;wrap(x,e.ticket_info,W-2*M).slice(0,6).forEach(l=>{T(l,M,y,"500 28px "+FF,"rgba(255,255,255,.8)");y+=38});y+=10}
+ y+=6;line();
+ /* titulaire */
+ lab("Titulaire");T(String(o.name||""),M,y+8,"800 48px "+FF,"#fff");y+=58;
+ if(kind==="receipt"){T("N° "+o.code+" · "+(o.created_at?new Date(o.created_at).toLocaleString(lc(),{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):""),M,y+8,"600 28px "+FF,"rgba(255,255,255,.7)");y+=50}
+ if(o.seats&&o.seats.length){T("Places : "+o.seats.map(s=>String(s).split("-")[1]).join(", "),M,y+8,"700 32px "+FF,P.accent);y+=48}
+ y+=6;line();
+ if(kind==="receipt"){
+  lab("Détail de la commande");
+  const rows=(o.items||[]).concat(o.options||[]),sub={};
+  rows.forEach(r=>{sub[r.currency]=(sub[r.currency]||0)+r.price*r.qty;x.font="700 32px "+FF;const nm=wrap(x,r.name,560);nm.forEach((l,k)=>{T(l,M,y,"700 32px "+FF,"#fff");if(k===0)T(num(r.price*r.qty)+" "+money(r.currency),W-M,y,"800 32px "+FF,"#fff","right");y+=40});T(r.qty+" × "+num(r.price)+" "+money(r.currency),M,y-2,"500 26px "+FF,"rgba(255,255,255,.65)");y+=44});
+  const am=o.amounts||{};Object.keys(sub).forEach(cc=>{const d=sub[cc]-(am[cc]||0);if(d>0){T("Remise",M,y,"600 30px "+FF,"rgba(255,255,255,.85)");T("−"+num(d)+" "+money(cc),W-M,y,"700 30px "+FF,"rgba(255,255,255,.9)","right");y+=46}});
+  y+=6;line();
+  T("TOTAL",M,y+30,"800 38px "+FF,"#fff");T(sum(am)||"—",W-M,y+34,"900 52px "+FF,P.accent,"right");y+=92;
+  const st=o.used?["DÉJÀ UTILISÉ","#ff7a7a"]:ok?["PAYÉ ✓","#27c97f"]:["EN ATTENTE DE CONFIRMATION","#f5b72c"];
+  x.font="800 30px "+FF;const sw=x.measureText(st[0]).width+60;x.fillStyle=st[1];rr(x,M,y,sw,64,32);x.fill();T(st[0],M+30,y+43,"800 30px "+FF,"#10201d");y+=110;
+ }
+ /* QR */
+ if(ok){const qs=kind==="receipt"?340:520,q=qrCanvas(o.id,qs);x.fillStyle="#fff";const bx=(W-qs-60)/2;rr(x,bx,y,qs+60,qs+60,30);x.fill();if(q)x.drawImage(q,bx+30,y+30,qs,qs);y+=qs+60+54;T(String(o.code),W/2,y,"900 56px "+FF,"#fff","center");y+=70;
+  T(kind==="receipt"?"Ce reçu ne remplace pas le billet : présentez le QR code à l'entrée.":"Billet nominatif à usage unique. Présentez ce QR code à l'entrée.",W/2,y,"500 26px "+FF,"rgba(255,255,255,.7)","center");y+=40}
+ else{x.font="600 30px "+FF;wrap(x,"Le QR code et le code du billet s'afficheront dès que l'organisation aura confirmé votre achat.",W-2*M).forEach(l=>{T(l,W/2,y,"600 30px "+FF,"rgba(255,255,255,.85)","center");y+=42});y+=20}
+ y+=40;T("Billetterie officielle · Restau du Rire Tickets",W/2,y,"600 24px "+FF,"rgba(255,255,255,.55)","center");y+=50;
+ const f=document.createElement("canvas");f.width=W;f.height=Math.ceil(y);f.getContext("2d").drawImage(c,0,0);return f}
+async function buildCard(o,noimg){
+ const e=evOf(o),img=noimg?null:await loadImg(posterUrl(e)),H0=6000,IW=W,MX=76,ok=o.status==="confirmed";
+ const c=document.createElement("canvas");c.width=IW;c.height=H0;const x=c.getContext("2d");
+ const g=x.createLinearGradient(0,0,IW,Math.min(H0,2600));g.addColorStop(0,"#1f1b33");g.addColorStop(.5,"#5b3ca6");g.addColorStop(1,"#f26a2a");x.fillStyle=g;x.fillRect(0,0,IW,H0);
+ const SERIF="Georgia,'Times New Roman',serif",WH="#fff",SOFT="rgba(255,255,255,.78)";let y=96;
+ const T=(t,xx,yy,font,col,al,ls)=>{x.font=font;x.fillStyle=col;x.textAlign=al||"left";try{x.letterSpacing=ls||"0px"}catch(z){}x.fillText(t,xx,yy);try{x.letterSpacing="0px"}catch(z){}};
+ const lab=t=>{T(t.toUpperCase(),MX,y,"700 26px "+FF,SOFT,"left","5px");y+=42};
+ const line=()=>{x.fillStyle="rgba(255,255,255,.22)";x.fillRect(MX,y,IW-2*MX,2);y+=44};
+ T("REÇU",MX,y,"700 40px "+FF,SOFT,"left","10px");y+=36;
+ T("N° "+o.code+(o.created_at?" · "+new Date(o.created_at).toLocaleString(lc(),{day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"}):""),MX,y+10,"500 26px "+FF,SOFT);y+=84;
+ T(sum(o.amounts)||"—",MX,y+90,"800 132px "+SERIF,WH);y+=190;
+ T("Titulaire : "+String(o.name||""),MX,y,"700 54px "+FF,WH);y+=36;
+ if(o.seats&&o.seats.length){T("Places : "+o.seats.map(s=>String(s).split("-")[1]).join(", "),MX,y+34,"700 32px "+FF,"#ffe3b3");y+=44}
+ y+=30;
+ const st=o.used?["DÉJÀ UTILISÉ","#ff9a9a"]:ok?["PAYÉ ✓","#27c97f"]:["EN ATTENTE DE CONFIRMATION","#f5b72c"];
+ x.font="800 28px "+FF;const sw=x.measureText(st[0]).width+56;x.fillStyle=st[1];rr(x,MX,y,sw,60,30);x.fill();T(st[0],MX+28,y+40,"800 28px "+FF,"#1a1530");y+=112;
+ line();
+ if(img){const mw=IW-2*MX,mh=880,s=Math.min(mw/img.width,mh/img.height),w=img.width*s,h=img.height*s,px=(IW-w)/2;x.save();rr(x,px,y,w,h,30);x.clip();x.drawImage(img,px,y,w,h);x.restore();y+=h+48}
+ x.font="800 56px "+FF;wrap(x,o.title||e.title,IW-2*MX).forEach(l=>{T(l,MX,y+44,"800 56px "+FF,WH);y+=66});y+=26;
+ [["Date",o.starts_at?dt(o.starts_at):""],["Lieu",[o.venue||e.venue,o.city||e.city].filter(Boolean).join(", ")],["Organisateur",o.organizer||e.organizer_name||""]].forEach(m=>{if(!m[1])return;lab(m[0]);x.font="600 34px "+FF;wrap(x,m[1],IW-2*MX).forEach(l=>{T(l,MX,y,"600 34px "+FF,WH);y+=44});y+=16});
+ if(Array.isArray(e.tickets)&&e.tickets.length){lab("Tarifs de l'affiche");e.tickets.forEach(t=>{T(String(t.name||""),MX,y,"600 32px "+FF,SOFT);T(num(t.price)+" "+money(t.currency),IW-MX,y,"700 32px "+FF,WH,"right");y+=44});y+=12}
+ if(e.ticket_info){lab("Informations");x.font="500 28px "+FF;wrap(x,e.ticket_info,IW-2*MX).slice(0,6).forEach(l=>{T(l,MX,y,"500 28px "+FF,SOFT);y+=38});y+=12}
+ y+=8;line();
+ lab("Détail de la commande");
+ const rows=(o.items||[]).concat(o.options||[]),sub={};
+ rows.forEach(r=>{sub[r.currency]=(sub[r.currency]||0)+r.price*r.qty;x.font="700 32px "+FF;wrap(x,r.name,600).forEach((l,k)=>{T(l,MX,y,"700 32px "+FF,WH);if(k===0)T(num(r.price*r.qty)+" "+money(r.currency),IW-MX,y,"800 32px "+FF,WH,"right");y+=40});T(r.qty+" × "+num(r.price)+" "+money(r.currency),MX,y-2,"500 26px "+FF,SOFT);y+=46});
+ const am=o.amounts||{};Object.keys(sub).forEach(cc=>{const d=sub[cc]-(am[cc]||0);if(d>0){T("Remise",MX,y,"600 30px "+FF,SOFT);T("−"+num(d)+" "+money(cc),IW-MX,y,"700 30px "+FF,WH,"right");y+=46}});
+ y+=6;line();
+ T("TOTAL",MX,y+34,"700 36px "+FF,SOFT,"left","4px");T(sum(am)||"—",IW-MX,y+38,"800 54px "+SERIF,WH,"right");y+=100;
+ if(ok){const qs=340,q=qrCanvas(o.id,qs),bx=(IW-qs-60)/2;x.fillStyle="#fff";rr(x,bx,y,qs+60,qs+60,30);x.fill();if(q)x.drawImage(q,bx+30,y+30,qs,qs);y+=qs+60+56;T(String(o.code),IW/2,y,"900 56px "+FF,WH,"center","3px");y+=64;T("Ce reçu ne remplace pas le billet : présentez le QR code à l'entrée.",IW/2,y,"500 25px "+FF,SOFT,"center");y+=50}
+ else{x.font="600 30px "+FF;wrap(x,"Le QR code et le code du billet s'afficheront dès que l'organisation aura confirmé votre achat.",IW-2*MX).forEach(l=>{T(l,IW/2,y,"600 30px "+FF,SOFT,"center");y+=42});y+=24}
+ y+=40;T("Restau du Rire Tickets",MX,y,"700 34px "+FF,WH);y+=84;
+ /* carte arrondie sur fond blanc */
+ const PAD=44,h=Math.ceil(y),f=document.createElement("canvas");f.width=IW+2*PAD;f.height=h+2*PAD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
+ fx.save();rr(fx,PAD,PAD,IW,h,64);fx.clip();fx.drawImage(c,0,0,IW,h,PAD,PAD,IW,h);fx.restore();return f}
+async function make(o,kind){if(kind==="receipt"){try{const c=await buildCard(o,false);c.toDataURL("image/jpeg",.5);return c}catch(e){return await buildCard(o,true)}}try{const c=await build(o,kind,false);c.toDataURL("image/jpeg",.5);return c}catch(e){return await build(o,kind,true)}}
+
+/* PDF (une page, image JPEG) sans bibliothèque */
+function pdfBlob(c){const b64=c.toDataURL("image/jpeg",.92).split(",")[1],bin=atob(b64),n=bin.length,jb=new Uint8Array(n);for(let i=0;i<n;i++)jb[i]=bin.charCodeAt(i);
+ const pw=595.28,ph=+(pw*c.height/c.width).toFixed(2),en=s=>new TextEncoder().encode(s),parts=[],off=[];let len=0;const push=b=>{parts.push(b);len+=b.length};
+ push(en("%PDF-1.4\n"));const obj=(k,body)=>{off[k]=len;push(en(k+" 0 obj\n"));(Array.isArray(body)?body:[body]).forEach(p=>push(typeof p==="string"?en(p):p));push(en("\nendobj\n"))};
+ obj(1,"<< /Type /Catalog /Pages 2 0 R >>");obj(2,"<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+ obj(3,"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 "+pw+" "+ph+"] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>");
+ obj(4,["<< /Type /XObject /Subtype /Image /Width "+c.width+" /Height "+c.height+" /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length "+n+" >>\nstream\n",jb,"\nendstream"]);
+ const cs="q "+pw+" 0 0 "+ph+" 0 0 cm /Im0 Do Q";obj(5,"<< /Length "+cs.length+" >>\nstream\n"+cs+"\nendstream");
+ const xr=len;let t="xref\n0 6\n0000000000 65535 f \n";for(let k=1;k<=5;k++)t+=String(off[k]).padStart(10,"0")+" 00000 n \n";t+="trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n"+xr+"\n%%EOF";push(en(t));return new Blob(parts,{type:"application/pdf"})}
+function dataBlob(c){const b=atob(c.toDataURL("image/png").split(",")[1]),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new Blob([u],{type:"image/png"})}
+async function deliver(blob,name,title,msg){const f=new File([blob],name,{type:blob.type});
+ if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title});return}catch(e){if(e&&e.name==="AbortError")return}}
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);try{toast(msg)}catch(e){}}
+const box=h=>{let d=document.getElementById("p5rc");if(!d){d=document.createElement("div");d.id="p5rc";d.className="p5rc";document.body.appendChild(d)}d.style.background="#10201d";d.innerHTML=h;return d};
+const bs="display:block;width:100%;box-sizing:border-box;border:0;border-radius:16px;padding:16px;margin:10px 0;font:800 17px system-ui;cursor:pointer;";
+async function preview(o,kind){const lbl=kind==="receipt"?"reçu":"billet";box('<p style="color:#fff;text-align:center;margin-top:40vh;font:700 18px system-ui">⏳ Création du '+lbl+'…</p>');
+ try{const c=await make(o,kind);window._rcv={c,o,kind};const nm=(kind==="receipt"?"recu-":"billet-")+o.code;
+  box('<div style="max-width:520px;margin:auto"><button style="'+bs+'background:#fff;color:#10201d" onclick="p5RcClose()">✕ Fermer</button><img alt="" style="width:100%;border-radius:18px;display:block" src="'+c.toDataURL("image/jpeg",.7)+'">'+
+  '<button style="'+bs+'background:#27c97f;color:#10201d" onclick="p5RcImg()">🖼️ Enregistrer en image (galerie photo)</button>'+
+  '<button style="'+bs+'background:#f2b84b;color:#10201d" onclick="p5RcPdf()">📄 Enregistrer en PDF</button>'+
+  '<p style="color:#cfe;font:13px system-ui;text-align:center">Sur iPhone : choisissez « Enregistrer l\'image » (Photos) ou « Enregistrer dans Fichiers » (PDF).</p></div>')}
+ catch(e){box('<div style="padding:30px;color:#fff;text-align:center;font:16px system-ui">❌ Impossible de créer le document.<br><br><button style="'+bs+'background:#fff;color:#10201d" onclick="p5RcClose()">Fermer</button></div>')}}
+window.p5RcImg=()=>{const r=window._rcv;if(!r)return;deliver(dataBlob(r.c),(r.kind==="receipt"?"recu-":"billet-")+r.o.code+".png",r.o.title,"Image téléchargée ✅")};
+window.p5RcPdf=()=>{const r=window._rcv;if(!r)return;deliver(pdfBlob(r.c),(r.kind==="receipt"?"recu-":"billet-")+r.o.code+".pdf",r.o.title,"PDF téléchargé ✅")};
+window.p5Receipt=i=>preview(MY.list[i],"receipt");
+window.p5TkImg=i=>preview(MY.list[i],"ticket");
+window.p5TkPdf=i=>preview(MY.list[i],"ticket");
+window.p5RcClose=()=>{document.body.classList.remove("p5print");const d=document.getElementById("p5rc");if(d)d.remove()};
+window._pdfBlob=pdfBlob;
+})();
+</script>
+
 </body></html>
