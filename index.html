@@ -2542,7 +2542,7 @@ function addPN(){syncPN();PN.push({name:"",number:"",op:"M-Pesa"});drawPN()}
 function renderCreate(){const el=$("v-create");
  if(!tok){el.innerHTML=`<div class="x2"><h2>➕ Créer un événement</h2><p class="sm">Connectez-vous ou créez un compte gratuit pour publier votre événement.</p><button class="btn dk" onclick="nav('account')">Connexion / Créer un compte</button></div>`;return}
  el.innerHTML=`<div class="x2"><h2>➕ Créer un événement</h2><p class="sm">Votre événement sera publié après validation par notre équipe.</p>
- <label>Titre *</label><input id="ct" placeholder="Ex : Gala d'humour"><label>Nom de l'organisateur (affiché aux visiteurs)</label><input id="co" placeholder="Ex : Mad Mad Production">
+ <label>Titre *</label><input id="ct" placeholder="Ex : Gala d'humour"><label>Nom de l'organisateur * (affiché aux visiteurs)</label><input id="co" placeholder="Ex : Mad Mad Production"><label>Logo de l'organisateur * (profil visible par tout le monde)</label><input id="clg" type="file" accept="image/*">
  <div class="g"><div><label>Modèle de l'événement *</label><select id="cg">${Object.entries(CATN).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select></div><div><label>Pays *</label><select id="cy">${COUNTRIES.filter(x=>x[0]!=="ALL").map(x=>`<option value="${x[0]}"${x[0]===cty?" selected":""}>${x[1]}</option>`).join("")}</select></div></div>
  <div class="g"><div><label>Ville *</label><input id="cv"></div><div><label>Lieu / salle *</label><input id="cl"></div></div><div id="cls"></div><button type="button" class="btn dk" id="cadds" onclick="addSalle()">➕ Ajouter une autre salle</button><p class="sm" style="margin:6px 0 8px">Votre événement a lieu dans 2 ou 3 salles ? Ajoutez-les ici : chaque salle a ses propres dates (3 salles au maximum). Un seul événement, une seule affiche, un seul lien d'achat.</p>
  <label>Date et heure *</label><input id="cd" type="datetime-local"><input id="cdp" placeholder="Lieu de cette date (facultatif, sinon le lieu ci-dessus)" style="margin-top:6px"><div id="cdx"></div><button type="button" class="btn dk" onclick="addDT()">➕ Ajouter une autre date</button><p class="sm" style="margin:6px 0 8px">Festival ou spectacle sur plusieurs jours ? Ajoutez chaque date (ex : 1, 2, 3 et 4) : même salle ou salles différentes. Le dernier jour est le jour J. Les dates ci-dessus sont celles de la salle principale.</p><label>🧭 Plan d'accès (facultatif)</label><input id="cmap" placeholder="Lien Google Maps (facultatif)"><textarea id="cacc" rows="2" placeholder="Conseils : repère, parking, transport…"></textarea><label>Description de l'événement</label><textarea id="cx"></textarea><label>Description de la billetterie</label><textarea id="ctd" placeholder="Ex : comment acheter, conditions d'entrée, remboursement, places numérotées…"></textarea>
@@ -2560,6 +2560,8 @@ async function _createEvent(){syncTR();syncPN();const v=i=>$(i).value.trim();
  const tk=TR.filter(t=>t.name.trim()&&t.price!=="").map((t,i)=>({id:"t"+(i+1),name:t.name.trim(),price:+t.price,currency:t.currency,stock:t.stock?+t.stock:null}));
  const pn=PN.filter(p=>p.number.trim()).map(p=>({name:p.name.trim(),number:p.number.trim(),op:p.op}));
  if(!v("ct")||!v("cv")||!v("cl")||!v("cd")||!tk.length||!v("cw")){cmsg("Veuillez remplir les champs obligatoires et au moins une catégorie de billets.");return}
+ if(!v("co")){cmsg("Indiquez le nom de votre organisation (affiché aux visiteurs).");return}
+ if(!$("clg").files[0]&&!(window.orgLogoPath&&orgLogoPath(myId()))){cmsg("Ajoutez le logo de votre organisation : il devient votre profil visible par tout le monde.");return}
  if(tk.some(t=>!(t.stock>=1))){cmsg("Indiquez le nombre total de billets de chaque catégorie (en ligne + espèces).");return}
  const RW=[[v("cd"),v("cdp")]],hasS=!!document.querySelector("#cls .sbk");document.querySelectorAll("#cdx .dxr").forEach(r=>RW.push([r.querySelector(".dxi").value.trim(),((r.querySelector(".dxp")||{}).value||"").trim()]));
  if(hasS)RW.forEach(x=>{if(!x[1])x[1]=v("cl")});
@@ -2571,7 +2573,8 @@ async function _createEvent(){syncTR();syncPN();const v=i=>$(i).value.trim();
  const b=$("cbtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi...";
  try{let poster=null;const f=$("cp2").files[0];
   if(f){poster=myId()+"/"+Date.now()+"-"+f.name.replace(/[^\w.\-]/g,"_");const u=await af(SB+"/storage/v1/object/affiches/"+poster,{method:"POST",headers:{"Content-Type":f.type||"image/jpeg"},body:f});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error("Envoi de l'affiche impossible : "+(er.message||er.error||u.status))}}
-  const r=await af(SB+"/rest/v1/events",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({owner_id:myId(),title:v("ct"),category:$("cg").value,country:$("cy").value,city:v("cv"),venue:[v("cl"),...[...document.querySelectorAll("#cls .sli")].map(x=>x.value.trim())].filter(Boolean).join(" • "),starts_at:dates[0],...(dates.length>1?{dates}:{}),...(Object.keys(DP).length?{date_places:DP}:{}),...(v("co")?{organizer_name:v("co")}:{}),description:v("cx"),ticket_info:v("ctd")||null,poster_path:poster,tickets:tk,pay_numbers:pn,whatsapp:v("cw"),pay_link:null,modes:{reservation:$("cm1").checked,cash:$("cm2").checked,online:$("cm3").checked,hold:$("cm4").checked,hold_hours:Math.min(Math.max(+v("chh")||48,1),168),...evExtra()}})});
+  let logo=null;if($("clg").files[0])logo=await uploadLogo($("clg").files[0]);else logo=orgLogoPath(myId())||null;
+  const r=await af(SB+"/rest/v1/events",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({owner_id:myId(),title:v("ct"),category:$("cg").value,country:$("cy").value,city:v("cv"),venue:[v("cl"),...[...document.querySelectorAll("#cls .sli")].map(x=>x.value.trim())].filter(Boolean).join(" • "),starts_at:dates[0],...(dates.length>1?{dates}:{}),...(Object.keys(DP).length?{date_places:DP}:{}),...(v("co")?{organizer_name:v("co")}:{}),description:v("cx"),ticket_info:v("ctd")||null,poster_path:poster,tickets:tk,pay_numbers:pn,whatsapp:v("cw"),pay_link:null,modes:{reservation:$("cm1").checked,cash:$("cm2").checked,online:$("cm3").checked,hold:$("cm4").checked,hold_hours:Math.min(Math.max(+v("chh")||48,1),168),...(logo?{logo:logo}:{}),...evExtra()}})});
   if(!r.ok){const er=await r.json().catch(()=>({}));throw new Error("Création impossible ("+r.status+") : "+(er.message||er.details||er.hint||"erreur inconnue")+(er.code?" ["+er.code+"]":""))}
   cmsg("✅ Votre événement est envoyé pour validation. Il sera publié dès que l'équipe l'aura validé.");showLink((await r.json().catch(()=>[]))[0]||{});nav("account")
  }catch(x){cmsg("❌ "+x.message)}
@@ -3079,7 +3082,7 @@ const _cr=chipsRow;
 chipsRow=function(e){const M=e.modes||{},a=M.audience||"Tout public",t=Array.isArray(M.tags)?M.tags:[];const x=[`<span class="ch aud">${esc(a)}</span>`,...t.map(k=>`<span class="ch tg">#${esc(k)}</span>`)].join("");let b=_cr(e);return b?b.replace('</div>',x+'</div>'):`<div class="chs">${x}</div>`};
 
 /* 4. Organisateurs : vérifiés + page publique + abonnés */
-const VER=new Set();
+const VER=new Set();window.VER_=VER;
 async function loadVer(){try{const r=await fetch(SB+"/rest/v1/rpc/verified_owner_ids",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;(await r.json()).forEach(x=>VER.add(typeof x==="string"?x:(x.owner||x.verified_owner_ids)));paintVer()}catch(e){}}
 function paintVer(){document.querySelectorAll(".orgr").forEach(r=>{const b=r.querySelector("[data-fl]");if(!b)return;const o=b.dataset.fl,n=r.querySelector(".ot b");if(n&&VER.has(o)&&!n.querySelector(".vf"))n.insertAdjacentHTML("beforeend",`<span class="vf" title="Organisateur vérifié">${VSVG}</span>`)})}
 window.orgSheet=function(o){let m=$("osh");if(!m){m=document.createElement("div");m.id="osh";m.onclick=e=>{if(e.target===m)m.hidden=true};document.body.appendChild(m)}
@@ -4780,7 +4783,7 @@ window.f6Pay=async function(eid){let l=[];try{l=await api("payouts?event_id=eq."
 window.f6Rc=function(i){const p=f6P[i],w=window.open("","_blank");w.document.write('<title>Reçu de reversement</title><body style="font-family:sans-serif;padding:30px"><h2>REÇU DE REVERSEMENT</h2><p>Le Restau du Rire — Tickets</p><hr><p>Événement : <b>'+E(f6E.title)+'</b><br>Date : '+D(p.created_at)+'<br>Montant reversé : <b>'+p.amount+' '+E(p.currency)+'</b><br>Réf. : '+E(String(p.id||"").slice(0,8))+'</p><p style="color:#555">Paiements en ligne reversés après l\'événement.</p><script>print()<\/script>');w.document.close()};
 /* Menu flottant */
 const css=document.createElement("style");css.textContent=".f6{background:#14201f;color:#fff;border-radius:16px;padding:16px;width:100%;max-width:380px;margin:auto;max-height:86vh;overflow:auto}.f6c{background:#1d2e2c;border-radius:10px;padding:10px;margin:8px 0}.f6c a{color:#9fe}#f6fab{position:fixed;right:12px;bottom:78px;z-index:50;height:42px;padding:0 16px;border-radius:21px;border:0;background:#e8b04a;color:#14201f;font-size:15px;font-weight:800;box-shadow:0 4px 12px rgba(0,0,0,.25)}";document.head.appendChild(css);
-const fab=document.createElement("button");fab.id="f6fab";fab.textContent="✨ Plus";fab.onclick=()=>M('<h3>✨ Plus</h3><button class="p4b o" onclick="f6Resales()">🎟️ Reventes vérifiées</button><button class="p4b" onclick="f6Orgs()">🎤 Organisateurs</button>'+(pro()?'<button class="p4b" onclick="f6Pro()">🧰 Outils pro</button>':"")+'<div class="sm" style="margin-top:10px">🛡️ Argent protégé : les paiements en ligne ne sont reversés à l\'organisateur qu\'après l\'événement.</div>');document.body.appendChild(fab);
+const fab=document.createElement("button");fab.id="f6fab";fab.textContent="✨ Plus";fab.onclick=()=>M('<h3>✨ Plus</h3><button class="p4b o" onclick="f6Resales()">🎟️ Reventes vérifiées</button><button class="p4b" onclick="f6Orgs()">🎤 Organisateurs</button><button class="p4b" onclick="orgLogoPick()">🖼️ Logo de mon organisation</button>'+(pro()?'<button class="p4b" onclick="f6Pro()">🧰 Outils pro</button>':"")+'<div class="sm" style="margin-top:10px">🛡️ Argent protégé : les paiements en ligne ne sont reversés à l\'organisateur qu\'après l\'événement.</div>');document.body.appendChild(fab);
 const h=(location.hash||"").match(/^#o=(.+)$/);if(h)setTimeout(()=>f6Org(h[1]),1500);
 })();
 </script>
@@ -4873,7 +4876,7 @@ rem();setInterval(rem,1800000);
 window.f8Pro=function(){const my=typeof myId==="function"?myId():"",ev=EVS().filter(e=>role==="admin"||e.owner_id===my);
  M('<h3>🧰 Outils pro</h3><button class="p4b o" onclick="f6Off()">📥 Scanner hors ligne</button>'+(role==="admin"?'<button class="p4b" onclick="f8Backup()">💾 Sauvegarde</button><button class="p4b" onclick="f8Claims(\'\')">📨 Toutes les réclamations</button>':"")+ev.map(e=>'<div class="f6c"><b>'+E(e.title)+"</b><br>"+[["f6MenuAdd","➕ Plat"],["f6Kit","👨‍🍳 Cuisine"],["f6Rel","📣 Relancer"],["f6Pay","🧾 Reversements"],["f8Draw","🎁 Tirage"],["f8Inv","🧾 Facture"],["f8Csv","📊 Excel"],["f8SpAdd","🤝 Sponsor"],["f8SpStats","📈 Sponsors"],["f8Req","📝 Demandes"],["f8Claims","📨 Réclam."]].map(b=>'<button class="p4b" onclick="'+b[0]+"('"+e.id+"')\">"+b[1]+"</button>").join("")+"</div>").join(""))};
 window.f6Pro=window.f8Pro;
-const fab=g("f6fab");if(fab)fab.onclick=()=>M('<h3>✨ Plus</h3><button class="p4b o" onclick="f6Resales()">🎟️ Reventes vérifiées</button><button class="p4b" onclick="f8Tk()">🎫 Billets hors ligne</button><button class="p4b" onclick="f8Share()">📤 Partager</button><button class="p4b" onclick="f8Special()">🎓 Tarif spécial</button><button class="p4b" onclick="f6Orgs()">🎤 Organisateurs</button><button class="p4b" onclick="f8Help()">❓ Aide</button>'+((typeof myId==="function"&&myId())||role==="admin"?'<button class="p4b" onclick="f8Pro()">🧰 Outils pro</button>':"")+'<div class="sm" style="margin-top:10px">🛡️ Argent protégé : les paiements en ligne ne sont reversés à l\'organisateur qu\'après l\'événement.</div>');
+const fab=g("f6fab");if(fab)fab.onclick=()=>M('<h3>✨ Plus</h3><button class="p4b o" onclick="f6Resales()">🎟️ Reventes vérifiées</button><button class="p4b" onclick="f8Tk()">🎫 Billets hors ligne</button><button class="p4b" onclick="f8Share()">📤 Partager</button><button class="p4b" onclick="f8Special()">🎓 Tarif spécial</button><button class="p4b" onclick="f6Orgs()">🎤 Organisateurs</button><button class="p4b" onclick="orgLogoPick()">🖼️ Logo de mon organisation</button><button class="p4b" onclick="f8Help()">❓ Aide</button>'+((typeof myId==="function"&&myId())||role==="admin"?'<button class="p4b" onclick="f8Pro()">🧰 Outils pro</button>':"")+'<div class="sm" style="margin-top:10px">🛡️ Argent protégé : les paiements en ligne ne sont reversés à l\'organisateur qu\'après l\'événement.</div>');
 const css=document.createElement("style");css.textContent="#f8sp{position:fixed;left:0;right:0;bottom:0;z-index:40;height:34px;display:flex;align-items:center;justify-content:center;gap:8px;background:#0e2f2b;color:#fff;font-size:13px;cursor:pointer}#f8sp img{height:22px}#f8sp small{opacity:.6}";document.head.appendChild(css);
 })();
 </script>
@@ -5254,6 +5257,53 @@ function inject(){const e=EV&&EV.e,ve=document.getElementById("v-ev");if(!e||!ve
  const tk=document.getElementById("evtk");if(tk&&!document.getElementById("aiBtn")){tk.insertAdjacentHTML("afterbegin",'<button type="button" class="plbig" id="aiBtn" style="background:#fff;color:#0e2f2b;border:2px solid #0e2f2b">🤖 Besoin d\'aide pour acheter ?</button>');document.getElementById("aiBtn").onclick=open}}
 const _o=window.openEvent;
 if(typeof _o==="function")window.openEvent=async function(){const r=await _o.apply(this,arguments);try{inject()}catch(x){console.warn("ai",x)}return r};
+})();
+</script>
+
+<style>
+.cvf{display:inline-flex;vertical-align:-3px;margin-left:5px}.cvf svg{width:17px;height:17px}
+.cvt{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#e8f4fe;color:#1d6fb8;font:800 11px system-ui;vertical-align:1px}
+.olg{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.olg2{width:18px;height:18px;border-radius:50%;object-fit:cover;vertical-align:-4px;margin-right:6px;background:#fff}
+.ot .vf,.osh-h .vf{display:none!important}
+</style>
+<script>
+/* ===== V31 : logo de l'organisateur (profil) + certification visibles par tout le monde ===== */
+(function(){
+const CV='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1d9bf0"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BADGE='<span class="cvf" title="Organisateur certifié">'+CV+'</span>';
+const evs=()=>{try{return DBEV||[]}catch(x){return[]}};
+const ver=()=>window.VER_||new Set();
+const oname=e=>(window.p4org?window.p4org(e):(e&&e.organizer_name))||"";
+window.orgLogoPath=function(o){if(!o)return"";const l=evs().filter(x=>x.owner_id===o&&x.modes&&x.modes.logo).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));return l.length?l[0].modes.logo:""};
+window.orgLogoUrl=function(o){const p=orgLogoPath(o);return p?SB+"/storage/v1/object/public/affiches/"+p:""};
+const byName=n=>{n=String(n||"").trim();const e=evs().find(x=>x.owner_id&&String(oname(x)).trim()===n);return e?e.owner_id:""};
+const img=(u,c)=>'<img class="'+c+'" alt="" src="'+String(u).replace(/"/g,"&quot;")+'" onerror="this.parentNode.setAttribute(\'data-lb\',\'1\');this.remove()">';
+function setAv(av,u){if(u&&av&&!av.dataset.lb&&!av.querySelector("img")){av.innerHTML=img(u,"olg");av.style.overflow="hidden";av.style.background="#fff"}}
+window.paintVer=function(){try{const V=ver();
+ document.querySelectorAll(".orgr").forEach(r=>{const b=r.querySelector("[data-fl]");if(!b)return;const o=b.dataset.fl,n=r.querySelector(".ot b");setAv(r.querySelector(".av"),orgLogoUrl(o));if(n&&V.has(o)&&!n.querySelector(".cvf"))n.insertAdjacentHTML("beforeend",BADGE+'<span class="cvt">Certifié</span>')});
+ document.querySelectorAll("[data-ow]").forEach(p=>{const o=p.dataset.ow,b=p.querySelector("b"),u=orgLogoUrl(o);if(u&&!p.dataset.lb&&!p.querySelector(".olg2"))p.insertAdjacentHTML("afterbegin",img(u,"olg2"));if(b&&V.has(o)&&!p.querySelector(".cvf"))b.insertAdjacentHTML("afterend",BADGE)});
+ document.querySelectorAll(".tb-by").forEach(p=>{const b=p.querySelector("b");if(!b)return;const o=byName(b.textContent);setAv(p.querySelector(".av2"),orgLogoUrl(o));if(o&&V.has(o)&&!p.querySelector(".cvf"))b.insertAdjacentHTML("afterend",BADGE)});
+}catch(e){}};
+/* cartes de l'accueil : « par [organisateur] » avec logo + badge */
+const _ec5=evCard;evCard=function(e){let h=_ec5(e);try{const d=evs().find(x=>x.id===(e&&e.id));if(d&&d.owner_id)h=h.replace('<p class="p4by">','<p class="p4by" data-ow="'+String(d.owner_id).replace(/"/g,"")+'">')}catch(x){}return h};
+/* fiche organisateur */
+const _os=window.orgSheet;if(typeof _os==="function")window.orgSheet=function(o){_os(o);try{const a=document.querySelector("#osh .osh-h .av"),b=document.querySelector("#osh .osh-h b");setAv(a,orgLogoUrl(o));if(b&&ver().has(o)&&!b.querySelector(".cvf"))b.insertAdjacentHTML("beforeend",BADGE)}catch(x){}};
+/* envoi du logo (réduit à 320 px) */
+const shrink=(f,m)=>new Promise(res=>{try{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||f)},"image/png")}catch(e){res(f)}};im.onerror=()=>res(f);im.src=u}catch(e){res(f)}});
+window.uploadLogo=async function(f){const b=await shrink(f,320),t=b.type||"image/png",ext=t.includes("png")?"png":t.includes("webp")?"webp":"jpg",p=myId()+"/logo-"+Date.now()+"."+ext;const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":t},body:b});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error("Envoi du logo impossible : "+(er.message||er.error||u.status))}return p};
+/* organisateur qui a déjà des événements : ajouter / changer son logo */
+window.orgLogoPick=function(){
+ if(!(typeof myId==="function"&&myId())){alert("Connectez-vous en tant qu'organisateur pour ajouter votre logo.");return}
+ const i=document.createElement("input");i.type="file";i.accept="image/*";
+ i.onchange=async()=>{const f=i.files[0];if(!f)return;try{
+  const mine=evs().filter(x=>x.owner_id===myId());if(!mine.length){alert("Créez d'abord un événement : le logo sera ajouté à votre profil.");return}
+  const path=await uploadLogo(f);
+  for(const e of mine){const m=Object.assign({},e.modes||{},{logo:path});const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(e.id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({modes:m})});if(!r.ok)throw new Error("Enregistrement du logo impossible ("+r.status+")");e.modes=m}
+  if(typeof toast==="function")toast("Logo ajouté ✅");paintVer();try{drawEvents()}catch(x){}
+ }catch(x){alert(x.message||"Erreur")}};
+ i.click()};
+setTimeout(()=>{try{paintVer()}catch(e){}},800);
 })();
 </script>
 </body></html>
