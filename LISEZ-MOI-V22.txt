@@ -1,0 +1,7 @@
+V22 : 🎯 DEFI POUR SPECTATEURS (questions + roue qui s'arrête sur le palier gagné) sur votre V20
+1) Supabase > SQL Editor : lancer supabase/sql/26-defi-spectateurs.sql (une fois). Le 25-roue-de-la-chance n'est plus utilisé.
+2) Remplacer site/ (index.html + sw.js), ouvrir le site avec ?v=22.
+3) Dashboard > ⚙️ Outils pro > « Défi pour spectateurs » (ou Gestion pro > onglet 🎯) : activer, saisir les questions (bonne réponse cochée), choisir les cadeaux avec score minimum et stock.
+PUBLIC : carte « Défi pour spectateurs » sur l'accueil -> nom + WhatsApp d'achat -> questions -> le serveur corrige -> bouton TOURNER LA ROUE -> la roue s'arrête sur le palier débloqué par le score (aucun hasard) -> cadeau.
+UN SEUL ESSAI par personne. Bonnes réponses secrètes. Classement public (prénoms) + compteur de cadeaux remportés.
+A FAIRE : faire valider ce concours par un avocat congolais avant de l'activer.
