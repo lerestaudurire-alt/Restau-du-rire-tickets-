@@ -1,0 +1,9 @@
+V21 : 🎡 ROUE DE LA CHANCE (loterie, sans questions) sur votre V20
+1) Supabase > SQL Editor : lancer supabase/sql/25-roue-de-la-chance.sql (une fois, relançable).
+2) Remplacer le dossier site/ (index.html + sw.js), ouvrir le site avec ?v=21 (ou vider le cache).
+3) Où régler : Dashboard organisateur > ⚙️ Outils pro > « Roue de la chance (loterie) », ou Mon espace > ⚙️ Gestion pro > onglet 🎡 Roue de la chance.
+PUBLIC : carte « Roue de la chance » sur l'accueil -> nom + WhatsApp d'achat -> UN SEUL tour par personne -> la roue tourne -> lot tiré par le serveur.
+LOTS : ticket standard, ticket VIP, T-shirt, chapeau, stylo, bouteille d'eau, jus, cartes SIM Airtel/Orange/Vodacom/Africell + mégas, « Pas de chance » ; chances et stock réglables ; lots personnalisés.
+ORGANISATEUR : gagnants avec WhatsApp pour les prévenir, bouton « Lot remis ». Compteur public « Déjà N lots gagnés ».
+CORRECTIF : si un outil de Gestion pro n'est pas chargé, un message clair s'affiche au lieu de l'erreur « is not a function ».
+NOTE : le bouton « Gestion pro » de Mon espace n'apparaît que si le compte connecté a un événement publié ou en attente. Connectez-vous avec l'e-mail utilisé pour créer l'événement.
