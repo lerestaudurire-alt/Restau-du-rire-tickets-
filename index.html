@@ -1816,6 +1816,25 @@ html.low .ev3 .pic{display:none}
 #pub .lmh{margin:14px 0 4px;padding:12px;border-radius:18px;background:#fff4f2;border:1.5px solid #dc2626}#pub .lmh b{display:block;margin-bottom:6px;color:#b91c1c}
 #pub .lmh a{display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #f3c9c4;cursor:pointer;font-weight:700}#pub .lmh i{font-style:normal;color:#dc2626;white-space:nowrap}
 #pub .spl{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}#pub .spi{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:6px 12px;border:1px solid #dfe7e4;border-radius:12px;background:#fff;color:inherit;text-decoration:none}#pub .spi img{max-height:40px;max-width:110px;object-fit:contain}
+</style><style>
+#pub .whc{margin:14px 0;padding:16px;border-radius:22px;color:#fff;background:radial-gradient(circle at 10% 0,rgba(242,193,78,.5),transparent 55%),linear-gradient(135deg,#0e2f2b,#1f6f5b);box-shadow:0 8px 22px rgba(14,47,43,.25)}
+#pub .whc-t{font-size:20px}#pub .whc p{margin:6px 0 8px;font-size:14px;line-height:1.4;color:#e6f2ee}#pub .whc-n{display:inline-block;margin:0 0 10px;padding:6px 12px;border-radius:999px;background:rgba(242,193,78,.2);border:1px solid #f2c14e;color:#f2c14e;font-weight:800;font-size:14px}#pub .whc-n[hidden]{display:none}#pub .whc-e{font-size:26px;letter-spacing:4px;margin:6px 0 10px;word-break:break-all}
+.whl{display:none;position:fixed;inset:0;z-index:9999;background:rgba(8,28,25,.88);overflow:auto;-webkit-overflow-scrolling:touch}
+.whp{position:relative;max-width:460px;margin:0 auto;min-height:100%;box-sizing:border-box;padding:max(18px,env(safe-area-inset-top)) 16px 30px;background:#fffdf8;color:#0e2f2b}
+.whp h2{margin:4px 40px 6px 0}.whx{position:absolute;right:12px;top:max(14px,env(safe-area-inset-top));width:38px;height:38px;border-radius:50%;border:0;background:#0e2f2b;color:#fff;font-size:18px}
+.whok{margin:12px 0 4px;padding:10px 12px;border-radius:14px;background:#e8f5ee;color:#14633f;text-align:center}
+.whw{position:relative;width:min(300px,82vw);margin:10px auto}.whs{width:100%;display:block;filter:drop-shadow(0 6px 10px rgba(0,0,0,.25))}
+.whptr{position:absolute;left:50%;top:-14px;transform:translateX(-50%);font-size:34px;line-height:1;color:#dc2626;z-index:2;text-shadow:0 2px 3px rgba(0,0,0,.3)}
+.whl2{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0}.whl2 span{padding:5px 9px;border-radius:999px;background:#eef3f1;font-size:12px;font-weight:700}
+.whwin,.whno{margin:14px 0;padding:14px;border-radius:18px;text-align:center}.whwin{background:#fff4d6;border:2px solid #f2c14e}.whno{background:#f1f3f2}.whpz{font:900 22px/1.2 system-ui;margin:6px 0 10px}
+.whmine{margin-top:10px;font-size:14px}.whmine div{padding:4px 0;border-top:1px solid #e3ebe8}
+.whcf{position:fixed;top:-30px;font-size:26px;z-index:10000;pointer-events:none;animation:whf 2.6s linear forwards}@keyframes whf{to{transform:translateY(110vh) rotate(360deg)}}
+.wh9r{display:flex;flex-direction:column;gap:6px;padding:10px;margin:6px 0;border:1px solid #dfe7e4;border-radius:14px;background:#fff}.wh9n{display:flex;align-items:center;gap:8px}.wh9n input[type=checkbox]{width:auto}.we2{font-size:22px}
+.wh9i{display:flex;gap:8px;align-items:center}.wh9i input{width:90px}.wp{font-style:normal;font-weight:800;color:#1f6f5b;min-width:52px}
+.whp input,.whp select{background:#fff!important;color:#0e2f2b!important;border:1.5px solid #cfdad6!important;border-radius:14px;padding:12px;width:100%;box-sizing:border-box;font-size:16px;margin:4px 0}.whp label{display:block;margin-top:8px;font-weight:700}.whp .btn{width:100%;margin:10px 0 0}
+.chT{margin:8px 0}.chT div{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid #e3ebe8}.chT span{font-size:22px}.chT b{flex:1}.chT i{font-style:normal;font-weight:800;color:#1f6f5b}
+.chp{display:flex;justify-content:space-between;margin:12px 0 6px;font-weight:800;color:#1f6f5b}.chb{height:8px;border-radius:8px;background:#e3ebe8;overflow:hidden}.chb i{display:block;height:100%;background:#f2c14e;transition:width .3s}
+.chq{margin:16px 0 10px;font-size:19px;line-height:1.3}.whp .cho{display:block;width:100%;margin:8px 0;padding:14px;border-radius:14px;border:2px solid #0e2f2b;background:#fff;color:#0e2f2b;font-size:16px;font-weight:700;text-align:left}.whp .cho:active{background:#f2c14e}
 </style></head><body>
 
 <!-- ========== PAGE PUBLIQUE ========== -->
@@ -1826,7 +1845,7 @@ html.low .ev3 .pic{display:none}
 <div id="v-home" class="view">
 <section class="hm"><span class="hm-k">🎭 La scène vous attend</span><h1>Votre place,<br><em>votre fou rire.</em></h1><p>Choisissez votre soirée, réglez en quelques gestes et gardez votre billet numérique dans la poche.</p>
 <div class="hm-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="qs1" placeholder="Un spectacle, un artiste, une ville ?" oninput="setQ(this.value)"></div></section>
-<div id="lastmin"></div><div class="cdw" id="cdw" hidden><div class="cdt"><span>⏳ Prochain événement</span><b id="cdn"></b></div><div class="cdg"><div><b id="cdD">00</b><small>Jours</small></div><div><b id="cdH">00</b><small>Heures</small></div><div><b id="cdM">00</b><small>Minutes</small></div><div><b id="cdS">00</b><small>Secondes</small></div></div></div>
+<div id="lastmin"></div><div id="wheelcard"></div><div class="cdw" id="cdw" hidden><div class="cdt"><span>⏳ Prochain événement</span><b id="cdn"></b></div><div class="cdg"><div><b id="cdD">00</b><small>Jours</small></div><div><b id="cdH">00</b><small>Heures</small></div><div><b id="cdM">00</b><small>Minutes</small></div><div><b id="cdS">00</b><small>Secondes</small></div></div></div>
 <div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
 <div class="cats" id="ctabs"></div>
 <div class="sech"><h2>Prochains rendez-vous</h2><span class="sm" id="evcount"></span></div>
@@ -3494,7 +3513,7 @@ window.p5Copy=copy;
 const _myobs=new MutationObserver(()=>{const m=$("myev");if(!m||$("p5gp"))return;const b=m.querySelector('button[onclick="odbOpen()"]');if(b)b.insertAdjacentHTML("afterend",'<button class="btn" id="p5gp" style="margin-top:8px" onclick="p5Manage()">⚙️ Gestion pro : promos, équipe d\'entrée, ambassadeurs…</button>')});
 const _mv=$("myev");if(_mv)_myobs.observe(_mv,{childList:true,subtree:true});
 let CUR="",TAB="door";
-const TABS=[["tix","🎟️ Billets & stock"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
+const TABS=[["tix","🎟️ Billets & stock"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["chal","🎯 Défi spectateurs"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🎫 Tickets papier"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
 window.p5Manage=async function(tab,eid){if(typeof tab==="string"&&TABS.some(t=>t[0]===tab))TAB=tab;if(typeof eid==="string"&&eid)CUR=eid;let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.zIndex=window.ODB?"10000":"";ov.style.display="block";document.body.style.overflow="hidden";
  if(!MYEV||!MYEV.length){try{await loadMine()}catch(x){}}
  const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");
@@ -4845,5 +4864,93 @@ window.f6Pro=window.f8Pro;
 const fab=g("f6fab");if(fab)fab.onclick=()=>M('<h3>✨ Plus</h3><button class="p4b o" onclick="f6Resales()">🎟️ Reventes vérifiées</button><button class="p4b" onclick="f8Tk()">🎫 Billets hors ligne</button><button class="p4b" onclick="f8Share()">📤 Partager</button><button class="p4b" onclick="f8Special()">🎓 Tarif spécial</button><button class="p4b" onclick="f6Orgs()">🎤 Organisateurs</button><button class="p4b" onclick="f8Help()">❓ Aide</button>'+((typeof myId==="function"&&myId())||role==="admin"?'<button class="p4b" onclick="f8Pro()">🧰 Outils pro</button>':"")+'<div class="sm" style="margin-top:10px">🛡️ Argent protégé : les paiements en ligne ne sont reversés à l\'organisateur qu\'après l\'événement.</div>');
 const css=document.createElement("style");css.textContent="#f8sp{position:fixed;left:0;right:0;bottom:0;z-index:40;height:34px;display:flex;align-items:center;justify-content:center;gap:8px;background:#0e2f2b;color:#fff;font-size:13px;cursor:pointer}#f8sp img{height:22px}#f8sp small{opacity:.6}";document.head.appendChild(css);
 })();
+</script>
+<script>
+/* ===== V13 : 🎯 DEFI DES SPECTATEURS (concours de connaissances, sans hasard) ===== */
+(function(){
+const CURF=()=>window.p5Cur(),EVT=()=>window.p5Ev()||{},ra=window.p5ra,rpub=window.p5rp;
+const PRESETS=[
+{id:"vip",emoji:"👑",name:"Ticket VIP",min:5,stock:3},
+{id:"std",emoji:"🎟️",name:"Ticket standard",min:5,stock:5},
+{id:"sim_airtel",emoji:"📱",name:"Carte SIM Airtel + mégas",min:4,stock:10},
+{id:"sim_orange",emoji:"📱",name:"Carte SIM Orange + mégas",min:4,stock:10},
+{id:"sim_vodacom",emoji:"📱",name:"Carte SIM Vodacom + mégas",min:4,stock:10},
+{id:"sim_africell",emoji:"📱",name:"Carte SIM Africell + mégas",min:4,stock:10},
+{id:"tshirt",emoji:"👕",name:"T-shirt",min:3,stock:20},
+{id:"hat",emoji:"🧢",name:"Chapeau",min:3,stock:20},
+{id:"pen",emoji:"🖊️",name:"Stylo",min:2,stock:""},
+{id:"water",emoji:"💧",name:"Bouteille d'eau",min:1,stock:""},
+{id:"juice",emoji:"🧃",name:"Jus",min:1,stock:""}];
+async function saveModes(patch){const e=EVT(),m=Object.assign({},e.modes||{},patch);await api("events?id=eq."+CURF(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m})});e.modes=m;const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CURF());if(d)d.modes=m}
+const fmtT=s=>Math.floor(s/60)+" min "+String(s%60).padStart(2,"0")+" s";
+
+/* ---------- Onglet organisateur ---------- */
+async function chalTab(b){const e=EVT(),C=(e.modes||{}).challenge||{},saved={};(C.tiers||[]).forEach(t=>saved[t.id]=t);const custom=(C.tiers||[]).filter(t=>!PRESETS.find(x=>x.id===t.id));while(custom.length<3)custom.push({});
+ let Q=[];try{Q=await ra("challenge_load",{p_event:CURF()})}catch(x){}
+ const qs=Q.slice();while(qs.length<5)qs.push({q:"",o:["","",""],a:0});
+ const trow=(t,on,c)=>`<div class="wh9r" data-id="${esc(t.id||"")}"><label class="wh9n"><input type="checkbox" class="to" ${on?"checked":""}> ${c?`<input class="te" maxlength="4" style="width:46px" value="${esc(t.emoji||"🎁")}"><input class="tn" placeholder="Autre cadeau" value="${esc(t.name||"")}">`:`<span class="we2">${t.emoji}</span> <b>${esc(t.name)}</b>`}</label><div class="wh9i"><label class="sm">Score min</label><input class="tm" type="number" min="1" max="10" value="${esc(t.min||1)}"><label class="sm">Stock</label><input class="ts" type="number" min="0" value="${esc(t.stock??"")}" placeholder="∞"></div></div>`;
+ const qrow=(q,i)=>`<div class="p5cd cq"><b>Question ${i+1}</b><input class="qq" maxlength="200" placeholder="Ex : Quel est le thème de notre spectacle ?" value="${esc(q.q||"")}">${[0,1,2].map(k=>`<div class="wh9i"><input type="radio" name="qa${i}" class="qa" value="${k}" ${(+q.a||0)===k?"checked":""} style="width:auto"><input class="qo" placeholder="Réponse ${"ABC"[k]}${k===0?" (cochez la bonne)":""}" value="${esc((q.o||[])[k]||"")}" style="flex:1"></div>`).join("")}</div>`;
+ b.innerHTML=`<div class="p5cd"><b>🎯 Défi des spectateurs</b><small>Concours de connaissances : le spectateur qui a un billet répond à vos questions (sur le spectacle, l'artiste, votre marque). <b>Son cadeau dépend uniquement de son score</b>, il n'y a aucun tirage au sort. Un seul essai par personne (nom + numéro WhatsApp).</small>
+ <label class="sm"><input id="ch9_on" type="checkbox" style="width:auto" ${C.on?"checked":""}> ✅ Activer le défi pour cet événement</label></div>
+ <div class="p5cd"><b>❓ Questions (3 réponses possibles)</b><small>Cochez la bonne réponse. Les bonnes réponses restent secrètes : le serveur corrige.</small></div><div id="ch9_q">${qs.map(qrow).join("")}</div>
+ <div class="p5cd"><b>🎁 Cadeaux selon le score</b><small>Chaque cadeau est donné à partir d'un <b>score minimum</b>. Si le score permet plusieurs cadeaux, le <b>premier de la liste</b> encore en stock est attribué. Stock vide = illimité.</small></div><div id="ch9_t">${PRESETS.map(p=>{const s=saved[p.id];return trow(Object.assign({},p,s||{}),s?true:!C.tiers,false)}).join("")}${custom.map(t=>trow(t,!!t.name,true)).join("")}</div>
+ <button class="btn wa" onclick="p9ChSave()">💾 Enregistrer le défi</button><div id="ch9_w"></div>`;
+ try{window.CH9=await ra("challenge_winners",{p_event:CURF()});cwDraw()}catch(x){$("ch9_w").innerHTML='<p class="sm">⚠️ Résultats indisponibles : lancez le SQL 25-defi-spectateurs.sql.</p>'}}
+window.p9ChSave=async function(){const Q=[];document.querySelectorAll("#ch9_q .cq").forEach(c=>{const q=c.querySelector(".qq").value.trim(),o=[...c.querySelectorAll(".qo")].map(x=>x.value.trim()),a=+(c.querySelector(".qa:checked")||{value:0}).value;if(q.length<3)return;const oo=o.filter(Boolean);if(oo.length<2){return}Q.push({q,o:o.filter(Boolean),a:Math.min(a,oo.length-1),raw:o,ra:a})});
+ const Q2=Q.map(x=>{const idx=x.raw.map((v,i)=>v?i:-1).filter(i=>i>=0),na=idx.indexOf(x.ra);return{q:x.q,o:x.o,a:na<0?0:na}});
+ const T=[];document.querySelectorAll("#ch9_t .wh9r").forEach((r,i)=>{if(!r.querySelector(".to").checked)return;const pre=PRESETS.find(x=>x.id===r.dataset.id),nm=pre?pre.name:(r.querySelector(".tn").value||"").trim().slice(0,40);if(!nm)return;const st=r.querySelector(".ts").value;
+  T.push({id:pre?pre.id:"c"+i,emoji:pre?pre.emoji:((r.querySelector(".te").value||"🎁").trim().slice(0,4)||"🎁"),name:nm,min:Math.max(1,+r.querySelector(".tm").value||1),stock:st===""?null:Math.max(0,+st)})});
+ T.sort((a,c)=>c.min-a.min);const on=$("ch9_on").checked;
+ if(on&&Q2.length<1){alert("Ajoutez au moins 1 question complète (question + 2 réponses).");return}if(on&&!T.length){alert("Choisissez au moins 1 cadeau.");return}
+ const mx=Math.max(0,...T.map(t=>t.min));if(on&&mx>Q2.length&&!confirm("Certains cadeaux demandent un score supérieur au nombre de questions ("+Q2.length+") : personne ne pourra les gagner. Continuer ?"))return;
+ try{await ra("challenge_save",{p_event:CURF(),p_qs:Q2});await saveModes({challenge:{on,tiers:T}});toast("Défi enregistré ✅");drawEvents()}catch(x){alert("❌ "+(x.message||x))}};
+function cwDraw(){const L=window.CH9||[],box=$("ch9_w");if(!box)return;const win=L.filter(x=>!x.none);
+ box.innerHTML=`<div class="p5cd"><b>🏆 Résultats et cadeaux à remettre</b><small>${L.length} participant(s) · ${win.length} cadeau(x) à remettre · ${win.filter(x=>x.claimed).length} remis</small></div>`+(L.map(x=>`<div class="p5cd"><b>${esc(x.name||"?")}</b> <span class="p5k">${x.score}/${x.total}</span> <small>${fmtT(x.elapsed||0)}</small>${x.none?'<small>Pas de cadeau</small>':`<small>🎁 ${esc(x.prize)} · ${x.claimed?"✅ remis":"⏳ à remettre"}</small>`}${!x.none&&x.phone?`<a class="p4b g" target="_blank" rel="noopener" href="https://wa.me/${ph(x.phone)}?text=${encodeURIComponent("🎉 Bravo "+String(x.name||"").split(" ")[0]+" ! Avec "+x.score+"/"+x.total+" au défi de « "+(EVT().title||"")+" », vous gagnez : "+x.prize+". Présentez-vous à l'organisateur pour le récupérer.")}" style="text-decoration:none;display:inline-block">💬 Prévenir</a><button class="p4b o" onclick="p9ChClaim('${x.id}',${!x.claimed})">${x.claimed?"↩️ Annuler":"✅ Remis"}</button>`:""}</div>`).join("")||'<p class="sm">Personne n\'a encore joué.</p>')}
+window.p9ChClaim=async function(id,v){try{await ra("challenge_claim",{p_id:id,p_done:v});const x=(window.CH9||[]).find(y=>y.id===id);if(x)x.claimed=v;cwDraw()}catch(e){alert("❌ "+e.message)}};
+window.P7T=Object.assign(window.P7T||{},{chal:chalTab});
+
+/* ---------- Côté public ---------- */
+const chEvents=()=>((typeof DBEV!=="undefined"&&DBEV)||[]).filter(e=>e.status==="published"&&e.modes&&e.modes.challenge&&e.modes.challenge.on&&(e.modes.challenge.tiers||[]).length>=1);
+let CST={t:0,won:0,best:null};
+function chCard(){const b=$("wheelcard");if(!b)return;const L=chEvents();if(!L.length){b.innerHTML="";return}const pr=(L[0].modes.challenge.tiers||[]).map(p=>p.emoji).filter(Boolean).slice(0,12).join(" ");
+ b.innerHTML=`<div class="whc"><div class="whc-t">🎯 <b>${tr("Défi des spectateurs")}</b></div><p>${tr("Vous avez acheté votre billet ? Répondez aux questions sur le spectacle : selon votre score, gagnez un cadeau garanti (T-shirt, chapeau, carte SIM avec mégas, ticket VIP…).")}</p><div class="whc-e">${pr}</div><div class="whc-n" id="whcn" hidden></div><button class="btn" onclick="chOpen()">🎯 ${tr("Relever le défi")}</button></div>`;chStats(L)}
+async function chStats(L){try{if(Date.now()-CST.t>60000){let won=0,best=null;for(const e of L){won+=((await rpub("challenge_stats",{p_event:e.id}))||{}).won||0;const r=(await rpub("challenge_ranking",{p_event:e.id}))||[];if(r[0]&&(!best||r[0].score>best.score))best=r[0]}CST={t:Date.now(),won,best}}
+ const el=$("whcn");if(el){const t=[];if(CST.won>0)t.push("🏆 "+CST.won+" "+tr(CST.won>1?"cadeaux remportés !":"cadeau remporté !"));if(CST.best)t.push("⭐ "+tr("Meilleur score")+" : "+esc(CST.best.name||"")+" "+CST.best.score+"/"+CST.best.total);if(t.length){el.hidden=false;el.innerHTML=t.join(" · ")}}}catch(x){}}
+let S={};
+const COL=["#0e2f2b","#f2c14e","#1f6f5b","#e8704a","#14405a","#c9a227","#2a8f6f","#b5452f"];
+window.chOpen=function(){const L=chEvents();if(!L.length)return;let o=$("whl");if(!o){o=document.createElement("div");o.id="whl";o.className="whl";document.body.appendChild(o)}o.style.display="block";document.body.style.overflow="hidden";S={};
+ let id={};try{id=JSON.parse(localStorage.getItem("lrr_wh_id")||"{}")}catch(x){}
+ o.innerHTML=`<div class="whp"><button class="whx" onclick="chClose()">✕</button><h2>🎯 ${tr("Défi des spectateurs")}</h2><p class="sm">${tr("Entrez le nom et le numéro WhatsApp utilisés pour acheter votre billet.")}</p>
+ ${L.length>1?`<label>${tr("Événement")}</label><select id="whe">${L.map(e=>`<option value="${esc(e.id)}">${esc(e.title)}</option>`).join("")}</select>`:`<input type="hidden" id="whe" value="${esc(L[0].id)}"><p><b>${esc(L[0].title)}</b></p>`}
+ <label>${tr("Nom complet *")}</label><input id="whn" placeholder="${tr("Votre nom complet")}" value="${esc(id.n||"")}"><label>${tr("Numéro WhatsApp *")}</label><input id="whp" type="tel" placeholder="+243…" value="${esc(id.p||"")}">
+ <button class="btn dk" onclick="chCheck()">${tr("Vérifier mon billet")}</button><p class="sm" id="whm"></p><div id="whb"></div></div>`};
+window.chClose=function(){const o=$("whl");if(o)o.style.display="none";document.body.style.overflow="";clearInterval(S.tm)};
+window.chCheck=async function(){const n=$("whn").value.trim(),p=$("whp").value.trim(),eid=$("whe").value,m=$("whm");if(n.length<3||p.replace(/\D/g,"").length<8){m.textContent=tr("Entrez votre nom complet et votre numéro WhatsApp.");return}
+ m.textContent="⏳…";try{const r=await rpub("challenge_info",{p_phone:p,p_name:n,p_event:eid});if(!r.ok){m.textContent="❌ "+r.error;$("whb").innerHTML="";return}
+  try{localStorage.setItem("lrr_wh_id",JSON.stringify({n,p}))}catch(x){}Object.assign(S,{e:(DBEV||[]).find(x=>x.id===eid),eid,n,p,info:r,rot:0});m.textContent="";chIntro()}catch(x){m.textContent="❌ "+(x.message||"Erreur")}};
+const tiersHTML=T=>`<div class="chT">${T.map(t=>`<div><span>${esc(t.emoji||"🎁")}</span><b>${esc(t.name)}</b><i>≥ ${t.min}</i></div>`).join("")}</div>`;
+function chIntro(){const r=S.info;if(r.played){const m=r.mine;$("whb").innerHTML=`<div class="${m.none?"whno":"whwin"}"><b>${tr("Vous avez déjà participé")}</b><div class="whpz">${m.score}/${m.total}</div>${m.none?`<small>${tr("Pas de cadeau cette fois, merci d'avoir joué !")}</small>`:`<div>🎁 ${esc(m.prize)} ${m.claimed?"✅":""}</div><small>${tr("Présentez-vous à l'organisateur pour récupérer votre cadeau.")}</small>`}</div>`;return}
+ $("whb").innerHTML=`<div class="whok">👋 ${esc(S.n.split(" ")[0])} · ${r.n} ${tr("question(s)")}</div><b>${tr("Cadeaux selon votre score")}</b>${tiersHTML(r.tiers)}<p class="sm">🎯 ${tr("Concours de connaissances : votre cadeau dépend uniquement de votre score, sans tirage au sort. Un seul essai par personne.")}</p><button class="btn" onclick="chGo()">▶️ ${tr("Commencer le défi")}</button>`}
+window.chGo=async function(){try{const r=await rpub("challenge_start",{p_phone:S.p,p_name:S.n,p_event:S.eid});S.qs=r.questions;S.ans=[];S.qi=0;S.t0=Date.now();clearInterval(S.tm);S.tm=setInterval(()=>{const e=$("chtm");if(e)e.textContent=Math.floor((Date.now()-S.t0)/1000)+" s"},500);chQ()}catch(x){$("whb").innerHTML='<div class="whno">❌ '+esc(x.message||"Erreur")+"</div>"}};
+function chQ(){const q=S.qs[S.qi],n=S.qs.length;$("whb").innerHTML=`<div class="chp"><span>${tr("Question")} ${S.qi+1}/${n}</span><span id="chtm">0 s</span></div><div class="chb"><i style="width:${S.qi/n*100}%"></i></div><h3 class="chq">${esc(q.q)}</h3>${q.o.map((o,i)=>`<button class="cho" onclick="chPick(${i})">${esc(o)}</button>`).join("")}`}
+window.chPick=function(i){S.ans.push(i);S.qi++;if(S.qi<S.qs.length)setTimeout(chQ,180);else chFinish()};
+async function chFinish(){clearInterval(S.tm);$("whb").innerHTML='<p class="sm">⏳ '+tr("Calcul de votre score…")+"</p>";
+ try{const r=await rpub("challenge_submit",{p_phone:S.p,p_name:S.n,p_event:S.eid,p_answers:S.ans});if(!r.ok)throw new Error(r.error||"Erreur");S.res=r;chWheel()}catch(x){$("whb").innerHTML='<div class="whno">❌ '+esc(x.message||"Erreur")+"</div>"}}
+function wheelSVG(P){const n=P.length,a=360/n,R=140,pt=(deg,r)=>{const t=(deg-90)*Math.PI/180;return[150+r*Math.cos(t),150+r*Math.sin(t)]};
+ const segs=P.map((p,i)=>{const [x1,y1]=pt(i*a,R),[x2,y2]=pt((i+1)*a,R),[tx,ty]=pt((i+.5)*a,98),l=a>180?1:0,pp=n===1?`<circle cx="150" cy="150" r="${R}" fill="${COL[0]}" stroke="#fff" stroke-width="2"/>`:`<path d="M150 150 L${x1.toFixed(1)} ${y1.toFixed(1)} A${R} ${R} 0 ${l} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z" fill="${p.none?"#6b7a76":COL[i%COL.length]}" stroke="#fff" stroke-width="2"/>`;return pp+`<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" font-size="${n>9?22:28}" text-anchor="middle" dominant-baseline="central" transform="rotate(${((i+.5)*a).toFixed(1)} ${tx.toFixed(1)} ${ty.toFixed(1)})">${esc(p.emoji||"🎁")}</text>`}).join("");
+ return`<div class="whw"><div class="whptr">▼</div><svg viewBox="0 0 300 300" class="whs"><g id="whg" style="transform-origin:150px 150px;transform:rotate(0deg)">${segs}<circle cx="150" cy="150" r="16" fill="#fff" stroke="#0e2f2b" stroke-width="4"/></g></svg></div>`}
+function chWheel(){const r=S.res,P=S.info.tiers.map(t=>({emoji:t.emoji,name:t.name})).concat([{emoji:"🙏",name:"Merci",none:true}]);
+ $("whb").innerHTML=`<div class="whok">🎯 ${tr("Votre score")} : <b>${r.score}/${r.total}</b> · ${fmtT(r.elapsed)}</div>${wheelSVG(P)}<div id="whres"></div>`;
+ const n=P.length,a=360/n,off=(Math.random()-.5)*a*.5,rot=360*5+(360-(r.index+.5)*a)+off,g=$("whg");requestAnimationFrame(()=>{g.style.transition="transform 4.6s cubic-bezier(.12,.6,.1,1)";g.style.transform="rotate("+rot+"deg)"});setTimeout(chResult,4800)}
+function chResult(){const r=S.res,e=S.e||{},msg=`🎉 Défi « ${e.title||""} » : ${S.n} a obtenu ${r.score}/${r.total} et gagne ${r.prize?r.prize.name:""} !`;
+ $("whres").innerHTML=r.none?`<div class="whno">🙏 <b>${tr("Merci d'avoir participé !")}</b><br>${tr("Il fallait un score plus élevé pour gagner un cadeau. À la prochaine !")}</div>`
+ :`<div class="whwin"><div style="font-size:44px">${esc(r.prize.emoji||"🎁")}</div><b>🎉 ${tr("Bravo ! Vous gagnez")} :</b><div class="whpz">${esc(r.prize.name)}</div><small>${tr("Faites une capture d'écran et présentez-la à l'organisateur pour récupérer votre cadeau.")}</small>${e.whatsapp?`<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${ph(e.whatsapp)}?text=${encodeURIComponent(msg)}" style="display:block;text-align:center;text-decoration:none">💬 ${tr("Prévenir l'organisateur")}</a>`:""}</div>`;
+ if(!r.none)confetti();CST.t=0;rpub("challenge_ranking",{p_event:S.eid}).then(R=>{if(R&&R.length)$("whres").insertAdjacentHTML("afterend",`<div class="whmine"><b>🏆 ${tr("Classement")}</b>${R.slice(0,5).map((x,i)=>`<div>${["🥇","🥈","🥉"][i]||(i+1)+"."} ${esc(x.name||"")} · ${x.score}/${x.total} · ${fmtT(x.elapsed||0)}</div>`).join("")}</div>`)}).catch(()=>{})}
+function confetti(){const o=$("whl");if(!o)return;for(let i=0;i<26;i++){const s=document.createElement("span");s.textContent=["🎉","✨","🎊","⭐"][i%4];s.className="whcf";s.style.left=Math.random()*100+"%";s.style.animationDelay=Math.random()*.6+"s";o.appendChild(s);setTimeout(()=>s.remove(),3200)}}
+const _dc=drawEvents;drawEvents=function(){const r=_dc.apply(this,arguments);chCard();return r};
+chCard();
+if(typeof LD!=="undefined"){const T=[["Défi des spectateurs","Mokakoli ya batala","Changamoto ya watazamaji"],["Vous avez acheté votre billet ? Répondez aux questions sur le spectacle : selon votre score, gagnez un cadeau garanti (T-shirt, chapeau, carte SIM avec mégas, ticket VIP…).","Osombi bilete na yo ? Pesa eyano na mituna ya likambo : engebene na score na yo, zwa likabo (T-shirt, ngomba, carte SIM na megas, bilete VIP…).","Umenunua tiketi yako ? Jibu maswali kuhusu onyesho : kulingana na alama zako, shinda zawadi (fulana, kofia, laini ya simu yenye megabaiti, tiketi ya VIP…)."],["Relever le défi","Meka mokakoli","Pokea changamoto"],["Commencer le défi","Banda mokakoli","Anza changamoto"],["Votre score","Score na yo","Alama zako"],["Question","Motuna","Swali"],["question(s)","motuna","maswali"],["Classement","Molongo","Orodha"],["Meilleur score","Score malamu","Alama bora"],["cadeaux remportés !","makabo ezwami !","zawadi zimeshindwa !"],["cadeau remporté !","likabo ezwami !","zawadi imeshindwa !"],["Bravo ! Vous gagnez","Bopeto ! Ozwi","Hongera ! Unashinda"],["Merci d'avoir participé !","Matondi mpo ya kosangana !","Asante kwa kushiriki !"],["Vous avez déjà participé","Osangani déjà","Tayari umeshiriki"]];T.forEach(r=>{LD.ln[r[0]]=r[1];LD.sw[r[0]]=r[2]})}
+})();
+
 </script>
 </body></html>
