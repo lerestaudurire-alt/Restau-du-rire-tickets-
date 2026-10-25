@@ -5631,7 +5631,8 @@ async function buildBank(o,noimg){
  const items=Array.isArray(o.items)?o.items:[],qty=items.reduce((a,r)=>a+(+r.qty||0),0)||1;
  const cat=items.map(r=>r.name).filter(Boolean).join(", ")||"Billet",price=items.map(r=>num(r.price)+" "+money(r.currency)).join(" / ")||"—";
  const ph=(window.MY&&MY.phone)||o.phone||"—";
- const sraw=o.seller!==undefined?o.seller:(o.vendeur!==undefined?o.vendeur:o.seller_name),seller=sraw===undefined?"—":(String(sraw||"").trim()||"Direct (site)");
+ const kd=String(o.kind||"").toLowerCase(),sl=String(o.seller||o.vendeur||o.seller_name||"").trim();
+ const sLab=kd==="online"?"ACHAT":"VENDEUR",seller=kd==="online"?"En ligne":kd==="reservation"?"Organisation":kd==="cash"?(sl||"—"):(sl||"—");
  /* en-tête */
  T("RESTAU DU RIRE · TICKETS",M0,84,"800 24px "+FF,SOFT,"left","4px");
  const st=o.used?["DÉJÀ UTILISÉ","#ff9a9a"]:ok?["PAYÉ ✓","#27c97f"]:["EN ATTENTE","#f5b72c"];
@@ -5641,9 +5642,9 @@ async function buildBank(o,noimg){
  T([dd,lieu].filter(Boolean).join(" · "),M0,203,fit([dd,lieu].filter(Boolean).join(" · "),CW-2*M0,26,"500"),SOFT);
  x.fillStyle="rgba(255,255,255,.22)";x.fillRect(M0,232,CW-2*M0,2);
  /* colonne gauche */
- lab("TITULAIRE",M0,282);val(o.name,M0,330,676,50);
+ lab("PROPRIÉTAIRE",M0,282);val(o.name,M0,330,676,50);
  lab("TÉLÉPHONE",M0,392);val(ph,M0,432,320,32);
- lab("VENDEUR",M0+360,392);val(seller,M0+360,432,316,32);
+ lab(sLab,M0+360,392);val(seller,M0+360,432,316,32);
  lab("CATÉGORIE",M0,494);val(cat,M0,534,210,32);
  lab("PRIX",M0+240,494);val(price,M0+240,534,210,32);
  lab("BILLETS",M0+480,494);val(String(qty),M0+480,534,196,32);
@@ -5659,8 +5660,11 @@ async function buildBank(o,noimg){
  /* carte arrondie sur fond blanc */
  const f=document.createElement("canvas");f.width=CW+2*PD;f.height=CH+2*PD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
  fx.save();rr(fx,PD,PD,CW,CH,56);fx.clip();fx.drawImage(c,PD,PD);fx.restore();return f}
-window._bk={};
-async function bkGet(i){const o=MY.list[i];if(!window._bk[i])window._bk[i]=await buildBank(o,false);return window._bk[i]}
+window._bk={};try{new MutationObserver(()=>{});}catch(e){}
+let _meta=null;
+function bkMeta(){return _meta||(_meta=bkMeta0())}
+async function bkMeta0(){const _meta={};try{const ids=MY.list.map(o=>o.id),r=await window.p5rp("order_meta",{p_ids:ids});(r||[]).forEach(m=>{_meta[String(m.id)]=m});MY.list.forEach(o=>{const m=_meta[String(o.id)];if(m){if(o.kind===undefined)o.kind=m.kind;if(o.seller===undefined)o.seller=m.seller}})}catch(e){}return _meta}
+async function bkGet(i){await bkMeta();const o=MY.list[i];if(!window._bk[i])window._bk[i]=await buildBank(o,false);return window._bk[i]}
 window.p5CardImg=async i=>{try{const o=MY.list[i],c=await bkGet(i);deliver(dataBlob(c),"carte-"+o.code+".png",o.title,"Image téléchargée ✅")}catch(e){alert("❌ Impossible de créer l'image.")}};
 window.p5CardPdf=async i=>{try{const o=MY.list[i],c=await bkGet(i);deliver(pdfBlob(pageCanvas(c)),"carte-"+o.code+".pdf",o.title,"PDF téléchargé ✅")}catch(e){alert("❌ Impossible de créer le PDF.")}};
 const _mcB=window.mcard;
