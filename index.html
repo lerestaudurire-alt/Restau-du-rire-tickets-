@@ -5463,4 +5463,11 @@ orgRow=function(e){let h=_or(e);try{
  if(isCert(o,e)&&h.indexOf("cvf")<0)h=h.replace("</b><small data-fc",BADGE+"</b><small data-fc");
 }catch(x){}return h};
 })();</script>
+<style id="affiche-compacte">/* Accueil : affiches réduites (l'affiche reste entière, centrée). Pour changer la taille : modifiez --aff-h */
+:root{--aff-h:260px}
+#pub .ev3-p.hp{display:flex!important;justify-content:center;align-items:center;min-height:0!important;padding:12px 0}
+#pub .ev3-p.hp .pic{width:auto!important;max-width:78%!important;height:auto!important;max-height:var(--aff-h)!important;border-radius:10px;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.c2i.pf{display:flex!important;justify-content:center;align-items:center;padding:10px 0}
+.c2i.pf img.pic{width:auto!important;max-width:78%!important;height:auto!important;max-height:var(--aff-h)!important;border-radius:10px}
+</style>
 </body></html>
