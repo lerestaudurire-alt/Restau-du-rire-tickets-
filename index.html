@@ -2006,6 +2006,8 @@ const EDITION={
   grand_sponsor:"billets/grand-sponsor.jpg"
  }
 };
+/* affiche d'un événement ; si la base n'a plus de chemin d'affiche, repli sur l'affiche officielle du Restau du Rire */
+function evPoster(e){if(e&&e.poster_path)return SB+"/storage/v1/object/public/affiches/"+e.poster_path;return(e&&/restau\s+du\s+rire/i.test(e.title||"")&&EDITION.affiche)?EDITION.affiche:""}
 const dsg=k=>{const s=EDITION.billets[k];return s?`<img src="${s}" alt="" class="dsg" onclick="dsgView('${k}')" onerror="this.remove()">`:""};
 function dsgView(k){const s=EDITION.billets[k],tt=T.find(x=>x[0]===k);if(!s)return;mo.classList.add("on");
  $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:420px;margin:auto;text-align:center"><img src="${s}" alt="" style="width:100%;border-radius:12px" onerror="this.remove()"><h3 style="color:#000;margin:10px 0 2px">Billet ${esc(tt?tt[1]:"")}</h3><p style="margin:0 0 10px;font-size:13px;color:#555">${tt?nf(tt[2])+" "+tt[3]:""}</p><button class="ab" onclick="closeMo()">Fermer</button></div>`}
@@ -2474,7 +2476,7 @@ function fmtRange(e){if(!e)return"";const L=evDates(e);if(L.length<2)return fmtD
 function fmtDate(iso){if(!iso)return"";const d=new Date(iso);return d.toLocaleDateString(LOCN(),{weekday:"short",day:"numeric",month:"short",year:"numeric"})+" • "+d.toLocaleTimeString(LOCN(),{hour:"2-digit",minute:"2-digit"})}
 function minPrice(e){const t=(e.tickets||[]).filter(x=>x.price>=0).sort((a,b)=>a.price-b.price)[0];return t?(t.price>0?nf(t.price)+" "+(t.currency==="USD"?"$":"FC"):"Gratuit"):"—"}
 function allEvents(){const L=EDITION.ouvert?[{id:"official",cat:"gala",country:"CD",title:"LE RESTAU DU RIRE — ÉDITION 1.5",date:"dim. 27 déc. 2026 • 15:59",place:"Salle Concordia, Bukavu",price:"5 000 FC",ts:"2026-12-27T15:59:00+02:00",img:EDITION.affiche,off:true,href:"nav('reservation')"}]:[];
- DBEV.forEach(e=>L.push({id:e.id,cat:e.category,country:e.country,title:e.title,date:fmtRange(e),place:[e.venue,e.city].filter(Boolean).join(", "),price:minPrice(e),ts:(evDates(e)[0]||null),img:e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"",off:false,left:evLeft(e),href:"nav('event/"+evUrlKey(e)+"')"}));return L}
+ DBEV.forEach(e=>L.push({id:e.id,cat:e.category,country:e.country,title:e.title,date:fmtRange(e),place:[e.venue,e.city].filter(Boolean).join(", "),price:minPrice(e),ts:(evDates(e)[0]||null),img:evPoster(e),off:false,left:evLeft(e),href:"nav('event/"+evUrlKey(e)+"')"}));return L}
 function evCard(e){const d=e.ts?new Date(e.ts):null,ok=d&&!isNaN(d),loc=LOCN(),
  day=ok?d.getDate():"•",mon=ok?d.toLocaleDateString(loc,{month:"short"}).replace(".","").toUpperCase():"";
  return `<article class="ev3" onclick="${e.href}"><div class="ev3-p${e.img?' hp':''}"><img class="lgo" alt="" src="${$("mainLogo").src}">${e.img?`<img class="pic" src="${esc(e.img)}" alt="" onerror="this.remove()">`:""}<div class="ev3-d"><b>${day}</b><span>${mon}</span></div>${e.off?'<span class="ev3-v">✔ Officiel</span>':""}</div>
@@ -2609,7 +2611,7 @@ async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc
  if(!e){el.innerHTML='<div class="x2"><p>Événement introuvable.</p><button class="btn dk" onclick="nav(\'home\')">Retour</button></div>';return}
  let sold={};try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id})});if(r.ok)sold=await r.json()}catch(x){}
  EV={e,sold,qty:{},mode:e.modes&&e.modes.reservation===false?"cash":"res"};
- const img=e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"";
+ const img=evPoster(e);
  el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="nav('home')">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareEv()">${SHI}</button></div></div>
  <div class="c2i${img?' pf':''}" style="border-radius:24px;overflow:hidden;margin-bottom:14px"><img class="lgo" alt="" src="${$("mainLogo").src}">${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.parentNode.classList.remove('pf');this.remove()">`:""}<span class="tg3">${esc((catLabel(e.category)).toUpperCase())}</span><div class="pov">${e.owner_id?fpov(e.owner_id):""}${heartBig(e.id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(e.title)}</h2>${orgRow(e)}${chipsRow(e)}<div style="margin-bottom:12px"><button class="btn dk" style="margin:0" onclick="icsEv()">📅 Ajouter au calendrier</button> <button class="btn dk" style="margin:0 0 0 6px" onclick="inviteFriends()">👥 Inviter des amis</button> <button class="btn dk" style="margin:6px 0 0" onclick="shareAffiche()">🖼️ Affiche à partager</button></div>
@@ -2849,7 +2851,7 @@ function ckCur(c){CKS.cur=c;ckDraw()}
 function ckCty(v){if(v==="EA"){ckClose();eaOpen(CKS.f);return}CKS.country=v;CKS.op=null;if(v!=="CD")CKS.cur="USD";ckDraw()}
 function ckSel(o){CKS.op=CKS.op===o?null:o;ckDraw()}
 function ckDraw(){const e=EV.e,a=ckAmounts(),T=evTotals();
- const img=e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:$("mainLogo").src;
+ const img=evPoster(e)||$("mainLogo").src;
  const line=e.tickets.filter(t=>EV.qty[t.id]).map(t=>EV.qty[t.id]+"x "+esc(t.name)).join(", ");
  const meta=[fmtRange(e),e.city].filter(Boolean).map(esc).join(" • ");
  const list=CKS.country==="CD"?CKOPS.concat([["card","Carte bancaire","Visa / Mastercard","💳","#0e2f2b"]]):[["card","Carte bancaire","Visa / Mastercard","💳","#0e2f2b"]];
@@ -3274,7 +3276,7 @@ const sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},ld=k=>{try{return loc
 const wnum=n=>String(n||"").replace(/\D/g,""),okUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||""),SUP="243902704475";
 const LOC=()=>LOCN(),dshort=d=>d.toLocaleDateString(LOC(),{day:"numeric",month:"short"}),fdt=d=>new Date(d).toLocaleString(LOC(),{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
 const ini=n=>String(n||"").trim().slice(0,2).toUpperCase(),db=id=>(DBEV||[]).find(e=>e.id===id),MD=e=>(e&&e.modes)||{};
-const posterUrl=e=>e&&e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"";
+const posterUrl=e=>evPoster(e);
 function orgName(e){if(!e)return"";let n=e.organizer_name||"";try{const s=(DBEV||[]).filter(x=>x.owner_id&&x.owner_id===e.owner_id&&x.organizer_name).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));if(s.length)n=s[0].organizer_name}catch(x){}return String(n||"").trim()}
 window.p4org=orgName;
 
@@ -5539,7 +5541,7 @@ const num=v=>{try{return nf(v)}catch(e){return String(v)}};
 const sum=a=>{try{return amtTxt(a)}catch(e){return Object.entries(a||{}).map(([c,v])=>v+" "+money(c)).join(" + ")}};
 const dt=d=>{try{return new Date(d).toLocaleString(lc(),{weekday:"long",day:"numeric",month:"long",year:"numeric",hour:"2-digit",minute:"2-digit"})}catch(e){return ""}};
 const evOf=o=>{try{return (DBEV||[]).find(x=>String(x.id)===String(o.event_id))||{}}catch(e){return {}}};
-const posterUrl=e=>e&&e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"";
+const posterUrl=e=>evPoster(e);
 const loadImg=u=>new Promise(r=>{if(!u)return r(null);const i=new Image();i.crossOrigin="anonymous";i.onload=()=>r(i);i.onerror=()=>r(null);i.src=u});
 function rr(x,a,b,w,h,r){x.beginPath();if(x.roundRect)x.roundRect(a,b,w,h,r);else x.rect(a,b,w,h)}
 /* couleurs tirées de l'affiche */
