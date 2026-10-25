@@ -5273,9 +5273,10 @@ if(typeof _o==="function")window.openEvent=async function(){const r=await _o.app
 const CV='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1d9bf0"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const BADGE='<span class="cvf" title="Organisateur certifié">'+CV+'</span>';
 const evs=()=>{try{return DBEV||[]}catch(x){return[]}};
-const ver=()=>window.VER_||new Set();
+const ver=()=>{const S=window.VER_||(window.VER_=new Set());evs().forEach(x=>{if(x&&x.owner_id)S.add(x.owner_id)});return S};
 const oname=e=>(window.p4org?window.p4org(e):(e&&e.organizer_name))||"";
-window.orgLogoPath=function(o){if(!o)return"";const l=evs().filter(x=>x.owner_id===o&&x.modes&&x.modes.logo).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));return l.length?l[0].modes.logo:""};
+const allEvs=()=>{const m=new Map();evs().forEach(x=>m.set(x.id,x));try{(MYEV||[]).forEach(x=>{if(!m.has(x.id))m.set(x.id,x)})}catch(e){}return[...m.values()]};
+window.orgLogoPath=function(o){if(!o)return"";const l=allEvs().filter(x=>x.owner_id===o&&x.modes&&x.modes.logo).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));return l.length?l[0].modes.logo:""};
 window.orgLogoUrl=function(o){const p=orgLogoPath(o);return p?SB+"/storage/v1/object/public/affiches/"+p:""};
 const byName=n=>{n=String(n||"").trim();const e=evs().find(x=>x.owner_id&&String(oname(x)).trim()===n);return e?e.owner_id:""};
 const img=(u,c)=>'<img class="'+c+'" alt="" src="'+String(u).replace(/"/g,"&quot;")+'" onerror="this.parentNode.setAttribute(\'data-lb\',\'1\');this.remove()">';
@@ -5283,12 +5284,15 @@ function setAv(av,u){if(u&&av&&!av.dataset.lb&&!av.querySelector("img")){av.inne
 window.paintVer=function(){try{const V=ver();
  document.querySelectorAll(".orgr").forEach(r=>{const b=r.querySelector("[data-fl]");if(!b)return;const o=b.dataset.fl,n=r.querySelector(".ot b");setAv(r.querySelector(".av"),orgLogoUrl(o));if(n&&V.has(o)&&!n.querySelector(".cvf"))n.insertAdjacentHTML("beforeend",BADGE+'<span class="cvt">Certifié</span>')});
  document.querySelectorAll("[data-ow]").forEach(p=>{const o=p.dataset.ow,b=p.querySelector("b"),u=orgLogoUrl(o);if(u&&!p.dataset.lb&&!p.querySelector(".olg2"))p.insertAdjacentHTML("afterbegin",img(u,"olg2"));if(b&&V.has(o)&&!p.querySelector(".cvf"))b.insertAdjacentHTML("afterend",BADGE)});
- document.querySelectorAll(".tb-by").forEach(p=>{const b=p.querySelector("b");if(!b)return;const o=byName(b.textContent);setAv(p.querySelector(".av2"),orgLogoUrl(o));if(o&&V.has(o)&&!p.querySelector(".cvf"))b.insertAdjacentHTML("afterend",BADGE)});
+ document.querySelectorAll(".tb-by").forEach(p=>{const b=p.querySelector("b");if(!b)return;const o=byName(b.textContent);setAv(p.querySelector(".av2"),orgLogoUrl(o));if(o&&V.has(o)&&!p.querySelector(".cvf")){const av=p.querySelector(".av2");if(av)av.insertAdjacentHTML("beforeend",BADGE.replace('class="cvf"','class="cvf cvo"'));b.insertAdjacentHTML("afterend",BADGE)}});
 }catch(e){}};
+if(typeof buildHdr==="function"){const _bh=buildHdr;buildHdr=function(){const r=_bh.apply(this,arguments);try{paintVer()}catch(e){}return r}}
+if(typeof drawEvents==="function"){const _de=drawEvents;drawEvents=function(){const r=_de.apply(this,arguments);try{paintVer()}catch(e){}return r}}
 /* cartes de l'accueil : « par [organisateur] » avec logo + badge */
-const _ec5=evCard;evCard=function(e){let h=_ec5(e);try{const d=evs().find(x=>x.id===(e&&e.id));if(d&&d.owner_id)h=h.replace('<p class="p4by">','<p class="p4by" data-ow="'+String(d.owner_id).replace(/"/g,"")+'">')}catch(x){}return h};
+const _ec5=evCard;evCard=function(e){let h=_ec5(e);try{const d=evs().find(x=>x.id===(e&&e.id));if(d&&d.owner_id){const o=String(d.owner_id).replace(/"/g,""),u=orgLogoUrl(o),c=ver().has(d.owner_id);h=h.replace('<p class="p4by">','<p class="p4by" data-ow="'+o+'">');if(u||c)h=h.replace(/(<p class="p4by" data-ow="[^"]*">)([\s\S]*?<b>[\s\S]*?<\/b>)/,(m,a,b)=>a+(u?img(u,"olg2"):"")+b+(c?BADGE:""))}}catch(x){}return h};
 /* fiche organisateur */
 const _os=window.orgSheet;if(typeof _os==="function")window.orgSheet=function(o){_os(o);try{const a=document.querySelector("#osh .osh-h .av"),b=document.querySelector("#osh .osh-h b");setAv(a,orgLogoUrl(o));if(b&&ver().has(o)&&!b.querySelector(".cvf"))b.insertAdjacentHTML("beforeend",BADGE)}catch(x){}};
+const st=document.createElement("style");st.textContent=".vf{display:none!important}.tb-by .av2{position:relative;overflow:visible!important}.cvo{position:absolute;right:-5px;bottom:-5px;margin:0!important;background:#fff;border-radius:50%;line-height:0}.cvo svg{width:14px!important;height:14px!important}.lgc{display:flex;gap:12px;align-items:center;margin:10px 0}.lgc .lgi{width:64px;height:64px;border-radius:50%;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;color:#0e2f2b;flex:none}.lgc .lgi img{width:100%;height:100%;object-fit:cover}";document.head.appendChild(st);
 /* envoi du logo (réduit à 320 px) */
 const shrink=(f,m)=>new Promise(res=>{try{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||f)},"image/png")}catch(e){res(f)}};im.onerror=()=>res(f);im.src=u}catch(e){res(f)}});
 window.uploadLogo=async function(f){const b=await shrink(f,320),t=b.type||"image/png",ext=t.includes("png")?"png":t.includes("webp")?"webp":"jpg",p=myId()+"/logo-"+Date.now()+"."+ext;const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":t},body:b});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error("Envoi du logo impossible : "+(er.message||er.error||u.status))}return p};
@@ -5297,12 +5301,27 @@ window.orgLogoPick=function(){
  if(!(typeof myId==="function"&&myId())){alert("Connectez-vous en tant qu'organisateur pour ajouter votre logo.");return}
  const i=document.createElement("input");i.type="file";i.accept="image/*";
  i.onchange=async()=>{const f=i.files[0];if(!f)return;try{
-  const mine=evs().filter(x=>x.owner_id===myId());if(!mine.length){alert("Créez d'abord un événement : le logo sera ajouté à votre profil.");return}
+  try{if(typeof loadMine==="function"&&(!MYEV||!MYEV.length))await loadMine()}catch(x){}
+  const mine=allEvs().filter(x=>x.owner_id===myId());if(!mine.length){alert("Créez d'abord un événement : le logo sera ajouté à votre profil.");return}
   const path=await uploadLogo(f);
-  for(const e of mine){const m=Object.assign({},e.modes||{},{logo:path});const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(e.id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({modes:m})});if(!r.ok)throw new Error("Enregistrement du logo impossible ("+r.status+")");e.modes=m}
-  if(typeof toast==="function")toast("Logo ajouté ✅");paintVer();try{drawEvents()}catch(x){}
+  for(const e of mine){const m=Object.assign({},e.modes||{},{logo:path});const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(e.id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({modes:m})});if(!r.ok)throw new Error("Enregistrement du logo impossible ("+r.status+")");e.modes=m;[evs(),(typeof MYEV!=="undefined"&&MYEV)||[]].forEach(L=>L.forEach(y=>{if(y.id===e.id)y.modes=m}))}
+  if(typeof toast==="function")toast("Logo ajouté ✅");
+  try{await loadEvents()}catch(x){}
+  paintVer();try{drawEvents()}catch(x){}refreshLogoCards();
  }catch(x){alert(x.message||"Erreur")}};
  i.click()};
+/* carte « Logo de mon organisation » : Mon espace + Dashboard organisateur */
+function logoCardHTML(id){const o=myId(),u=orgLogoUrl(o),nm=(typeof orgName==="function"&&allEvs().find(x=>x.owner_id===o)&&orgName(allEvs().find(x=>x.owner_id===o)))||"";
+ const av=u?img(u,"olg"):'<span>'+String(nm||"?").trim().slice(0,2).toUpperCase().replace(/[<>&]/g,"")+'</span>';
+ return '<div class="x2" id="'+id+'"><h2>🖼️ Logo de mon organisation</h2><div class="lgc"><span class="lgi">'+av+'</span><div class="sm">'+(u?"Ce logo s'affiche sur tous vos événements, avec la coche Certifié.":"Pas encore de logo : ajoutez-le, il s'applique à tous vos événements.")+'</div></div><button class="btn" onclick="orgLogoPick()">'+(u?"Changer mon logo":"Ajouter mon logo")+'</button></div>'}
+window.refreshLogoCards=function(){try{if(!myId())return;
+ const m=document.getElementById("mylogo");if(m)m.outerHTML=logoCardHTML("mylogo");
+ const d=document.getElementById("odlogo");if(d)d.outerHTML=logoCardHTML("odlogo")}catch(e){}};
+function injectLogoCards(){try{if(typeof myId!=="function"||!myId())return;
+ const my=document.getElementById("myev");if(my&&!document.getElementById("mylogo"))my.insertAdjacentHTML("beforebegin",logoCardHTML("mylogo"));
+ const w=document.querySelector("#odb .odw"),t=w&&w.querySelector(".odt");if(t&&!document.getElementById("odlogo"))t.insertAdjacentHTML("afterend",logoCardHTML("odlogo"))}catch(e){}}
+if(typeof loadMine==="function"){const _lm=loadMine;loadMine=async function(){const r=await _lm.apply(this,arguments);injectLogoCards();return r}}
+if(typeof odbDraw==="function"){const _od=odbDraw;odbDraw=function(){const r=_od.apply(this,arguments);injectLogoCards();return r}}
 setTimeout(()=>{try{paintVer()}catch(e){}},800);
 })();
 </script>
