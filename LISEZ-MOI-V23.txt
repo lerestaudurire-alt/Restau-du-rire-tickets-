@@ -1,0 +1,13 @@
+V23 = votre index_1.html (v21 + v26 + v27) CORRIGE + Défi pour spectateurs
+POURQUOI VOUS NE VOYIEZ PAS LES NOUVEAUTES (2 bugs corrigés) :
+  1) « Mes places » : les boutons QR sécurisé / Menu / Revendre n'étaient jamais ajoutés (fonction mcard non accessible).
+  2) Au clic, ces boutons appelaient rp et MY, introuvables : tout échouait en silence.
+  + le bouton flottant est maintenant « ✨ Plus » (plus visible).
+SQL A LANCER DANS Supabase > SQL Editor (une fois chacun, relançables) :
+  - supabase/sql/27-fonctions-v26.sql  : QR rotatif, menu précommande, reventes (fonctions et tables qui manquaient)
+  - supabase/sql/26-defi-spectateurs.sql : Défi pour spectateurs
+Puis : remplacer site/ (index.html + sw.js) et ouvrir le site avec ?v=63.
+OU TROUVER : ✨ Plus (bas à droite) : reventes vérifiées, organisateurs, outils pro (scanner hors ligne, plats, cuisine, relance, reversements).
+« Mes places » : après recherche de votre billet, sous « Mes commandes détaillées » : 🔄 QR sécurisé, 🍽️ Menu, 💸 Revendre.
+Défi : Dashboard > Outils pro > « Défi pour spectateurs ».
+APPLICATION MOBILE (Capacitor) : le dossier capacitor-app/www est à jour ; il faut reconstruire/republier l'app pour voir les changements (un site web mis à jour ne met pas à jour une app qui embarque ses propres fichiers).
