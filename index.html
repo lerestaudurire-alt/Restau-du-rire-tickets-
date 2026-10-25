@@ -2461,7 +2461,7 @@ function fmtRange(e){if(!e)return"";const L=evDates(e);if(L.length<2)return fmtD
  return L.map(d=>d.toLocaleDateString(loc,{day:"numeric",month:"short",year:"numeric"})).join(" • ")+(sameT?" • "+hm(L[0]):"")}
 function fmtDate(iso){if(!iso)return"";const d=new Date(iso);return d.toLocaleDateString(LOCN(),{weekday:"short",day:"numeric",month:"short",year:"numeric"})+" • "+d.toLocaleTimeString(LOCN(),{hour:"2-digit",minute:"2-digit"})}
 function minPrice(e){const t=(e.tickets||[]).filter(x=>x.price>=0).sort((a,b)=>a.price-b.price)[0];return t?(t.price>0?nf(t.price)+" "+(t.currency==="USD"?"$":"FC"):"Gratuit"):"—"}
-function allEvents(){const L=EDITION.ouvert?[{id:"official",cat:"spectacle",country:"CD",title:"LE RESTAU DU RIRE — ÉDITION 1.5",date:"dim. 27 déc. 2026 • 15:59",place:"Salle Concordia, Bukavu",price:"5 000 FC",ts:"2026-12-27T15:59:00+02:00",img:EDITION.affiche,off:true,href:"nav('reservation')"}]:[];
+function allEvents(){const L=EDITION.ouvert?[{id:"official",cat:"gala",country:"CD",title:"LE RESTAU DU RIRE — ÉDITION 1.5",date:"dim. 27 déc. 2026 • 15:59",place:"Salle Concordia, Bukavu",price:"5 000 FC",ts:"2026-12-27T15:59:00+02:00",img:EDITION.affiche,off:true,href:"nav('reservation')"}]:[];
  DBEV.forEach(e=>L.push({id:e.id,cat:e.category,country:e.country,title:e.title,date:fmtRange(e),place:[e.venue,e.city].filter(Boolean).join(", "),price:minPrice(e),ts:(evDates(e)[0]||null),img:e.poster_path?SB+"/storage/v1/object/public/affiches/"+e.poster_path:"",off:false,left:evLeft(e),href:"nav('event/"+evUrlKey(e)+"')"}));return L}
 function evCard(e){const d=e.ts?new Date(e.ts):null,ok=d&&!isNaN(d),loc=LOCN(),
  day=ok?d.getDate():"•",mon=ok?d.toLocaleDateString(loc,{month:"short"}).replace(".","").toUpperCase():"";
@@ -2469,7 +2469,7 @@ function evCard(e){const d=e.ts?new Date(e.ts):null,ok=d&&!isNaN(d),loc=LOCN(),
  <div class="ev3-b"><span class="ev3-c">${esc(catLabel(e.cat))}</span><div class="ev3-t"><h3>${esc(e.title)}</h3>${heartBtn(e.id)}</div><p>${ic("cal")}${esc(e.date)}</p><p>${ic("pin")}${esc(e.place)}</p>
  ${e.left==null?"":`<span class="bl${e.left?(e.left<=20?" lm":""):" fl"}">${e.left?(e.left<=20?"🔥 Dernières places":"✅ Places disponibles")+(ownerView(e.id)?" · "+e.left+" restants (visible par vous seul)":""):"SOLD OUT"}</span>`}
  <div class="ev3-f"><span class="sm">Dès <b>${esc(e.price)}</b></span><span class="ev3-go">Réserver</span></div></div></article>`}
-function catsAll(){const used=[...new Set((DBEV||[]).map(e=>e.category).filter(Boolean))];const base=["spectacle","concert","festival","formation"];const all=[...new Set([...base,...used])];return[["all","Tout","🎫"],...all.map(k=>[k,catLabel(k),CATI[k]||"🎟️"])]}
+function catsAll(){const used=[...new Set((DBEV||[]).map(e=>e.category).filter(Boolean))];const base=["spectacle","gala","concert","festival","formation"];const all=[...new Set([...base,...used])];return[["all","Tout","🎫"],...all.map(k=>[k,catLabel(k),CATI[k]||"🎟️"])]}
 function drawCats(){$("ctabs").innerHTML=catsAll().map(c=>`<button class="cat${c[0]===cat?" on":""}" onclick="setCat('${c[0]}')"><i>${c[2]}</i><span>${esc(c[1])}</span></button>`).join("")}
 function setCat(k){cat=k;drawCats();drawEvents()}
 function setQ(v){qs=String(v||"").toLowerCase().trim();if($("v-home").hidden)nav("home");drawEvents()}
@@ -2481,7 +2481,7 @@ function ownerView(id){try{if(role==="admin")return true;const e=((typeof DBEV!=
 function evLeft(e){const T=Array.isArray(e.tickets)?e.tickets:[];if(!T.length||T.some(t=>!t.stock)||!SOLD[e.id])return null;return T.reduce((a,t)=>a+Math.max((+t.stock)-((SOLD[e.id]||{})[t.id]||0),0),0)}
 async function loadSold(){const l=(DBEV||[]).filter(e=>Array.isArray(e.tickets)&&e.tickets.length&&e.tickets.every(t=>t.stock)).slice(0,30);
  await Promise.all(l.map(async e=>{try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:e.id})});if(r.ok)SOLD[e.id]=await r.json()}catch(x){}}));drawEvents()}
-async function loadEvents(){try{const r=await fetch(SB+"/rest/v1/events?select=*&status=eq.published&order=starts_at",{headers:H("")});if(r.ok){DBEV=await r.json();drawEvents();loadSold()}}catch(e){}}
+async function loadEvents(){try{const r=await fetch(SB+"/rest/v1/events?select=*&status=eq.published&order=starts_at",{headers:H("")});if(r.ok){DBEV=await r.json();DBEV.forEach(e=>{if(e&&/restau\s+du\s+rire/i.test(e.title||"")&&(!e.category||e.category==="spectacle"))e.category="gala"});drawEvents();loadSold()}}catch(e){}}
 let accMode="login";
 function renderAcc(){const el=$("v-acc");
  if(!tok){el.innerHTML=`<div class="x2"><h2>👤 Mon compte</h2><div class="sgm" style="margin-bottom:12px"><a class="${accMode==="login"?"on":""}" onclick="accMode='login';renderAcc()">Connexion</a><a class="${accMode==="signup"?"on":""}" onclick="accMode='signup';renderAcc()">Créer un compte</a></div>
@@ -2888,7 +2888,7 @@ const LKD=(()=>{let d=localStorage.getItem("lrr_dev");if(!d){d=(crypto.randomUUI
 let LKS=new Set((()=>{try{return JSON.parse(localStorage.getItem("lrr_likes")||"[]")}catch(e){return[]}})()),LKN={};
 function heartBtn(id){id=String(id||"");return `<button class="lk${LKS.has(id)?" on":""}" data-lk="${esc(id)}" aria-label="J'aime" onclick="event.stopPropagation();toggleLike('${esc(id)}',this)">${HRT}<span></span></button>`}
 function heartBig(id){id=String(id||"");return `<button class="ib${LKS.has(id)?" on":""}" data-lk="${esc(id)}" aria-label="J'aime" onclick="toggleLike('${esc(id)}',this)">${HRT}<b class="n"></b></button>`}
-function paintLikes(){document.querySelectorAll("[data-lk]").forEach(b=>{const k=b.dataset.lk,on=LKS.has(k),n=LKN[k]||0;b.classList.toggle("on",on);const t=b.querySelector("span,.n");if(t)t.textContent=n>0?(n>=1000?(n/1000).toFixed(1).replace(".0","")+"k":n):""})}
+function paintLikes(){document.querySelectorAll("[data-lk]").forEach(b=>{const k=b.dataset.lk,on=LKS.has(k),n=LKN[k]||0;b.classList.toggle("on",on);const t=b.querySelector("span,.n");if(t)t.textContent=n>=1000?(n/1000).toFixed(1).replace(".0","")+"k":String(n)})}
 async function loadLikes(){try{const r=await fetch(SB+"/rest/v1/rpc/event_like_counts",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;(await r.json()).forEach(x=>LKN[x.event_id]=x.n);paintLikes()}catch(e){}}
 async function toggleLike(id,btn){const on=!LKS.has(id);on?LKS.add(id):LKS.delete(id);LKN[id]=Math.max(0,(LKN[id]||0)+(on?1:-1));localStorage.setItem("lrr_likes",JSON.stringify([...LKS]));paintLikes();if(btn&&on){btn.classList.add("pop");setTimeout(()=>btn.classList.remove("pop"),180)}
  try{const r=await fetch(SB+"/rest/v1/rpc/like_event",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id,p_device:LKD,p_like:on})});if(r.ok){const n=await r.json();if(typeof n==="number"){LKN[id]=n;paintLikes()}}}catch(e){}}
@@ -5439,5 +5439,26 @@ function paint(){try{
 }catch(e){}}
 let t;new MutationObserver(()=>{clearTimeout(t);t=setTimeout(paint,80)}).observe(document.body,{childList:true,subtree:true});
 [400,1200,2500].forEach(ms=>setTimeout(paint,ms));
+})();</script>
+
+<style>/* v33 : likes visibles, logo + certification organisateur */
+.lk span{min-width:14px;min-height:15px;font-size:13px;font-weight:800;text-align:center}
+.ib[data-lk]{width:auto!important;min-width:46px;padding:0 13px!important;border-radius:999px!important;gap:6px}
+.ib[data-lk] .n{position:static!important;background:none!important;color:inherit!important;padding:0!important;min-width:0!important;font:800 14px/1 system-ui,sans-serif!important}
+.orgr .av{width:48px;height:48px;font-size:17px;background:#fff;border:1px solid #d9e4e0}
+.orgr .av img.olg{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.orgr .cvb{white-space:nowrap}
+</style>
+<script>(function(){
+const CV='<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#1d9bf0"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const BADGE='<span class="cbb cvb"><span class="cvf" title="Organisateur certifié">'+CV+'</span><span class="cvt">Certifié</span></span>';
+function isCert(o,e){try{if(VER.has(o))return true}catch(x){}try{if(window.VER_&&window.VER_.has(o))return true}catch(x){}try{if(DBEV.some(x=>x.owner_id===o))return true}catch(x){}return !!(e&&e.status==="published")}
+function logoOf(o,e){let u="";try{u=window.orgLogoUrl?window.orgLogoUrl(o):""}catch(x){}if(!u&&e&&e.modes&&e.modes.logo)u=SB+"/storage/v1/object/public/affiches/"+e.modes.logo;return u}
+const _or=orgRow;
+orgRow=function(e){let h=_or(e);try{
+ if(!e||!e.owner_id)return h;const o=e.owner_id,u=logoOf(o,e);
+ if(u)h=h.replace(/<span class="av">([^<]*)<\/span>/,(m,t)=>'<span class="av"><img class="olg" alt="" src="'+String(u).replace(/"/g,"&quot;")+'" onerror="this.replaceWith(document.createTextNode(\''+t.replace(/[^\wÀ-ÿ]/g,"")+'\'))"></span>');
+ if(isCert(o,e)&&h.indexOf("cvf")<0)h=h.replace("</b><small data-fc",BADGE+"</b><small data-fc");
+}catch(x){}return h};
 })();</script>
 </body></html>
