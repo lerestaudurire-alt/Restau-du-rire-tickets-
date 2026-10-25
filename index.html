@@ -3178,8 +3178,44 @@ function ask(msg){return new Promise(res=>{const o=document.createElement("div")
  document.body.appendChild(o);o.querySelector("#mq").textContent=msg;const i=o.querySelector("#mi");i.focus();const done=v=>{o.remove();res(v)};
  o.querySelector("#mc2").onclick=()=>done(null);o.querySelector("#mo2").onclick=()=>done(i.value);i.onkeydown=e=>{if(e.key==="Enter")done(i.value)}})}
 async function verify(fid,code){try{const c=await fetch(SB+"/auth/v1/factors/"+fid+"/challenge",{method:"POST",headers:hdr(),body:"{}"});if(!c.ok)return false;const ch=await c.json();const v=await fetch(SB+"/auth/v1/factors/"+fid+"/verify",{method:"POST",headers:hdr(),body:JSON.stringify({challenge_id:ch.id,code:String(code).replace(/\s/g,"")})});if(!v.ok)return false;setSession(await v.json());return true}catch(e){return false}}
+
+/* Code de connexion envoyé par e-mail, SMS ou WhatsApp (Supabase Auth OTP) */
+const AH={apikey:KEY,"Content-Type":"application/json"};
+const maskE=m=>{m=String(m||"");const i=m.indexOf("@");return i<2?m:m[0]+"•••"+m.slice(i-1)};
+const maskP=n=>{n=String(n||"");return n.length<6?n:"+"+n.replace(/^\+/,"").slice(0,3)+" ••• ••"+n.slice(-3)};
+const plus=n=>String(n).startsWith("+")?String(n):"+"+n;
+function choose(u,hasT){return new Promise(res=>{const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(20,18,35,.75);z-index:120;display:flex;align-items:center;justify-content:center;padding:16px";
+ const b=(id,t)=>'<button class="btn dk" id="'+id+'" style="margin:6px 0;width:100%">'+t+'</button>';
+ o.innerHTML='<div style="background:#fff;color:#1c1b2e;border-radius:18px;padding:18px;max-width:340px;width:100%"><h3 style="margin:0 0 6px">🔐 Double vérification</h3><p class="sm" style="margin-bottom:8px">Recevoir mon code de connexion par :</p>'+
+  (u.email?b("ch_e","✉️ E-mail · "+maskE(u.email)):"")+(u.phone?b("ch_w","💬 WhatsApp · "+maskP(u.phone))+b("ch_s","📱 SMS · "+maskP(u.phone)):"")+(hasT?b("ch_t","🔑 Application d'authentification"):"")+
+  '<button class="btn" id="ch_x" style="margin:6px 0;width:100%;background:#eee;color:#333">Annuler</button></div>';
+ document.body.appendChild(o);const done=v=>{o.remove();res(v)};
+ [["ch_e","email"],["ch_w","whatsapp"],["ch_s","sms"],["ch_t","totp"],["ch_x",null]].forEach(([id,v])=>{const el=o.querySelector("#"+id);if(el)el.onclick=()=>done(v)})})}
+async function sendCode(ch,u){try{const body=ch==="email"?{email:u.email,create_user:false}:{phone:plus(u.phone),channel:ch,create_user:false};const r=await fetch(SB+"/auth/v1/otp",{method:"POST",headers:AH,body:JSON.stringify(body)});return r.ok}catch(e){return false}}
+async function checkCode(ch,u,code){try{const t=String(code).replace(/\s/g,"");const body=ch==="email"?{type:"email",email:u.email,token:t}:{type:"sms",phone:plus(u.phone),token:t};const r=await fetch(SB+"/auth/v1/verify",{method:"POST",headers:AH,body:JSON.stringify(body)});if(!r.ok)return false;setSession(await r.json());return true}catch(e){return false}}
+async function msgOtp(){let u={};try{const r=await fetch(SB+"/auth/v1/user",{headers:hdr()});if(r.ok)u=await r.json()}catch(e){}
+ if(!u.email&&!u.phone)return undefined;const hasT=(await factors()).length>0,lbl={email:"par e-mail",whatsapp:"sur WhatsApp",sms:"par SMS"};
+ while(true){const ch=await choose(u,hasT);if(ch===null){logout();alert("Connexion annulée.");return false}if(ch==="totp")return undefined;
+  if(!(await sendCode(ch,u))){alert("Envoi impossible "+lbl[ch]+". Attendez une minute puis réessayez, ou choisissez un autre moyen.");continue}
+  for(let i=0;i<3;i++){const c=await ask((i?"Code incorrect. Réessayez. ":"")+"Entrez le code à 6 chiffres reçu "+lbl[ch]+".");if(c===null)break;if(await checkCode(ch,u,c)){await initRole();return true}}
+  if(!confirm("Code non validé. Choisir un autre moyen de recevoir le code ?")){logout();alert("Connexion annulée : la double vérification n'a pas été validée.");return false}}}
+
+/* Code secret personnel (vérifié côté serveur, voir pin_secret.sql) */
+async function pinRpc(n,a){const r=await fetch(SB+"/rest/v1/rpc/"+n,{method:"POST",headers:hdr(),body:JSON.stringify(a||{})});if(!r.ok)throw 0;return r.json()}
+function pinAsk(msg){return new Promise(res=>{const o=document.createElement("div");o.style.cssText="position:fixed;inset:0;background:rgba(20,18,35,.75);z-index:120;display:flex;align-items:center;justify-content:center;padding:16px";
+ o.innerHTML='<div style="background:#fff;color:#1c1b2e;border-radius:18px;padding:18px;max-width:340px;width:100%"><h3 style="margin:0 0 6px">🔐 Code secret</h3><p class="sm" id="pq" style="margin-bottom:8px"></p><input id="pi" type="password" inputmode="numeric" autocomplete="off" maxlength="8" placeholder="••••••" style="width:100%;font-size:22px;text-align:center;letter-spacing:6px;padding:10px;border:2px solid #ddd;border-radius:12px"><div style="display:flex;gap:8px;margin-top:10px"><button class="btn dk" id="pc" style="flex:1;margin:0">Annuler</button><button class="btn or2" id="po" style="flex:1;margin:0">Valider</button></div></div>';
+ document.body.appendChild(o);o.querySelector("#pq").textContent=msg;const i=o.querySelector("#pi");i.focus();const done=v=>{o.remove();res(v)};
+ o.querySelector("#pc").onclick=()=>done(null);o.querySelector("#po").onclick=()=>done(i.value.trim());i.onkeydown=e=>{if(e.key==="Enter")done(i.value.trim())}})}
+async function pinGate(){let st;try{st=await pinRpc("pin_status")}catch(e){return true}
+ if(st==="none"){for(;;){const a=await pinAsk("Créez votre code secret : 6 à 8 chiffres. Vous le saisirez à chaque connexion.");if(a===null){logout();return false}
+  const b=await pinAsk("Confirmez votre code secret.");if(b===null){logout();return false}if(a!==b){alert("Les deux codes sont différents.");continue}
+  try{const r=await pinRpc("set_admin_pin",{p_pin:a});if(r==="ok"){alert("Code secret enregistré ✅");return true}if(r==="format"){alert("Le code doit contenir 6 à 8 chiffres.");continue}return true}catch(e){return true}}}
+ for(let i=0;i<5;i++){const c=await pinAsk(i?"Code incorrect. Réessayez.":"Entrez votre code secret.");if(c===null)break;let r;try{r=await pinRpc("check_admin_pin",{p_pin:c})}catch(e){return true}
+  if(r==="ok"||r==="none")return true;if(r==="locked"){alert("Trop d'essais. Réessayez dans 15 minutes.");break}}
+ logout();alert("Connexion annulée : code secret non validé.");return false}
 const _si=signin;
-signin=async function(e,p){const ok=await _si(e,p);if(!ok)return false;const f=await factors();if(!f.length)return true;
+const DOUBLE_VERIF=false; /* false = désactivée (mettre true pour la réactiver) */
+signin=async function(e,p){const ok=await _si(e,p);if(!ok)return false;if(!DOUBLE_VERIF){if(role==="admin"||role==="staff")return await pinGate();return true}if(role==="admin"||role==="staff"){const m=await msgOtp();if(m!==undefined)return m}const f=await factors();if(!f.length)return true;
  for(let i=0;i<3;i++){const c=await ask(i?"Code incorrect. Réessayez.":"Entrez le code à 6 chiffres de votre application d'authentification.");if(c===null)break;if(await verify(f[0].id,c)){await initRole();return true}}
  logout();alert("Connexion annulée : la double vérification n'a pas été validée.");return false};
 async function draw(){const v=$("v-acc");if(!v||!tok||$("mfa"))return;v.insertAdjacentHTML("beforeend",'<section class="card" id="mfa"><h2>🔐 Double vérification</h2><p class="sm" id="mfat">…</p><div id="mfab"></div></section>');
