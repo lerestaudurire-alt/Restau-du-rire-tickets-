@@ -5590,7 +5590,7 @@ async function buildCard(o,noimg){
  /* carte arrondie sur fond blanc */
  const PAD=44,h=Math.ceil(y),f=document.createElement("canvas");f.width=IW+2*PAD;f.height=h+2*PAD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
  fx.save();rr(fx,PAD,PAD,IW,h,64);fx.clip();fx.drawImage(c,0,0,IW,h,PAD,PAD,IW,h);fx.restore();return f}
-async function make(o,kind){if(kind==="receipt"){try{const c=await buildCard(o,false);c.toDataURL("image/jpeg",.5);return c}catch(e){return await buildCard(o,true)}}try{const c=await build(o,kind,false);c.toDataURL("image/jpeg",.5);return c}catch(e){return await build(o,kind,true)}}
+async function make(o,kind){try{const c=await buildBank(o,false);c.toDataURL("image/jpeg",.5);return c}catch(e){return await buildBank(o,true)}}
 
 /* PDF (une page, image JPEG) sans bibliothèque */
 function pdfBlob(c){const b64=c.toDataURL("image/jpeg",.92).split(",")[1],bin=atob(b64),n=bin.length,jb=new Uint8Array(n);for(let i=0;i<n;i++)jb[i]=bin.charCodeAt(i);
@@ -5614,8 +5614,66 @@ async function preview(o,kind){const lbl=kind==="receipt"?"reçu":"billet";box('
   '<button style="'+bs+'background:#f2b84b;color:#10201d" onclick="p5RcPdf()">📄 Enregistrer en PDF</button>'+
   '<p style="color:#cfe;font:13px system-ui;text-align:center">Sur iPhone : choisissez « Enregistrer l\'image » (Photos) ou « Enregistrer dans Fichiers » (PDF).</p></div>')}
  catch(e){box('<div style="padding:30px;color:#fff;text-align:center;font:16px system-ui">❌ Impossible de créer le document.<br><br><button style="'+bs+'background:#fff;color:#10201d" onclick="p5RcClose()">Fermer</button></div>')}}
-window.p5RcImg=()=>{const r=window._rcv;if(!r)return;deliver(dataBlob(r.c),(r.kind==="receipt"?"recu-":"billet-")+r.o.code+".png",r.o.title,"Image téléchargée ✅")};
-window.p5RcPdf=()=>{const r=window._rcv;if(!r)return;deliver(pdfBlob(r.c),(r.kind==="receipt"?"recu-":"billet-")+r.o.code+".pdf",r.o.title,"PDF téléchargé ✅")};
+window.p5RcImg=()=>{const r=window._rcv;if(!r)return;deliver(dataBlob(r.c),"carte-"+r.o.code+".png",r.o.title,"Image téléchargée ✅")};
+window.p5RcPdf=()=>{const r=window._rcv;if(!r)return;deliver(pdfBlob(pageCanvas(r.c)),"carte-"+r.o.code+".pdf",r.o.title,"PDF téléchargé ✅")};
+
+/* ===== CARTE BANCAIRE : QR + nom + téléphone + billet + vendeur + montant ===== */
+function pageCanvas(f){const PW=1240,PH=1754,m=70,w=PW-2*m,h=Math.round(f.height*w/f.width),c=document.createElement("canvas");c.width=PW;c.height=PH;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.drawImage(f,m,90,w,h);x.fillStyle="#6b6577";x.font="500 24px "+FF;x.textAlign="center";x.fillText("Restau du Rire Tickets · billet nominatif à usage unique",PW/2,90+h+70);return c}
+async function buildBank(o,noimg){
+ const CW=1200,CH=800,PD=40,ok=o.status==="confirmed",e=evOf(o),M0=64,SOFT="rgba(255,255,255,.72)",WH="#fff",SERIF="Georgia,'Times New Roman',serif";
+ const c=document.createElement("canvas");c.width=CW;c.height=CH;const x=c.getContext("2d");
+ const g=x.createLinearGradient(0,0,CW,CH);g.addColorStop(0,"#1f1b33");g.addColorStop(.5,"#5b3ca6");g.addColorStop(1,"#f26a2a");x.fillStyle=g;x.fillRect(0,0,CW,CH);
+ x.fillStyle="rgba(255,255,255,.05)";x.beginPath();x.arc(CW-60,40,300,0,7);x.fill();x.beginPath();x.arc(80,CH+60,260,0,7);x.fill();
+ const T=(t,xx,yy,font,col,al,ls)=>{x.font=font;x.fillStyle=col;x.textAlign=al||"left";try{x.letterSpacing=ls||"0px"}catch(z){}x.fillText(t,xx,yy);try{x.letterSpacing="0px"}catch(z){}};
+ const fit=(t,mw,px,wt,fam)=>{let s=px;fam=fam||FF;while(s>16){x.font=wt+" "+s+"px "+fam;if(x.measureText(t).width<=mw)break;s-=2}return wt+" "+s+"px "+fam};
+ const lab=(t,xx,yy)=>T(t,xx,yy,"700 19px "+FF,SOFT,"left","3px");
+ const val=(t,xx,yy,mw,px)=>{t=String(t||"—");T(t,xx,yy,fit(t,mw,px||32,"700"),WH)};
+ const items=Array.isArray(o.items)?o.items:[],qty=items.reduce((a,r)=>a+(+r.qty||0),0)||1;
+ const cat=items.map(r=>r.name).filter(Boolean).join(", ")||"Billet",price=items.map(r=>num(r.price)+" "+money(r.currency)).join(" / ")||"—";
+ const ph=(window.MY&&MY.phone)||o.phone||"—";
+ const sraw=o.seller!==undefined?o.seller:(o.vendeur!==undefined?o.vendeur:o.seller_name),seller=sraw===undefined?"—":(String(sraw||"").trim()||"Direct (site)");
+ /* en-tête */
+ T("RESTAU DU RIRE · TICKETS",M0,84,"800 24px "+FF,SOFT,"left","4px");
+ const st=o.used?["DÉJÀ UTILISÉ","#ff9a9a"]:ok?["PAYÉ ✓","#27c97f"]:["EN ATTENTE","#f5b72c"];
+ x.font="800 24px "+FF;const sw=x.measureText(st[0]).width+48;x.fillStyle=st[1];rr(x,CW-M0-sw,50,sw,52,26);x.fill();T(st[0],CW-M0-sw+24,86,"800 24px "+FF,"#1a1530");
+ const ttl=o.title||e.title||"";T(ttl,M0,160,fit(ttl,CW-2*M0,42,"800"),WH);
+ const dd=o.starts_at?new Date(o.starts_at).toLocaleDateString(lc(),{day:"numeric",month:"long",year:"numeric"}):"",lieu=[o.venue||e.venue,o.city||e.city].filter(Boolean).join(", ");
+ T([dd,lieu].filter(Boolean).join(" · "),M0,203,fit([dd,lieu].filter(Boolean).join(" · "),CW-2*M0,26,"500"),SOFT);
+ x.fillStyle="rgba(255,255,255,.22)";x.fillRect(M0,232,CW-2*M0,2);
+ /* colonne gauche */
+ lab("TITULAIRE",M0,282);val(o.name,M0,330,676,50);
+ lab("TÉLÉPHONE",M0,392);val(ph,M0,432,320,32);
+ lab("VENDEUR",M0+360,392);val(seller,M0+360,432,316,32);
+ lab("CATÉGORIE",M0,494);val(cat,M0,534,210,32);
+ lab("PRIX",M0+240,494);val(price,M0+240,534,210,32);
+ lab("BILLETS",M0+480,494);val(String(qty),M0+480,534,196,32);
+ x.fillStyle="rgba(255,255,255,.14)";rr(x,M0,584,676,150,28);x.fill();
+ lab("MONTANT VERSÉ",M0+32,628);const am=sum(o.amounts)||"—";T(am,M0+32,700,fit(am,612,76,"800",SERIF),WH);
+ /* colonne droite : QR */
+ const qx=796,qy=262,qs=340;
+ if(ok){const q=qrCanvas(o.id,280);x.fillStyle="#fff";rr(x,qx,qy,qs,qs,28);x.fill();if(q)x.drawImage(q,qx+30,qy+30,280,280);
+  const cd=String(o.code||"");T(cd,qx+qs/2,qy+qs+62,fit(cd,qs,40,"900"),WH,"center","2px");
+  T("Billet nominatif · usage unique",qx+qs/2,qy+qs+100,"500 21px "+FF,SOFT,"center");T("Présentez ce QR code à l'entrée",qx+qs/2,qy+qs+128,"500 21px "+FF,SOFT,"center")}
+ else{x.strokeStyle="rgba(255,255,255,.45)";x.lineWidth=3;x.setLineDash([14,10]);rr(x,qx,qy,qs,qs,28);x.stroke();x.setLineDash([]);
+  T("Le QR code s'affichera",qx+qs/2,qy+qs/2-8,"700 26px "+FF,WH,"center");T("dès la confirmation",qx+qs/2,qy+qs/2+28,"700 26px "+FF,WH,"center")}
+ /* carte arrondie sur fond blanc */
+ const f=document.createElement("canvas");f.width=CW+2*PD;f.height=CH+2*PD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
+ fx.save();rr(fx,PD,PD,CW,CH,56);fx.clip();fx.drawImage(c,PD,PD);fx.restore();return f}
+window._bk={};
+async function bkGet(i){const o=MY.list[i];if(!window._bk[i])window._bk[i]=await buildBank(o,false);return window._bk[i]}
+window.p5CardImg=async i=>{try{const o=MY.list[i],c=await bkGet(i);deliver(dataBlob(c),"carte-"+o.code+".png",o.title,"Image téléchargée ✅")}catch(e){alert("❌ Impossible de créer l'image.")}};
+window.p5CardPdf=async i=>{try{const o=MY.list[i],c=await bkGet(i);deliver(pdfBlob(pageCanvas(c)),"carte-"+o.code+".pdf",o.title,"PDF téléchargé ✅")}catch(e){alert("❌ Impossible de créer le PDF.")}};
+const _mcB=window.mcard;
+if(_mcB)window.mcard=function(o,i){let s=_mcB(o,i);if(o.status!=="confirmed")return s;
+ [["p5Receipt","🧾 Reçu"],["p5TkImg","🖼️ Billet (image)"],["p5TkPdf","📄 Billet (PDF)"]].forEach(([f,t])=>{s=s.replace('<button class="p4b" onclick="'+f+'('+i+')">'+t+'</button>',"")});
+ return '<div class="bkc" data-i="'+i+'" style="margin-top:14px"><div style="color:#fff;text-align:center;padding:30px 0;font:700 15px system-ui">⏳ Création de votre carte…</div></div>'+s};
+function bkFill(){document.querySelectorAll(".bkc:not([data-d])").forEach(async d=>{d.dataset.d=1;const i=+d.dataset.i;
+ try{const c=await bkGet(i);d.innerHTML='<img alt="Carte du billet" style="width:100%;display:block;border-radius:18px" src="'+c.toDataURL("image/jpeg",.92)+'">'+
+ '<button style="'+bs+'background:#27c97f;color:#10201d" onclick="p5CardImg('+i+')">🖼️ Enregistrer en image (galerie photo)</button>'+
+ '<button style="'+bs+'background:#f2b84b;color:#10201d" onclick="p5CardPdf('+i+')">📄 Enregistrer en PDF</button>';bkHide()}catch(e){d.innerHTML=""}})}
+function bkHide(){if(!window.MY||!MY.list||!document.querySelector(".bkc img"))return;const codes=new Set(MY.list.filter(o=>o.status==="confirmed").map(o=>String(o.code)));
+ document.querySelectorAll("#fres > div").forEach(b=>{if(!b.querySelector("[id^=fq]"))return;const cd=b.querySelector('div[style*="font-size:18px"]');if(cd&&codes.has(cd.textContent.trim()))b.style.display="none"})}
+let bkT=0;new MutationObserver(()=>{clearTimeout(bkT);bkT=setTimeout(()=>{bkFill();bkHide()},150)}).observe(document.getElementById("v-find")||document.body,{childList:true,subtree:true});
 window.p5Receipt=i=>preview(MY.list[i],"receipt");
 window.p5TkImg=i=>preview(MY.list[i],"ticket");
 window.p5TkPdf=i=>preview(MY.list[i],"ticket");
