@@ -3220,7 +3220,8 @@ window.wSaveFound=function(silent){document.querySelectorAll("#fres [id^=fq]").f
 const _sp=showPage;
 const MEK="lrr_me";
 const _ft0=findTicket;
-findTicket=async function(){const r=await _ft0.apply(this,arguments);try{const f=$("fres"),n=val("fn"),ph0=val("fp");if(f&&n.length>=3&&ph0&&f.querySelector("[id^=fq],.bkc")&&!/Aucun billet|impossible/.test(f.textContent))sv(MEK,JSON.stringify({n:n,p:ph0}))}catch(e){}return r};
+async function wFromMine(){for(let i=0;i<24;i++){const M=window.MY;if(M&&M.list&&M.list.length&&String(M.name||"").trim()===val("fn")){const c=M.list.filter(o=>o.status==="confirmed");if(!c.length)return false;c.forEach(o=>wAdd({id:o.id,name:o.name,desc:(o.items||[]).map(x=>x.name+" × "+x.qty).join(", "),code:o.code,title:o.title,phone:M.phone,nm:M.name}));drawWallet();try{sv(MEK,JSON.stringify({n:M.name,p:M.phone}))}catch(e){}return true}await new Promise(r=>setTimeout(r,500))}return false}
+findTicket=async function(){const r=await _ft0.apply(this,arguments);try{wFromMine()}catch(e){}try{const f=$("fres"),n=val("fn"),ph0=val("fp");if(f&&n.length>=3&&ph0&&f.querySelector("[id^=fq],.bkc")&&!/Aucun billet|impossible/.test(f.textContent))sv(MEK,JSON.stringify({n:n,p:ph0}))}catch(e){}return r};
 function wAuto(){try{const m=JSON.parse(ld(MEK)||"null");if(!m||!m.n||!m.p)return;if($("fn")&&!$("fn").value)$("fn").value=m.n;if($("fp")&&!$("fp").value)$("fp").value=m.p;
  if(Date.now()-(window.__wAuto||0)<20000)return;window.__wAuto=Date.now();setTimeout(()=>{try{findTicket()}catch(e){}},200)}catch(e){}}
 showPage=function(p){_sp(p);if(String(p||"").split("/")[0]==="find"){drawWallet();wAuto()}};
