@@ -1849,12 +1849,11 @@ html.low .ev3 .pic{display:none}
 <div id="v-home" class="view">
 <section class="hm"><span class="hm-k">🎭 La scène vous attend</span><h1>Votre place,<br><em>votre fou rire.</em></h1><p>Choisissez votre soirée, réglez en quelques gestes et gardez votre billet numérique dans la poche.</p>
 <div class="hm-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="qs1" placeholder="Un spectacle, un artiste, une ville ?" oninput="setQ(this.value)"></div></section>
+<div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
 <div class="cats" id="ctabs"></div>
 <div class="sech"><h2>Prochains rendez-vous</h2><span class="sm" id="evcount"></span></div>
 <div class="list" id="evl"></div>
 <div id="lastmin"></div><div id="wheelcard"></div><div class="cdw" id="cdw" hidden><div class="cdt"><span>⏳ Prochain événement</span><b id="cdn"></b></div><div class="cdg"><div><b id="cdD">00</b><small>Jours</small></div><div><b id="cdH">00</b><small>Heures</small></div><div><b id="cdM">00</b><small>Minutes</small></div><div><b id="cdS">00</b><small>Secondes</small></div></div></div>
-<div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
-
 <section id="instsec" class="x2" hidden><h2>📲 Gardez-nous sur votre écran</h2><p class="sm">Ajoutez le Restau du Rire à votre téléphone : une icône, un tap, vos billets sont là.</p><button class="btn" onclick="showInfo('install')">Je l'ajoute</button></section>
 <datalist id="provl"></datalist>
 <section id="joinCta" class="cta2 join"><div><b>Ouvrez votre espace</b><p>Un compte gratuit pour lancer vos soirées, suivre vos encaissements et garder tous vos billets au même endroit.</p></div><button class="btn or2" onclick="accMode='signup';nav('account')">Ouvrir mon espace</button></section>
@@ -2652,7 +2651,7 @@ async function submitOrder(){const e=EV.e,m=EV.mode,T2=evTotals(),v=i=>$(i).valu
  if(!v("on")||!v("op")||(hasA&&Object.values(A).some(x=>!x))||(m==="cash"&&!v("os"))){alert("Veuillez remplir tous les champs obligatoires"+(hasA?" (adresse complète comprise)":"")+".");return}
  let f=null;if(m==="cash"){f=$("otp").files[0];if(!f||!f.type.startsWith("image/")){alert("Ajoutez la photo de votre ticket.");return}}
  if(m==="res"){f=$("opr").files[0];if(!v("opy")||!$("orc").value||!f||!f.type.startsWith("image/")){alert("Veuillez compléter le paiement (numéro, destinataire et capture d'écran).");return}}
- const b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";const w=window.open("","_blank");
+ const b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";const w=(m==="cash")?null:window.open("","_blank");
  try{const oid=newId();let path=null;
   if(f){path="ord/"+oid+"/"+f.name.replace(/[^\w.\-]/g,"_");const u=await fetch(SB+"/storage/v1/object/preuves/"+path,{method:"POST",headers:H("",{"Content-Type":f.type||"image/jpeg"}),body:f});if(!u.ok)throw new Error("Envoi de la capture impossible")}
   const items=e.tickets.filter(t=>EV.qty[t.id]).map(t=>({id:t.id,name:t.name,qty:EV.qty[t.id],price:t.price,currency:t.currency}));
@@ -2661,7 +2660,7 @@ async function submitOrder(){const e=EV.e,m=EV.mode,T2=evTotals(),v=i=>$(i).valu
   if(!r.ok)throw new Error("Enregistrement impossible");
   const code="EV-"+oid.slice(0,8).toUpperCase();
   const msg=`🎟️ *NOUVELLE ${m==="res"?"RÉSERVATION":"COMMANDE EN ESPÈCES"}*\n🎭 ${e.title}\n🔖 Réf : ${code}\n\n👤 ${row.name}\n📞 ${row.phone}${hasA?`\n📍 ${A.pays}, ${A.province}, ${A.ville} • ${A.commune} • ${A.quartier} • ${A.avenue}\nRepère : ${A.loc}`:""}\n\n🎫 ${items.map(i=>i.name+" × "+i.qty).join(", ")}\n💰 ${amtTxt(T2.amt)}${row.seller?"\n🧾 Vendeur : "+row.seller:""}${m==="res"?"\n💳 Payé depuis "+row.payer+" vers "+row.rec+"\n📸 Capture envoyée via le site":m==="cash"?"\n📸 Photo du ticket envoyée via le site":""}`;
-  const url=m==="online"?e.pay_link+(e.pay_link.includes("?")?"&":"?")+"ref="+code:"https://wa.me/"+ph(e.whatsapp)+"?text="+encodeURIComponent(msg);if(w)w.location=url;else location.href=url;
+  const url=m==="online"?e.pay_link+(e.pay_link.includes("?")?"&":"?")+"ref="+code:"https://wa.me/"+ph(e.whatsapp)+"?text="+encodeURIComponent(msg);if(m!=="cash"){if(w)w.location=url;else location.href=url}
   $("ook").style.display="block";if(m==="cash")$("ook").innerHTML=`✅ <b>Ticket enregistré !</b><br>⏳ En attente de confirmation par l'organisation.<br>Dès que l'organisation a confirmé votre ticket, <b>elle vous envoie votre code sur WhatsApp</b>. Vous pourrez alors l'écrire <b>au dos de votre ticket</b>. Gardez bien votre ticket.`;EV.qty={};drawTk()
  }catch(x){if(w)w.close();alert("❌ "+x.message)}
  b.disabled=false;b.textContent=old}
