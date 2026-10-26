@@ -2641,15 +2641,77 @@ function setMode(m){EV.mode=m;document.querySelectorAll(".sgm a[data-m]").forEac
  <label>Nom complet *</label><input id="on" placeholder="Votre nom complet"><div class="g"><div><label>Numéro WhatsApp *</label><input id="op" type="tel" placeholder="+243..."></div><div><label>E-mail (facultatif)</label><input id="oe" type="email"></div></div><input id="ogrp" type="hidden" value="${esc(localStorage.getItem("lrr_grp_"+e.id)||"")}">${m==="res"?addrHTML("o"):""}
  ${m==="res"?`<div id="paywrap"><h3>💳 Paiement</h3><p class="sm">Payez le montant total sur l'un des numéros, puis ajoutez la preuve.</p><div class="pchips" id="epch"></div><div class="pay" id="epc"></div>
  <label>Chez qui avez-vous acheté votre billet ?</label><input id="os" placeholder="Nom du vendeur (vide = achat direct sur le site)"><label>Numéro ayant effectué le paiement *</label><input id="opy" type="tel"><label>Destinataire du paiement *</label><select id="orc"><option value="">Sélectionnez le destinataire</option>${pn.map(p=>`<option>${esc([p.op,p.name,p.number].filter(Boolean).join(" — "))}</option>`).join("")}</select><label>Capture d'écran du paiement *</label><input id="opr" type="file" accept="image/*"></div><p class="sm" id="freenote" hidden>🎁 Billet gratuit : aucun paiement à faire. Votre billet avec QR code est confirmé tout de suite.</p>`
- :m==="cash"?`<div class="note" style="margin:8px 0">🎟️ Vous avez acheté un ticket en espèces ? Enregistrez-le ici : choisissez sa catégorie, envoyez la photo de votre ticket, puis, une fois votre ticket confirmé par l'organisation, recevez votre code sur WhatsApp.</div><label>Catégorie de votre ticket *</label><select id="occ" onchange="cashCat(this.value)">${(e.tickets||[]).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select><label>Nom du vendeur (auprès de qui vous avez acheté votre ticket) *</label><input id="os" placeholder="Ex : Mutombo" autocomplete="off" maxlength="60"><label>Photo de votre ticket *</label><input id="otp" type="file" accept="image/*"><p class="sm">🔑 Après confirmation par l'organisation, vous recevrez votre code sur WhatsApp : <b>écrivez-le alors au dos de votre ticket</b>. C'est ce code qui vous donnera l'accès à la salle.</p>`:m==="hold"?`<p class="sm">⏳ Votre place est gardée pendant <b>${md.hold_hours||48} h</b>. Vous recevez un code : payez ensuite quand vous voulez (en ligne, espèces ou mobile money) avant la fin du délai. Passé ce délai, la place est libérée.</p>`:`<div class="note" style="margin:8px 0">🌍 <b>Vous êtes hors d'Afrique ?</b> Vous pouvez acheter vos billets depuis n'importe quel pays : payez par carte Visa / Mastercard, puis recevez votre billet avec QR code par WhatsApp et e-mail. Indiquez votre numéro avec l'indicatif de votre pays (+33, +32, +1…) et votre e-mail.<br>🇷🇼🇹🇿🇰🇪🇺🇬🇧🇮 <b>Afrique de l\'Est ou diaspora ?</b> Choisissez votre pays pour payer par mobile money ou par transfert international.</div><button type="button" class="btn dk" onclick="eaOpen()">🌍 Payer depuis l\'Afrique de l\'Est / l\'étranger</button><label>Votre pays *</label><select id="ocy" onchange="ocyChg()"><option value="Congo (RDC)">Congo (RDC)</option><option value="Autre pays d'Afrique">Autre pays d'Afrique</option><option>Rwanda</option><option>Tanzanie</option><option>Kenya</option><option>Ouganda</option><option>Burundi</option><option>France</option><option>Belgique</option><option>Suisse</option><option>Allemagne</option><option>Royaume-Uni</option><option>Canada</option><option>États-Unis</option><option>Émirats arabes unis</option><option>Chine</option><option>Inde</option><option>Brésil</option><option>Australie</option><option>Autre pays</option></select><p class="sm">À l\'étape suivante, vous choisirez la devise et le moyen de paiement (M-Pesa, Airtel Money, Orange Money, Africell Money ou carte).</p>`}
+ :m==="cash"?`<div class="note" style="margin:8px 0">🎟️ Vous avez acheté un ticket en espèces ? Enregistrez-le ici : choisissez sa catégorie, envoyez la photo de votre ticket, puis, une fois votre ticket confirmé par l'organisation, recevez votre code sur WhatsApp.</div><label>Catégorie de votre ticket *</label><select id="occ" onchange="cashCat(this.value)">${(e.tickets||[]).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select><label>Nom du vendeur (auprès de qui vous avez acheté votre ticket) *</label><input id="os" placeholder="Ex : Mutombo" autocomplete="off" maxlength="60"><label>Photo de votre ticket * <span class="sm">(une photo par ticket, QR bien visible)</span></label><input id="otp" type="file" accept="image/*" multiple onchange="ptVerify()"><div id="otpr" class="sm" style="margin:6px 0"></div><p class="sm">🔑 Après confirmation par l'organisation, vous recevrez votre code sur WhatsApp : <b>écrivez-le alors au dos de votre ticket</b>. C'est ce code qui vous donnera l'accès à la salle.</p>`:m==="hold"?`<p class="sm">⏳ Votre place est gardée pendant <b>${md.hold_hours||48} h</b>. Vous recevez un code : payez ensuite quand vous voulez (en ligne, espèces ou mobile money) avant la fin du délai. Passé ce délai, la place est libérée.</p>`:`<div class="note" style="margin:8px 0">🌍 <b>Vous êtes hors d'Afrique ?</b> Vous pouvez acheter vos billets depuis n'importe quel pays : payez par carte Visa / Mastercard, puis recevez votre billet avec QR code par WhatsApp et e-mail. Indiquez votre numéro avec l'indicatif de votre pays (+33, +32, +1…) et votre e-mail.<br>🇷🇼🇹🇿🇰🇪🇺🇬🇧🇮 <b>Afrique de l\'Est ou diaspora ?</b> Choisissez votre pays pour payer par mobile money ou par transfert international.</div><button type="button" class="btn dk" onclick="eaOpen()">🌍 Payer depuis l\'Afrique de l\'Est / l\'étranger</button><label>Votre pays *</label><select id="ocy" onchange="ocyChg()"><option value="Congo (RDC)">Congo (RDC)</option><option value="Autre pays d'Afrique">Autre pays d'Afrique</option><option>Rwanda</option><option>Tanzanie</option><option>Kenya</option><option>Ouganda</option><option>Burundi</option><option>France</option><option>Belgique</option><option>Suisse</option><option>Allemagne</option><option>Royaume-Uni</option><option>Canada</option><option>États-Unis</option><option>Émirats arabes unis</option><option>Chine</option><option>Inde</option><option>Brésil</option><option>Australie</option><option>Autre pays</option></select><p class="sm">À l\'étape suivante, vous choisirez la devise et le moyen de paiement (M-Pesa, Airtel Money, Orange Money, Africell Money ou carte).</p>`}
  <button class="btn wa" id="obtn" onclick="${m==='online'?'evGo()':m==='hold'?'evHold()':'submitOrder()'}">${m==="res"?"📲 ENVOYER MA RÉSERVATION":m==="cash"?"✅ ENREGISTRER MON ACHAT":m==="hold"?"⏳ RÉSERVER SANS PAYER":"💳 CONTINUER VERS LE PAIEMENT ›"}</button>
  <div class="note" id="ook">✅ Enregistré ! L'organisateur confirmera votre billet après vérification. Utilisez « Mes places » pour le retrouver une fois confirmé.</div></div>`;drawEPay();applyFree();if(m==="cash"&&$("occ")&&!Object.values(EV.qty).some(x=>x))cashCat($("occ").value)}
+/* ===== Vérification automatique des tickets papier (QR lu sur la photo) ===== */
+const PTV={sig:null,done:false,busy:null,mode:"",res:[]};
+const ptNorm=raw=>{const m=String(raw||"").toUpperCase().replace(/\s/g,"").match(/PT-[0-9A-F]{8}/);return m?m[0]:null};
+function ptLoadJsQR(){return new Promise(ok=>{if(window.__jsqrReal)return ok(true);const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js";s.onload=()=>{window.__jsqrReal=true;ok(true)};s.onerror=()=>ok(false);document.head.appendChild(s)})}
+async function ptDecode(file){const url=URL.createObjectURL(file);
+ try{const img=await new Promise((ok,ko)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=ko;i.src=url});
+  for(const mx of [1600,900,500]){const k=Math.min(1,mx/Math.max(img.naturalWidth,img.naturalHeight));
+   const w=Math.max(1,Math.round(img.naturalWidth*k)),h=Math.max(1,Math.round(img.naturalHeight*k));
+   const c=document.createElement("canvas");c.width=w;c.height=h;const x=c.getContext("2d",{willReadFrequently:true});x.drawImage(img,0,0,w,h);
+   if("BarcodeDetector" in window){try{const r=await new BarcodeDetector({formats:["qr_code"]}).detect(c);if(r&&r[0]&&r[0].rawValue&&ptNorm(r[0].rawValue))return r[0].rawValue}catch(_){}}
+   if(await ptLoadJsQR()){const q=window.jsQR(x.getImageData(0,0,w,h).data,w,h,{inversionAttempts:"attemptBoth"});if(q&&q.data&&ptNorm(q.data))return q.data}}
+ }catch(_){}finally{URL.revokeObjectURL(url)}
+ return null}
+function ptMismatch(){const cnt={};PTV.res.forEach(x=>{if(x.state==="ok")cnt[x.r.ticket_id]=(cnt[x.r.ticket_id]||0)+1});
+ const ids=new Set([...Object.keys(cnt),...Object.keys(EV.qty||{}).filter(k=>EV.qty[k])]);
+ for(const id of ids){const want=EV.qty[id]||0,have=cnt[id]||0;if(want!==have){const t=((EV.e||{}).tickets||[]).find(t=>t.id===id);
+  return "Votre commande contient "+want+" billet(s) « "+(t?t.name:id)+" » mais vous avez envoyé "+have+" photo(s) de cette catégorie. Envoyez une photo par ticket, de la bonne catégorie."}}
+ return ""}
+async function ptVerify(){const inp=$("otp"),box=$("otpr");if(!inp||!box)return PTV;
+ const files=[...inp.files].filter(f=>f.type.startsWith("image/")).slice(0,20);
+ const sig=files.map(f=>f.name+f.size+f.lastModified).join("|");
+ if(PTV.sig===sig){return PTV.done?PTV:PTV.busy}
+ PTV.sig=sig;PTV.done=false;PTV.res=[];PTV.mode="";
+ PTV.busy=(async()=>{
+  if(!files.length){box.innerHTML="";PTV.done=true;return PTV}
+  box.innerHTML="⏳ Vérification de votre ticket…";
+  const seen={},L=[];
+  for(const f of files){
+   const code=ptNorm(await ptDecode(f));
+   if(!code){PTV.res.push({f,state:"unread"});L.push("📷 QR illisible : reprenez la photo, bien de face et nette.");continue}
+   if(seen[code]){PTV.res.push({f,code,state:"dup",msg:"Le même ticket est envoyé deux fois."});L.push("❌ Le même ticket est envoyé deux fois.");continue}
+   seen[code]=1;let r;try{r=await rp("paper_check",{p_event:EV.e.id,p_code:code})}catch(x){r={result:"error"}}
+   if(r.result==="none"||r.result==="error"){PTV.mode="none";box.innerHTML="";PTV.done=true;return PTV}
+   PTV.mode="verify";
+   if(r.result==="valid"){PTV.res.push({f,code,state:"ok",r});L.push("✅ Ticket n° "+esc(r.serial)+" · "+esc(r.ticket||"")+" reconnu");continue}
+   const msg=r.result==="void"?"Ce ticket a été annulé.":r.result==="used"?"Ce ticket est déjà enregistré.":"Ceci n'est pas un ticket de « "+((EV.e||{}).title||"")+" ».";
+   PTV.res.push({f,code,state:"bad",msg});L.push("❌ "+esc(msg))}
+  if(PTV.mode==="verify"&&!PTV.res.some(x=>x.state!=="ok")){const mm=ptMismatch();if(mm)L.push("⚠️ "+esc(mm))}
+  box.innerHTML=L.join("<br>");PTV.done=true;return PTV})();
+ return PTV.busy}
+async function ptReady(){const p=await ptVerify();if(!p||p.mode!=="verify")return{};
+ const bad=p.res.find(x=>x.state==="bad"||x.state==="dup");if(bad){alert("❌ "+bad.msg);return{stop:1}}
+ if(p.res.some(x=>x.state==="unread")){
+  if(!confirm("📷 Le QR du ticket n'a pas pu être lu automatiquement.\n\nOK = envoyer quand même (l'organisation vérifiera la photo)\nAnnuler = reprendre une photo plus nette"))return{stop:1};
+  return{}}
+ const mm=ptMismatch();if(mm){alert("⚠️ "+mm);return{stop:1}}
+ return{pcs:p.res.filter(x=>x.state==="ok")}}
+async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";
+ try{const grp=String(($("ogrp")||{}).value||"").trim();
+  const addr=Object.assign({},hasA?A:{},grp?{grp:grp.toUpperCase().slice(0,8)}:{});const rows=[];
+  for(const p of pcs){const t=(e.tickets||[]).find(t=>t.id===p.r.ticket_id);if(!t)throw new Error("Catégorie de ticket inconnue.");
+   const oid=newId(),path="ord/"+oid+"/"+p.f.name.replace(/[^\w.\-]/g,"_");
+   const u=await fetch(SB+"/storage/v1/object/preuves/"+path,{method:"POST",headers:H("",{"Content-Type":p.f.type||"image/jpeg"}),body:p.f});
+   if(!u.ok)throw new Error("Envoi de la photo impossible");
+   const it={id:t.id,name:t.name,qty:1,price:t.price,currency:t.currency};
+   rows.push({id:oid,event_id:e.id,kind:"cash",name:v("on"),phone:v("op"),email:v("oe")||null,address:addr,seller:v("os").replace(/\s+/g," ").slice(0,60)||null,items:[EV.sel?{...it,date:EV.sel}:it],total_qty:1,amounts:{[t.currency||"FC"]:t.price},payer:null,rec:null,proof_path:path,status:"pending",paper_code:p.code})}
+  const r=await fetch(SB+"/rest/v1/orders",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(rows)});
+  if(!r.ok){let m="Enregistrement impossible";try{const j=await r.json();if(j&&j.message)m=j.message}catch(_){}throw new Error(m)}
+  $("ook").style.display="block";$("ook").innerHTML="✅ <b>"+(rows.length>1?rows.length+" tickets vérifiés et enregistrés":"Ticket vérifié et enregistré")+" !</b><br>⏳ En attente de confirmation par l'organisation.<br>Dès que l'organisation a confirmé votre ticket, <b>elle vous envoie sa confirmation sur WhatsApp</b>. Gardez bien votre ticket.";
+  PTV.sig=null;EV.qty={};drawTk()
+ }catch(x){alert("❌ "+x.message)}
+ b.disabled=false;b.textContent=old}
 async function submitOrder(){const e=EV.e,m=EV.mode,T2=evTotals(),v=i=>$(i).value.trim();
  if(!T2.n){alert("Veuillez sélectionner au moins un billet.");return}
  if(m==="res"&&isFreeCart())return evFree();
  const hasA=!!$("opays"),A=hasA?{pays:v("opays"),province:v("oprov"),ville:v("oville"),commune:v("ocom"),quartier:v("oqua"),avenue:v("oave"),loc:v("oloc")}:{};
  if(!v("on")||!v("op")||(hasA&&Object.values(A).some(x=>!x))||(m==="cash"&&!v("os"))){alert("Veuillez remplir tous les champs obligatoires"+(hasA?" (adresse complète comprise)":"")+".");return}
- let f=null;if(m==="cash"){f=$("otp").files[0];if(!f||!f.type.startsWith("image/")){alert("Ajoutez la photo de votre ticket.");return}}
+ let f=null;if(m==="cash"){f=$("otp").files[0];if(!f||!f.type.startsWith("image/")){alert("Ajoutez la photo de votre ticket.");return}const pv=await ptReady();if(pv.stop)return;if(pv.pcs)return ptSubmit(pv.pcs,A,hasA)}
  if(m==="res"){f=$("opr").files[0];if(!v("opy")||!$("orc").value||!f||!f.type.startsWith("image/")){alert("Veuillez compléter le paiement (numéro, destinataire et capture d'écran).");return}}
  const b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";const w=(m==="cash")?null:window.open("","_blank");
  try{const oid=newId();let path=null;
@@ -2657,7 +2719,7 @@ async function submitOrder(){const e=EV.e,m=EV.mode,T2=evTotals(),v=i=>$(i).valu
   const items=e.tickets.filter(t=>EV.qty[t.id]).map(t=>({id:t.id,name:t.name,qty:EV.qty[t.id],price:t.price,currency:t.currency}));
   const row={id:oid,event_id:e.id,kind:m==="res"?"reservation":m==="cash"?"cash":"online",name:v("on"),phone:v("op"),email:v("oe")||null,address:Object.assign({},hasA?A:{},String(($("ogrp")||{}).value||"").trim()?{grp:String($("ogrp").value).trim().toUpperCase().slice(0,8)}:{}),seller:(m==="online"?"":v("os").replace(/\s+/g," ").slice(0,60))||null,items:(EV.sel?items.map(i=>({...i,date:EV.sel})):items),total_qty:T2.n,amounts:T2.amt,payer:m==="res"?v("opy"):null,rec:m==="res"?$("orc").value:null,proof_path:path,status:"pending"};
   const r=await fetch(SB+"/rest/v1/orders",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
-  if(!r.ok)throw new Error("Enregistrement impossible");
+  if(!r.ok){let em="Enregistrement impossible";try{const j=await r.json();if(j&&j.message)em=j.message}catch(_){}throw new Error(em)}
   const code="EV-"+oid.slice(0,8).toUpperCase();
   const msg=`🎟️ *NOUVELLE ${m==="res"?"RÉSERVATION":"COMMANDE EN ESPÈCES"}*\n🎭 ${e.title}\n🔖 Réf : ${code}\n\n👤 ${row.name}\n📞 ${row.phone}${hasA?`\n📍 ${A.pays}, ${A.province}, ${A.ville} • ${A.commune} • ${A.quartier} • ${A.avenue}\nRepère : ${A.loc}`:""}\n\n🎫 ${items.map(i=>i.name+" × "+i.qty).join(", ")}\n💰 ${amtTxt(T2.amt)}${row.seller?"\n🧾 Vendeur : "+row.seller:""}${m==="res"?"\n💳 Payé depuis "+row.payer+" vers "+row.rec+"\n📸 Capture envoyée via le site":m==="cash"?"\n📸 Photo du ticket envoyée via le site":""}`;
   const url=m==="online"?e.pay_link+(e.pay_link.includes("?")?"&":"?")+"ref="+code:"https://wa.me/"+ph(e.whatsapp)+"?text="+encodeURIComponent(msg);if(m!=="cash"){if(w)w.location=url;else location.href=url}
@@ -3783,7 +3845,7 @@ window.p6Auto=c=>sv("lrr_autowa",c?"1":"0");
 window.p6Civ=async(eid,id,v)=>{try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({civility:v})});loadOrders(eid)}catch(x){alert("Échec : le SQL 22-ventes-especes.sql est-il installé ?")}};
 /* --- liste des commandes : espèces regroupées par date (Jour 1, Jour 2, …), numérotées dans l'ordre d'achat --- */
 function card(eid,o,n){const ev=evOf(eid),conf=o.status==="confirmed",l=link(o,ev),kind=({cash:"Espèces",paper:"Ticket papier",door:"Caisse porte",online:"En ligne"})[o.kind]||"Réservation";
- return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>
+ return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>${o.paper_check==="auto"?`<div class="sm" style="color:#2f9e6e">✅ Ticket papier vérifié automatiquement (QR reconnu)</div>`:o.paper_check==="manual"?`<div class="sm" style="color:#d9822b">⚠️ QR non lu : vérifiez la photo du ticket</div>`:""}
 <div class="sm">📞 <a href="https://wa.me/${ph(o.phone)}" target="_blank" rel="noopener" style="color:inherit">${esc(o.phone)}</a> • 🎟 ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}${Object.keys(o.amounts||{}).length?" • 💰 "+esc(amtTxt(o.amounts)):""}</div>
 <div class="sm">🛒 Acheté le <b>${esc(D(o.created_at))}</b> à <b>${esc(T(o.created_at))}</b>${o.seller?" • Vendeur : <b>"+esc(o.seller)+"</b>":""}</div>${recLine(o)}
 ${o.confirmed_at?`<div class="sm">✅ Confirmé le <b>${esc(D(o.confirmed_at))}</b> à <b>${esc(T(o.confirmed_at))}</b></div>`:""}
