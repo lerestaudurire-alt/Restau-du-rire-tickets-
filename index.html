@@ -5389,7 +5389,56 @@ function isStade(e){return /stade|stadium|parc|esplanade|arena|plein air/i.test(
 function isOwn(e){try{return typeof ownerView==="function"&&!!e&&ownerView(e.id)}catch(x){return false}}
 function stat(t){const sold=(EV&&EV.sold&&EV.sold[t.id])||0,own=isOwn(EV&&EV.e);if(!t.stock)return{so:false,txt:"Disponible",lo:false};const rem=Math.max(t.stock-sold,0);return{so:rem===0,txt:rem===0?"Complet":own?rem+" place"+(rem>1?"s":"")+" restante"+(rem>1?"s":""):"Disponible",lo:own&&rem>0&&rem/t.stock<=.2}}
 const X=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* ===== Plan Concordia : partenaires/sponsors devant à gauche, VVIP/VIP à droite, standards derrière, protocole ===== */
+function isConc(e){try{return /concordia/i.test([e.venue,e.city,e.title].join(" "))||!!(e.modes&&e.modes.hall&&e.modes.hall.kind==="concordia")}catch(x){return false}}
+function svgC(e){
+ const Z=zones(e),L=[],R=[],B=[];
+ Z.forEach((z,r)=>{const n=String(z.t.name||""),it={z,r};(/vvip|vip/i.test(n)?R:/partenaire|partner|sponsor/i.test(n)?L:B).push(it)});
+ if(!L.length&&!R.length)return"";
+ const W=360,INK="#23232e",PAPER="#fdfcf8",gap=6,y0=88,frontH=150,xl=34,xr=326,mid=180,ai=16;
+ let lx0=0,lx1=0,rx0=0,rx1=0;
+ if(L.length&&R.length){lx0=xl;lx1=mid-ai/2;rx0=mid+ai/2;rx1=xr}else if(L.length){lx0=xl;lx1=xr}else{rx0=xl;rx1=xr}
+ const nB=B.length,stdH=nB?Math.max(96,nB*60):0,yS0=y0+frontH+gap,yb=y0+frontH+(nB?gap+stdH:0)+34,H=yb+8+86+20;
+ const ttl=X(String(e.title||"").slice(0,34)),ven=X([e.venue,e.city].filter(Boolean).join(", ").slice(0,44));
+ let o=`<svg class="plsvg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la salle" font-family="system-ui,Arial,sans-serif">`;
+ o+=`<defs><pattern id="plg" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#e9e5da" stroke-width=".6"/></pattern><pattern id="plh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8d8d8d" stroke-width="1.6"/></pattern><pattern id="plw" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><line x1="0" y1="0" x2="8" y2="0" stroke="#c9b48a" stroke-width=".7"/></pattern></defs>`;
+ o+=`<rect width="${W}" height="${H}" fill="${PAPER}"/><rect width="${W}" height="${H}" fill="url(#plg)"/>`;
+ o+=`<rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${INK}" stroke-width="6"/><rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${PAPER}" stroke-width="1.6"/>`;
+ o+=`<rect x="62" y="20" width="236" height="48" fill="#efe3c8" stroke="${INK}" stroke-width="2"/><rect x="62" y="20" width="236" height="48" fill="url(#plw)"/><line x1="62" y1="27" x2="298" y2="27" stroke="${INK}" stroke-width=".8" stroke-dasharray="3 2"/><text x="180" y="52" text-anchor="middle" fill="${INK}" font-size="14" font-weight="800" letter-spacing="3">SCÈNE</text>`;
+ const chr=(bx,by,bw,bh,col)=>{let s="";for(let ry=by+8;ry+9<=by+bh-6;ry+=12)for(let rx=bx+6;rx+8<=bx+bw-4;rx+=12)s+=`<rect x="${rx}" y="${ry}" width="8" height="6.5" rx="1.6" fill="#fff" stroke="${col}" stroke-width="1"/><rect x="${rx}" y="${ry+6.5}" width="8" height="2" rx=".8" fill="${col}"/>`;return s};
+ const tabs=(bx,by,bw,bh)=>{let s="";for(let ry=by+8;ry+30<=by+bh-2;ry+=32)for(let rx=bx+4;rx+40<=bx+bw-2;rx+=46){s+=`<rect x="${rx}" y="${ry+7}" width="40" height="13" rx="1.5" fill="#d8bf8a" stroke="#6b4e1f" stroke-width=".9"/>`;[8,20,32].forEach(dx=>{s+=`<circle cx="${rx+dx}" cy="${ry+3}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/><circle cx="${rx+dx}" cy="${ry+24}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/>`});}return s};
+ const box=(it,x0,x1,y,h,split)=>{
+  const z=it.z,r=it.r,c=COL[Math.min(r,COL.length-1)],s=stat(z.t),k=kind(z.t.name),col=s.so?"#9a9a9a":c,w=x1-x0;
+  let g=`<g data-z="${z.i}" style="cursor:pointer"><rect x="${x0}" y="${y}" width="${w}" height="${h}" fill="${col}" fill-opacity="${s.so?.12:.1}" stroke="${col}" stroke-width="1.4" stroke-dasharray="5 3"/>`;
+  if(s.so)g+=`<rect x="${x0}" y="${y}" width="${w}" height="${h}" fill="url(#plh)" opacity=".28"/>`;
+  const parts=split?[[x0,mid-ai/2-x0],[mid+ai/2,x1-(mid+ai/2)]]:[[x0,w]];
+  parts.forEach(p=>{g+=k==="tab"?tabs(p[0],y,p[1],h):chr(p[0],y,p[1],h,col)});
+  if(split)g+=`<line x1="${mid}" y1="${y}" x2="${mid}" y2="${y+h}" stroke="#b9b4a6" stroke-width=".7" stroke-dasharray="2 3"/>`;
+  const lbl=X(z.t.name).slice(0,16),pr=z.t.price>0?(typeof nf==="function"?nf(z.t.price):z.t.price)+" "+(z.t.currency==="USD"?"$":"FC"):"Gratuit",cap=z.t.stock&&isOwn(e)?z.t.stock+" pl.":"",lw=Math.min(w-14,128),cx=x0+w/2,cy=y+h/2;
+  g+=`<rect x="${cx-lw/2}" y="${cy-18}" width="${lw}" height="36" fill="#fff" fill-opacity=".96" stroke="${INK}" stroke-width=".8"/><text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="11" font-weight="800" fill="${INK}">${lbl}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${s.so?"#b00":"#555"}">${s.so?"COMPLET":pr+(cap?" • "+cap:"")}</text>`;
+  g+=`<circle cx="${x0}" cy="${y}" r="10" fill="${col}" stroke="#fff" stroke-width="1.5"/><text x="${x0}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${r+1}</text></g>`;
+  return g};
+ const col=(arr,x0,x1)=>{const n=arr.length,h=(frontH-gap*(n-1))/n;arr.forEach((it,i)=>{o+=box(it,x0,x1,y0+i*(h+gap),h,false)})};
+ if(L.length)col(L,lx0,lx1);
+ if(R.length)col(R,rx0,rx1);
+ if(nB){const h=(stdH-gap*(nB-1))/nB;B.forEach((it,i)=>{o+=box(it,xl,xr,yS0+i*(h+gap),h,true)})}
+ /* allée centrale */
+ if(L.length&&R.length)o+=`<text x="${mid}" y="${y0+frontH/2}" text-anchor="middle" font-size="6.5" fill="#8a8a8a" letter-spacing="1" transform="rotate(-90 ${mid} ${y0+frontH/2})">ALLÉE</text>`;
+ /* protocole : 4 en salle (le long des murs) + 2 à la porte */
+ const pm=(x,y)=>`<g><circle cx="${x}" cy="${y}" r="8" fill="${INK}" stroke="#fff" stroke-width="1.4"/><text x="${x}" y="${y+3.6}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff">P</text></g>`;
+ const yA=y0+frontH/2,yB=nB?yS0+stdH/2:y0+14;
+ o+=pm(22,yA)+pm(338,yA)+pm(22,yB)+pm(338,yB)+pm(128,yb-12)+pm(232,yb-12);
+ /* porte */
+ const gapR=(x,y,ww,hh)=>`<rect x="${x}" y="${y}" width="${ww}" height="${hh}" fill="${PAPER}"/>`;
+ o+=gapR(148,yb+6,64,8);
+ o+=`<g fill="none" stroke="${INK}" stroke-width="1.2"><path d="M150 ${yb+10}V${yb-22}"/><path d="M150 ${yb-22}A32 32 0 0 1 182 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/><path d="M210 ${yb+10}V${yb-22}"/><path d="M210 ${yb-22}A32 32 0 0 0 178 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/></g>`;
+ o+=`<text x="${W/2}" y="${yb+24}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${INK}" letter-spacing="1">ENTRÉE • SORTIE (PORTE UNIQUE)</text>`;
+ o+=`<g><circle cx="52" cy="${yb+38}" r="6" fill="${INK}"/><text x="52" y="${yb+41}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#fff">P</text><text x="62" y="${yb+41}" font-size="8" fill="#555">Protocole : 4 en salle · 2 à la porte</text></g>`;
+ const cy=H-58;
+ o+=`<rect x="10" y="${cy}" width="${W-20}" height="48" fill="#fff" stroke="${INK}" stroke-width="1.6"/><line x1="236" y1="${cy}" x2="236" y2="${cy+48}" stroke="${INK}" stroke-width="1"/><text x="18" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">PLAN DE LA SALLE</text><text x="18" y="${cy+29}" font-size="12" font-weight="800" fill="${INK}">${ttl}</text><text x="18" y="${cy+41}" font-size="8" fill="#555">${ven}</text><text x="244" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">ÉCHELLE</text><text x="244" y="${cy+27}" font-size="9" font-weight="700" fill="${INK}">Schématique</text><text x="244" y="${cy+40}" font-size="7.5" fill="#777">Feuille 1 / 1</text>`;
+ return o+`</svg>`}
 function svg(e){
+ if(isConc(e)){const c=svgC(e);if(c)return c}
  const Z=zones(e),n=Math.max(Z.length,1),stade=isStade(e),W=360,INK="#23232e",PAPER="#fdfcf8",gap=6,bh=Math.max(64,Math.min(112,Math.floor(300/n))),y0=88,x0=44,w=272,yb=y0+n*(bh+gap)+34,H=yb+8+86;
  const ttl=X(String(e.title||"").slice(0,34)),ven=X([e.venue,e.city].filter(Boolean).join(", ").slice(0,44));
  let o=`<svg class="plsvg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la salle" font-family="system-ui,Arial,sans-serif">`;
