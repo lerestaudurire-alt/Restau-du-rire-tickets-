@@ -2699,7 +2699,7 @@ async function ptVerifyVerso(){const inp=$("otv"),box=$("otvr");if(!inp||!box)re
  if(PTVV.sig===sig)return PTVV.done?PTVV:PTVV.busy;PTVV.sig=sig;PTVV.done=false;PTVV.res=[];PTVV.files=files;
  PTVV.busy=(async()=>{if(!files.length){box.innerHTML="";box.style.cssText="";PTVV.done=true;return PTVV}
   const tpl=((EV.e||{}).modes||{}).stamp||null,nm=tpl&&tpl.name?" « "+tpl.name+" »":"";box.innerHTML=tpl?"⏳ Vérification du cachet de l'organisation…":"⏳ …";const L=[];let bad=-1;
-  for(let i=0;i<files.length;i++){const r=await stampCheck(files[i],tpl);PTVV.res.push({f:files[i],ok:r.ok,score:r.score});const n=files.length>1?" n°"+(i+1):"";
+  for(let i=0;i<files.length;i++){const r={ok:true,none:1};PTVV.res.push({f:files[i],ok:r.ok,score:r.score});const n=files.length>1?" n°"+(i+1):"";
    if(r.none)L.push("📷 Verso"+n+" reçu : l'organisation vérifiera le cachet.");else if(r.ok)L.push("✅ Verso"+n+" : cachet de l'organisation"+nm+" reconnu");else{if(bad<0)bad=i;L.push("❌ Verso"+n+" refusé : le cachet de l'organisation"+nm+" n'est pas reconnu. Le verso doit porter le même cachet que celui de l'organisation (voir le modèle ci-dessus), bien visible et net.")}}
   box.style.cssText=bad>=0?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTVV.done=true;
   if(bad>=0){try{alert("❌ Verso refusé : le cachet de l'organisation n'est pas reconnu sur la photo. Reprenez la photo du verso (cachet bien visible, net, bien éclairé, sans reflet).")}catch(_){}}return PTVV})();
@@ -2714,45 +2714,31 @@ async function ptDecode(file){const url=URL.createObjectURL(file);
    if(await ptLoadJsQR()){const q=window.jsQR(x.getImageData(0,0,w,h).data,w,h,{inversionAttempts:"attemptBoth"});if(q&&q.data&&ptNorm(q.data))return q.data}}
  }catch(_){}finally{URL.revokeObjectURL(url)}
  return null}
-function ptMismatch(){const cnt={};PTV.res.forEach(x=>{if(x.state==="ok")cnt[x.r.ticket_id]=(cnt[x.r.ticket_id]||0)+1});
- const ids=new Set([...Object.keys(cnt),...Object.keys(EV.qty||{}).filter(k=>EV.qty[k])]);
- for(const id of ids){const want=EV.qty[id]||0,have=cnt[id]||0;if(want!==have){const t=((EV.e||{}).tickets||[]).find(t=>t.id===id);
-  return "Votre commande contient "+want+" billet(s) « "+(t?t.name:id)+" » mais vous avez envoyé "+have+" photo(s) de cette catégorie. Envoyez une photo par ticket, de la bonne catégorie."}}
- return ""}
+function ptMismatch(){return ""}
 async function ptVerify(){const inp=$("otp"),box=$("otpr");if(!inp||!box)return PTV;
  const files=[...inp.files].filter(f=>f.type.startsWith("image/")).slice(0,20);
  const sig=files.map(f=>f.name+f.size+f.lastModified).join("|");
  if(PTV.sig===sig){return PTV.done?PTV:PTV.busy}
- PTV.sig=sig;PTV.done=false;PTV.res=[];PTV.mode="";
+ PTV.sig=sig;PTV.done=false;PTV.res=[];PTV.mode="verify";
  PTV.busy=(async()=>{
   if(!files.length){box.innerHTML="";PTV.done=true;return PTV}
-  box.innerHTML="⏳ Vérification de votre ticket…";
-  const seen={},L=[];
+  box.innerHTML="⏳ Lecture de votre ticket…";
+  const seen={},L=[],sel=($("occ")||{}).value;
   for(const f of files){
-   const code=ptNorm(await ptDecode(f));
-   if(!code){PTV.res.push({f,state:"unread",msg:"Ticket refusé : il n'est pas numéroté (ou son QR n'est pas lisible). Seuls les tickets officiels numérotés avec QR sont acceptés. Si le ticket est bien numéroté, reprenez la photo de face, nette et bien éclairée."});L.push("❌ Ticket refusé : non numéroté ou QR illisible. Reprenez la photo (de face, nette) ou utilisez un ticket officiel numéroté.");continue}
-   if(seen[code]){PTV.res.push({f,code,state:"dup",msg:"Le même ticket est envoyé deux fois."});L.push("❌ Le même ticket est envoyé deux fois.");continue}
-   seen[code]=1;let r;try{r=await rp("paper_check",{p_event:EV.e.id,p_code:code})}catch(x){r={result:"error"}}
-   if(r.result==="none"||r.result==="error"){PTV.mode="none";box.innerHTML="";PTV.done=true;return PTV}
-   PTV.mode="verify";
-   if(r.result==="valid"){const sel=($("occ")||{}).value,tt=((EV.e||{}).tickets||[]),st=tt.find(t=>t.id===sel);
-    const rt=tt.find(t=>t.id===r.ticket_id),pr=t=>t?nf(t.price)+" "+cur(t.currency):"?";
-    if(sel&&r.ticket_id&&(r.ticket_id!==sel||(st&&rt&&(+rt.price!==+st.price||String(rt.currency||"")!==String(st.currency||""))))){const m="Ticket refusé : cette photo est un ticket « "+(r.ticket||(rt?rt.name:"?"))+" » à "+pr(rt)+", mais vous avez choisi « "+(st?st.name:"?")+" » à "+pr(st)+". La catégorie et le prix doivent correspondre : choisissez la bonne catégorie ou envoyez le bon ticket.";PTV.res.push({f,code,state:"bad",msg:m});L.push("❌ "+esc(m));continue}
-    PTV.res.push({f,code,state:"ok",r});L.push("✅ Ticket n° "+esc(r.serial)+" · "+esc(r.ticket||"")+" reconnu");continue}
-   const msg=r.result==="void"?"Ticket refusé : ce ticket a été annulé.":r.result==="used"?"Ticket refusé : ce ticket est déjà enregistré (il a déjà été utilisé).":"Ticket refusé : faux ticket ou copie. Ceci n'est pas un ticket officiel de « "+((EV.e||{}).title||"")+" ».";
-   PTV.res.push({f,code,state:"bad",msg});L.push("❌ "+esc(msg))}
-  if(PTV.mode==="verify"&&!PTV.res.some(x=>x.state!=="ok")){const mm=ptMismatch();if(mm)L.push("⚠️ "+esc(mm))}
-  const badAny=PTV.res.some(x=>x.state!=="ok");box.style.cssText=badAny?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTV.done=true;if(badAny){const b0=PTV.res.find(x=>x.state!=="ok");try{alert("❌ "+(b0.msg||"Ticket refusé."))}catch(_){}}return PTV})();
+   let code=null;try{code=ptNorm(await ptDecode(f))}catch(_){}
+   if(code&&seen[code]){PTV.res.push({f,code,state:"dup",msg:"Le même ticket est envoyé deux fois."});L.push("❌ Le même ticket est envoyé deux fois.");continue}
+   if(code)seen[code]=1;
+   PTV.res.push({f,code:code||null,state:"ok",r:{ticket_id:sel}});
+   L.push("📷 Photo reçue : l'organisation vérifiera ce ticket avant de le confirmer.")}
+  const badAny=PTV.res.some(x=>x.state!=="ok");box.style.cssText=badAny?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTV.done=true;
+  if(badAny){try{alert("❌ "+PTV.res.find(x=>x.state!=="ok").msg)}catch(_){}}return PTV})();
  return PTV.busy}
 async function ptReady(){const rf=ptImgs("otp"),vf=ptImgs("otv");
  if(!vf.length){alert("❌ Ajoutez aussi la photo du VERSO de votre ticket (avec le cachet de l'organisation).");return{stop:1}}
  if(vf.length!==rf.length){alert("❌ Vous avez envoyé "+rf.length+" photo(s) du recto mais "+vf.length+" photo(s) du verso. Envoyez une photo du verso pour chaque ticket, dans le même ordre.");return{stop:1}}
- const vv=await ptVerifyVerso();if(vv.res.some(x=>!x.ok)){alert("❌ Verso refusé : le cachet de l'organisation n'est pas reconnu. Reprenez la photo du verso, cachet bien visible et net.");return{stop:1}}
+ await ptVerifyVerso();
  const p=await ptVerify();if(!p)return{};
- const un=p.res.find(x=>x.state==="unread");if(un){alert("❌ "+un.msg);return{stop:1}}
- if(p.mode!=="verify")return{};
- const bad=p.res.find(x=>x.state==="bad"||x.state==="dup");if(bad){alert("❌ "+bad.msg);return{stop:1}}
- const mm=ptMismatch();if(mm){alert("⚠️ "+mm);return{stop:1}}
+ const bad=p.res.find(x=>x.state==="dup");if(bad){alert("❌ "+bad.msg);return{stop:1}}
  return{pcs:p.res.filter(x=>x.state==="ok")}}
 async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";
  try{const grp=String(($("ogrp")||{}).value||"").trim();
@@ -2764,10 +2750,10 @@ async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),b=$("obt
    const vf0=(PTVV.files||[])[PTV.res.indexOf(p)];let vpath=null;
    if(vf0){vpath="ord/"+oid+"/verso-"+vf0.name.replace(/[^\w.\-]/g,"_");const u2=await fetch(SB+"/storage/v1/object/preuves/"+vpath,{method:"POST",headers:H("",{"Content-Type":vf0.type||"image/jpeg"}),body:vf0});if(!u2.ok)throw new Error("Envoi de la photo du verso impossible")}
    const it={id:t.id,name:t.name,qty:1,price:t.price,currency:t.currency};
-   rows.push({id:oid,event_id:e.id,kind:"cash",name:v("on"),phone:v("op"),email:v("oe")||null,address:vpath?Object.assign({},addr,{verso_path:vpath}):addr,seller:v("os").replace(/\s+/g," ").slice(0,60)||null,items:[EV.sel?{...it,date:EV.sel}:it],total_qty:1,amounts:{[t.currency||"FC"]:t.price},payer:null,rec:null,proof_path:path,status:"pending",paper_code:p.code})}
+   rows.push({id:oid,event_id:e.id,kind:"cash",name:v("on"),phone:v("op"),email:v("oe")||null,address:Object.assign({},addr,vpath?{verso_path:vpath}:{},p.code?{scan_code:p.code}:{}),seller:v("os").replace(/\s+/g," ").slice(0,60)||null,items:[EV.sel?{...it,date:EV.sel}:it],total_qty:1,amounts:{[t.currency||"FC"]:t.price},payer:null,rec:null,proof_path:path,status:"pending"})}
   const r=await fetch(SB+"/rest/v1/orders",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(rows)});
   if(!r.ok){let m="Enregistrement impossible";try{const j=await r.json();if(j&&j.message)m=j.message}catch(_){}throw new Error(m)}
-  $("ook").style.display="block";$("ook").innerHTML="✅ <b>"+(rows.length>1?rows.length+" tickets vérifiés et enregistrés":"Ticket vérifié et enregistré")+" !</b><br>⏳ En attente de confirmation par l'organisation.<br>Dès que l'organisation a confirmé votre ticket, <b>elle vous envoie sa confirmation sur WhatsApp</b>. Gardez bien votre ticket.";
+  $("ook").style.display="block";$("ook").innerHTML="✅ <b>"+(rows.length>1?rows.length+" tickets reçus":"Ticket reçu")+" !</b><br>⏳ L'organisation va vérifier l'authenticité de votre ticket avant de le confirmer.<br>Dès qu'elle l'a confirmé, <b>elle vous envoie sa confirmation sur WhatsApp</b>. Gardez bien votre ticket.";
   PTV.sig=null;PTVV.sig=null;EV.qty={};drawTk()
  }catch(x){alert("❌ "+x.message)}
  b.disabled=false;b.textContent=old}
@@ -3908,10 +3894,43 @@ waOrd=function(eid,id){const o=(ORD[eid]||[]).find(x=>x.id===id);if(o)window.ope
 function modal(o,l,m){let d=$("p6mod");if(d)d.remove();d=document.createElement("div");d.id="p6mod";window.__p6m=m;
  d.innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:16px;width:100%;max-width:420px"><h2 style="font-size:18px;margin:0 0 6px;color:#000">✅ Billet confirmé</h2><p style="margin:0 0 8px;font-size:14px"><b>${esc(civ(o)+o.name)}</b> · ${esc(ocode(o))}</p><textarea readonly rows="9" style="width:100%;box-sizing:border-box;font:13px/1.4 system-ui;padding:8px;border:1px solid #ddd;border-radius:10px;color:#000;background:#fff">${esc(m)}</textarea><a target="_blank" rel="noopener" href="${esc(l)}" style="display:block;text-align:center;text-decoration:none;background:#25d366;color:#fff;padding:13px;border-radius:12px;font-weight:800;margin:10px 0 6px">💬 Envoyer sur WhatsApp à ${esc(String(o.name).split(" ")[0])}</a><button class="ab" style="width:100%" onclick="p5Copy(window.__p6m)">📋 Copier le message</button><button class="ab" style="width:100%;margin-top:6px" onclick="document.getElementById('p6mod').remove()">Fermer</button></div>`;document.body.appendChild(d)}
 /* --- confirmation : enregistre date/heure puis ouvre WhatsApp avec le message --- */
+/* --- DÉTECTEUR À LA CONFIRMATION : c'est ici que le ticket est testé --- */
+const p7Blob=async path=>{const x=await af(SB+"/storage/v1/object/sign/preuves/"+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:600})});const d=await x.json();if(!d.signedURL)throw 0;const r=await fetch(SB+"/storage/v1"+d.signedURL);if(!r.ok)throw 0;return await r.blob()};
+async function p7Patch(id,p){const q=b=>api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(b)});try{await q(p)}catch(e){if(Object.keys(p).length>1)await q({status:"confirmed"});else throw e}}
+async function p7Detect(eid,o){
+ const base={go:true,patch:{status:"confirmed"}};
+ if(!o||!(o.kind==="cash"||o.kind==="paper")||!o.proof_path)return base;
+ toast("🔍 Le détecteur vérifie le ticket…");
+ const ev=evOf(eid),adr=o.address||{},sel=((o.items||[])[0]||{}).id,hard=[],soft=[];let code=null,r=null;
+ try{code=ptNorm(await ptDecode(await p7Blob(o.proof_path)))}catch(e){}
+ if(!code){soft.push("QR non lu ou ticket non numéroté sur la photo.")}
+ else{
+  const same=(ORD[eid]||[]).filter(x=>x.id!==o.id&&x.status!=="cancelled"&&(x.paper_code===code||(x.address&&x.address.scan_code===code)));
+  const conf=same.find(x=>x.status==="confirmed");
+  if(conf)hard.push("Ce ticket est déjà confirmé pour "+conf.name+" : copie ou doublon.");
+  else if(same.length)soft.push("Une autre commande en attente ("+same[0].name+") contient le même ticket.");
+  try{r=await window.p5rp("paper_check",{p_event:eid,p_code:code})}catch(e){r={result:"error"}}
+  if(r.result==="valid"){if(sel&&r.ticket_id&&r.ticket_id!==sel)hard.push("Le ticket photographié est « "+(r.ticket||"?")+" » mais la commande indique une autre catégorie.")}
+  else if(r.result==="void")hard.push("Ce ticket a été annulé.");
+  else if(r.result==="used"){if(o.paper_code!==code)hard.push("Ce ticket est déjà enregistré (déjà utilisé).")}
+  else if(r.result==="none"||r.result==="error")soft.push("Registre des tickets indisponible : le numéro n'a pas pu être contrôlé.");
+  else hard.push("Faux ticket ou copie : ce numéro n'est pas un ticket officiel de cet événement.")}
+ const tpl=(ev&&ev.modes||{}).stamp;
+ if(tpl&&tpl.d){if(!adr.verso_path)soft.push("Pas de photo du verso.");
+  else{try{const sr=await stampCheck(await p7Blob(adr.verso_path),tpl);if(!sr.ok)soft.push("Cachet de l'organisation non reconnu au verso.")}catch(e){soft.push("Verso illisible : cachet non contrôlé.")}}}
+ if(hard.length){
+  if(confirm("❌ CONFIRMATION REFUSÉE par le détecteur\n\n• "+hard.join("\n• ")+"\n\nAnnuler cette commande maintenant ?")){try{await api("orders?id=eq."+o.id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"cancelled"})});loadOrders(eid)}catch(e){alert("Échec de la mise à jour")}}
+  return{go:false}}
+ if(soft.length){
+  if(!confirm("⚠️ Le détecteur n'est pas sûr\n\n• "+soft.join("\n• ")+"\n\nOuvrez la photo (📸) et vérifiez vous-même. Confirmer quand même ?"))return{go:false};
+  return{go:true,patch:code&&r&&r.result==="valid"?{status:"confirmed",paper_code:code,paper_check:"manual"}:{status:"confirmed",paper_check:"manual"}}}
+ toast("✅ Ticket n° "+(r&&r.serial||"")+" reconnu");
+ return{go:true,patch:{status:"confirmed",paper_code:code,paper_check:"auto"}}}
 setOrd=async function(eid,id,s){
  if(s!=="confirmed"){try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:s})});loadOrders(eid)}catch(x){if(x)alert("Échec de la mise à jour")}return}
  const o0=(ORD[eid]||[]).find(x=>x.id===id),auto=ld("lrr_autowa")!=="0"&&o0&&o0.kind!=="online";let w=null;if(auto){try{w=window.open("about:blank","_blank")}catch(e){}}
- try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"confirmed"})});await loadOrders(eid);
+ try{const dv=await p7Detect(eid,o0);if(!dv.go){if(w)try{w.close()}catch(e){}return}
+  await p7Patch(id,dv.patch);await loadOrders(eid);
   const o=(ORD[eid]||[]).find(x=>x.id===id)||o0,ev=evOf(eid),l=link(o,ev);
   if(w&&!w.closed){w.location.href=l;toast("✅ Confirmé : WhatsApp s'ouvre avec le message")}else modal(o,l,msg(o,ev))}
  catch(x){if(w)try{w.close()}catch(e){}alert("Échec de la mise à jour")}};
@@ -3919,7 +3938,7 @@ window.p6Auto=c=>sv("lrr_autowa",c?"1":"0");
 window.p6Civ=async(eid,id,v)=>{try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({civility:v})});loadOrders(eid)}catch(x){alert("Échec : le SQL 22-ventes-especes.sql est-il installé ?")}};
 /* --- liste des commandes : espèces regroupées par date (Jour 1, Jour 2, …), numérotées dans l'ordre d'achat --- */
 function card(eid,o,n){const ev=evOf(eid),conf=o.status==="confirmed",l=link(o,ev),kind=({cash:"Espèces",paper:"Ticket papier",door:"Caisse porte",online:"En ligne"})[o.kind]||"Réservation";
- return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>${o.paper_check==="auto"?`<div class="sm" style="color:#2f9e6e">✅ Ticket papier vérifié automatiquement (QR reconnu)</div>`:o.paper_check==="manual"?`<div class="sm" style="color:#d9822b">⚠️ QR non lu : vérifiez la photo du ticket</div>`:""}
+ return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>${o.paper_check==="auto"?`<div class="sm" style="color:#2f9e6e">✅ Ticket papier vérifié automatiquement (QR reconnu)</div>`:o.paper_check==="manual"?`<div class="sm" style="color:#d9822b">⚠️ QR non lu : vérifiez la photo du ticket</div>`:(o.kind==="cash"&&o.status==="pending"?`<div class="sm" style="color:#6b7280">🔍 Le détecteur testera ce ticket quand vous cliquerez sur Confirmer</div>`:"")}
 <div class="sm">📞 <a href="https://wa.me/${ph(o.phone)}" target="_blank" rel="noopener" style="color:inherit">${esc(o.phone)}</a> • 🎟 ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}${Object.keys(o.amounts||{}).length?" • 💰 "+esc(amtTxt(o.amounts)):""}</div>
 <div class="sm">🛒 Acheté le <b>${esc(D(o.created_at))}</b> à <b>${esc(T(o.created_at))}</b>${o.seller?" • Vendeur : <b>"+esc(o.seller)+"</b>":""}</div>${recLine(o)}
 ${o.confirmed_at?`<div class="sm">✅ Confirmé le <b>${esc(D(o.confirmed_at))}</b> à <b>${esc(T(o.confirmed_at))}</b></div>`:""}
