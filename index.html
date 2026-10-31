@@ -2699,7 +2699,7 @@ async function ptVerifyVerso(){const inp=$("otv"),box=$("otvr");if(!inp||!box)re
  if(PTVV.sig===sig)return PTVV.done?PTVV:PTVV.busy;PTVV.sig=sig;PTVV.done=false;PTVV.res=[];PTVV.files=files;
  PTVV.busy=(async()=>{if(!files.length){box.innerHTML="";box.style.cssText="";PTVV.done=true;return PTVV}
   const tpl=((EV.e||{}).modes||{}).stamp||null,nm=tpl&&tpl.name?" « "+tpl.name+" »":"";box.innerHTML=tpl?"⏳ Vérification du cachet de l'organisation…":"⏳ …";const L=[];let bad=-1;
-  for(let i=0;i<files.length;i++){const r={ok:true,none:1};PTVV.res.push({f:files[i],ok:r.ok,score:r.score});const n=files.length>1?" n°"+(i+1):"";
+  for(let i=0;i<files.length;i++){const r=await stampCheck(files[i],tpl);PTVV.res.push({f:files[i],ok:r.ok,score:r.score});const n=files.length>1?" n°"+(i+1):"";
    if(r.none)L.push("📷 Verso"+n+" reçu : l'organisation vérifiera le cachet.");else if(r.ok)L.push("✅ Verso"+n+" : cachet de l'organisation"+nm+" reconnu");else{if(bad<0)bad=i;L.push("❌ Verso"+n+" refusé : le cachet de l'organisation"+nm+" n'est pas reconnu. Le verso doit porter le même cachet que celui de l'organisation (voir le modèle ci-dessus), bien visible et net.")}}
   box.style.cssText=bad>=0?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTVV.done=true;
   if(bad>=0){try{alert("❌ Verso refusé : le cachet de l'organisation n'est pas reconnu sur la photo. Reprenez la photo du verso (cachet bien visible, net, bien éclairé, sans reflet).")}catch(_){}}return PTVV})();
@@ -2714,31 +2714,45 @@ async function ptDecode(file){const url=URL.createObjectURL(file);
    if(await ptLoadJsQR()){const q=window.jsQR(x.getImageData(0,0,w,h).data,w,h,{inversionAttempts:"attemptBoth"});if(q&&q.data&&ptNorm(q.data))return q.data}}
  }catch(_){}finally{URL.revokeObjectURL(url)}
  return null}
-function ptMismatch(){return ""}
+function ptMismatch(){const cnt={};PTV.res.forEach(x=>{if(x.state==="ok")cnt[x.r.ticket_id]=(cnt[x.r.ticket_id]||0)+1});
+ const ids=new Set([...Object.keys(cnt),...Object.keys(EV.qty||{}).filter(k=>EV.qty[k])]);
+ for(const id of ids){const want=EV.qty[id]||0,have=cnt[id]||0;if(want!==have){const t=((EV.e||{}).tickets||[]).find(t=>t.id===id);
+  return "Votre commande contient "+want+" billet(s) « "+(t?t.name:id)+" » mais vous avez envoyé "+have+" photo(s) de cette catégorie. Envoyez une photo par ticket, de la bonne catégorie."}}
+ return ""}
 async function ptVerify(){const inp=$("otp"),box=$("otpr");if(!inp||!box)return PTV;
  const files=[...inp.files].filter(f=>f.type.startsWith("image/")).slice(0,20);
  const sig=files.map(f=>f.name+f.size+f.lastModified).join("|");
  if(PTV.sig===sig){return PTV.done?PTV:PTV.busy}
- PTV.sig=sig;PTV.done=false;PTV.res=[];PTV.mode="verify";
+ PTV.sig=sig;PTV.done=false;PTV.res=[];PTV.mode="";
  PTV.busy=(async()=>{
   if(!files.length){box.innerHTML="";PTV.done=true;return PTV}
-  box.innerHTML="⏳ Lecture de votre ticket…";
-  const seen={},L=[],sel=($("occ")||{}).value;
+  box.innerHTML="⏳ Vérification de votre ticket…";
+  const seen={},L=[];
   for(const f of files){
-   let code=null;try{code=ptNorm(await ptDecode(f))}catch(_){}
-   if(code&&seen[code]){PTV.res.push({f,code,state:"dup",msg:"Le même ticket est envoyé deux fois."});L.push("❌ Le même ticket est envoyé deux fois.");continue}
-   if(code)seen[code]=1;
-   PTV.res.push({f,code:code||null,state:"ok",r:{ticket_id:sel}});
-   L.push("📷 Photo reçue : l'organisation vérifiera ce ticket avant de le confirmer.")}
-  const badAny=PTV.res.some(x=>x.state!=="ok");box.style.cssText=badAny?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTV.done=true;
-  if(badAny){try{alert("❌ "+PTV.res.find(x=>x.state!=="ok").msg)}catch(_){}}return PTV})();
+   const code=ptNorm(await ptDecode(f));
+   if(!code){PTV.res.push({f,state:"unread",msg:"Ticket refusé : il n'est pas numéroté (ou son QR n'est pas lisible). Seuls les tickets officiels numérotés avec QR sont acceptés. Si le ticket est bien numéroté, reprenez la photo de face, nette et bien éclairée."});L.push("❌ Ticket refusé : non numéroté ou QR illisible. Reprenez la photo (de face, nette) ou utilisez un ticket officiel numéroté.");continue}
+   if(seen[code]){PTV.res.push({f,code,state:"dup",msg:"Le même ticket est envoyé deux fois."});L.push("❌ Le même ticket est envoyé deux fois.");continue}
+   seen[code]=1;let r;try{r=await rp("paper_check",{p_event:EV.e.id,p_code:code})}catch(x){r={result:"error"}}
+   if(r.result==="none"||r.result==="error"){PTV.mode="none";box.innerHTML="";PTV.done=true;return PTV}
+   PTV.mode="verify";
+   if(r.result==="valid"){const sel=($("occ")||{}).value,tt=((EV.e||{}).tickets||[]),st=tt.find(t=>t.id===sel);
+    const rt=tt.find(t=>t.id===r.ticket_id),pr=t=>t?nf(t.price)+" "+cur(t.currency):"?";
+    if(sel&&r.ticket_id&&(r.ticket_id!==sel||(st&&rt&&(+rt.price!==+st.price||String(rt.currency||"")!==String(st.currency||""))))){const m="Ticket refusé : cette photo est un ticket « "+(r.ticket||(rt?rt.name:"?"))+" » à "+pr(rt)+", mais vous avez choisi « "+(st?st.name:"?")+" » à "+pr(st)+". La catégorie et le prix doivent correspondre : choisissez la bonne catégorie ou envoyez le bon ticket.";PTV.res.push({f,code,state:"bad",msg:m});L.push("❌ "+esc(m));continue}
+    PTV.res.push({f,code,state:"ok",r});L.push("✅ Ticket n° "+esc(r.serial)+" · "+esc(r.ticket||"")+" reconnu");continue}
+   const msg=r.result==="void"?"Ticket refusé : ce ticket a été annulé.":r.result==="used"?"Ticket refusé : ce ticket est déjà enregistré (il a déjà été utilisé).":"Ticket refusé : faux ticket ou copie. Ceci n'est pas un ticket officiel de « "+((EV.e||{}).title||"")+" ».";
+   PTV.res.push({f,code,state:"bad",msg});L.push("❌ "+esc(msg))}
+  if(PTV.mode==="verify"&&!PTV.res.some(x=>x.state!=="ok")){const mm=ptMismatch();if(mm)L.push("⚠️ "+esc(mm))}
+  const badAny=PTV.res.some(x=>x.state!=="ok");box.style.cssText=badAny?"background:#fde2e2;color:#a40000;border-radius:10px;padding:10px;font-weight:700":"";box.innerHTML=L.join("<br>");PTV.done=true;if(badAny){const b0=PTV.res.find(x=>x.state!=="ok");try{alert("❌ "+(b0.msg||"Ticket refusé."))}catch(_){}}return PTV})();
  return PTV.busy}
 async function ptReady(){const rf=ptImgs("otp"),vf=ptImgs("otv");
  if(!vf.length){alert("❌ Ajoutez aussi la photo du VERSO de votre ticket (avec le cachet de l'organisation).");return{stop:1}}
  if(vf.length!==rf.length){alert("❌ Vous avez envoyé "+rf.length+" photo(s) du recto mais "+vf.length+" photo(s) du verso. Envoyez une photo du verso pour chaque ticket, dans le même ordre.");return{stop:1}}
- await ptVerifyVerso();
+ const vv=await ptVerifyVerso();if(vv.res.some(x=>!x.ok)){alert("❌ Verso refusé : le cachet de l'organisation n'est pas reconnu. Reprenez la photo du verso, cachet bien visible et net.");return{stop:1}}
  const p=await ptVerify();if(!p)return{};
- const bad=p.res.find(x=>x.state==="dup");if(bad){alert("❌ "+bad.msg);return{stop:1}}
+ const un=p.res.find(x=>x.state==="unread");if(un){alert("❌ "+un.msg);return{stop:1}}
+ if(p.mode!=="verify")return{};
+ const bad=p.res.find(x=>x.state==="bad"||x.state==="dup");if(bad){alert("❌ "+bad.msg);return{stop:1}}
+ const mm=ptMismatch();if(mm){alert("⚠️ "+mm);return{stop:1}}
  return{pcs:p.res.filter(x=>x.state==="ok")}}
 async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi en cours...";
  try{const grp=String(($("ogrp")||{}).value||"").trim();
@@ -2750,10 +2764,10 @@ async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),b=$("obt
    const vf0=(PTVV.files||[])[PTV.res.indexOf(p)];let vpath=null;
    if(vf0){vpath="ord/"+oid+"/verso-"+vf0.name.replace(/[^\w.\-]/g,"_");const u2=await fetch(SB+"/storage/v1/object/preuves/"+vpath,{method:"POST",headers:H("",{"Content-Type":vf0.type||"image/jpeg"}),body:vf0});if(!u2.ok)throw new Error("Envoi de la photo du verso impossible")}
    const it={id:t.id,name:t.name,qty:1,price:t.price,currency:t.currency};
-   rows.push({id:oid,event_id:e.id,kind:"cash",name:v("on"),phone:v("op"),email:v("oe")||null,address:Object.assign({},addr,vpath?{verso_path:vpath}:{},p.code?{scan_code:p.code}:{}),seller:v("os").replace(/\s+/g," ").slice(0,60)||null,items:[EV.sel?{...it,date:EV.sel}:it],total_qty:1,amounts:{[t.currency||"FC"]:t.price},payer:null,rec:null,proof_path:path,status:"pending"})}
+   rows.push({id:oid,event_id:e.id,kind:"cash",name:v("on"),phone:v("op"),email:v("oe")||null,address:vpath?Object.assign({},addr,{verso_path:vpath}):addr,seller:v("os").replace(/\s+/g," ").slice(0,60)||null,items:[EV.sel?{...it,date:EV.sel}:it],total_qty:1,amounts:{[t.currency||"FC"]:t.price},payer:null,rec:null,proof_path:path,status:"pending",paper_code:p.code})}
   const r=await fetch(SB+"/rest/v1/orders",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(rows)});
   if(!r.ok){let m="Enregistrement impossible";try{const j=await r.json();if(j&&j.message)m=j.message}catch(_){}throw new Error(m)}
-  $("ook").style.display="block";$("ook").innerHTML="✅ <b>"+(rows.length>1?rows.length+" tickets reçus":"Ticket reçu")+" !</b><br>⏳ L'organisation va vérifier l'authenticité de votre ticket avant de le confirmer.<br>Dès qu'elle l'a confirmé, <b>elle vous envoie sa confirmation sur WhatsApp</b>. Gardez bien votre ticket.";
+  $("ook").style.display="block";$("ook").innerHTML="✅ <b>"+(rows.length>1?rows.length+" tickets vérifiés et enregistrés":"Ticket vérifié et enregistré")+" !</b><br>⏳ En attente de confirmation par l'organisation.<br>Dès que l'organisation a confirmé votre ticket, <b>elle vous envoie sa confirmation sur WhatsApp</b>. Gardez bien votre ticket.";
   PTV.sig=null;PTVV.sig=null;EV.qty={};drawTk()
  }catch(x){alert("❌ "+x.message)}
  b.disabled=false;b.textContent=old}
@@ -3894,43 +3908,10 @@ waOrd=function(eid,id){const o=(ORD[eid]||[]).find(x=>x.id===id);if(o)window.ope
 function modal(o,l,m){let d=$("p6mod");if(d)d.remove();d=document.createElement("div");d.id="p6mod";window.__p6m=m;
  d.innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:16px;width:100%;max-width:420px"><h2 style="font-size:18px;margin:0 0 6px;color:#000">✅ Billet confirmé</h2><p style="margin:0 0 8px;font-size:14px"><b>${esc(civ(o)+o.name)}</b> · ${esc(ocode(o))}</p><textarea readonly rows="9" style="width:100%;box-sizing:border-box;font:13px/1.4 system-ui;padding:8px;border:1px solid #ddd;border-radius:10px;color:#000;background:#fff">${esc(m)}</textarea><a target="_blank" rel="noopener" href="${esc(l)}" style="display:block;text-align:center;text-decoration:none;background:#25d366;color:#fff;padding:13px;border-radius:12px;font-weight:800;margin:10px 0 6px">💬 Envoyer sur WhatsApp à ${esc(String(o.name).split(" ")[0])}</a><button class="ab" style="width:100%" onclick="p5Copy(window.__p6m)">📋 Copier le message</button><button class="ab" style="width:100%;margin-top:6px" onclick="document.getElementById('p6mod').remove()">Fermer</button></div>`;document.body.appendChild(d)}
 /* --- confirmation : enregistre date/heure puis ouvre WhatsApp avec le message --- */
-/* --- DÉTECTEUR À LA CONFIRMATION : c'est ici que le ticket est testé --- */
-const p7Blob=async path=>{const x=await af(SB+"/storage/v1/object/sign/preuves/"+path,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({expiresIn:600})});const d=await x.json();if(!d.signedURL)throw 0;const r=await fetch(SB+"/storage/v1"+d.signedURL);if(!r.ok)throw 0;return await r.blob()};
-async function p7Patch(id,p){const q=b=>api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(b)});try{await q(p)}catch(e){if(Object.keys(p).length>1)await q({status:"confirmed"});else throw e}}
-async function p7Detect(eid,o){
- const base={go:true,patch:{status:"confirmed"}};
- if(!o||!(o.kind==="cash"||o.kind==="paper")||!o.proof_path)return base;
- toast("🔍 Le détecteur vérifie le ticket…");
- const ev=evOf(eid),adr=o.address||{},sel=((o.items||[])[0]||{}).id,hard=[],soft=[];let code=null,r=null;
- try{code=ptNorm(await ptDecode(await p7Blob(o.proof_path)))}catch(e){}
- if(!code){soft.push("QR non lu ou ticket non numéroté sur la photo.")}
- else{
-  const same=(ORD[eid]||[]).filter(x=>x.id!==o.id&&x.status!=="cancelled"&&(x.paper_code===code||(x.address&&x.address.scan_code===code)));
-  const conf=same.find(x=>x.status==="confirmed");
-  if(conf)hard.push("Ce ticket est déjà confirmé pour "+conf.name+" : copie ou doublon.");
-  else if(same.length)soft.push("Une autre commande en attente ("+same[0].name+") contient le même ticket.");
-  try{r=await window.p5rp("paper_check",{p_event:eid,p_code:code})}catch(e){r={result:"error"}}
-  if(r.result==="valid"){if(sel&&r.ticket_id&&r.ticket_id!==sel)hard.push("Le ticket photographié est « "+(r.ticket||"?")+" » mais la commande indique une autre catégorie.")}
-  else if(r.result==="void")hard.push("Ce ticket a été annulé.");
-  else if(r.result==="used"){if(o.paper_code!==code)hard.push("Ce ticket est déjà enregistré (déjà utilisé).")}
-  else if(r.result==="none"||r.result==="error")soft.push("Registre des tickets indisponible : le numéro n'a pas pu être contrôlé.");
-  else hard.push("Faux ticket ou copie : ce numéro n'est pas un ticket officiel de cet événement.")}
- const tpl=(ev&&ev.modes||{}).stamp;
- if(tpl&&tpl.d){if(!adr.verso_path)soft.push("Pas de photo du verso.");
-  else{try{const sr=await stampCheck(await p7Blob(adr.verso_path),tpl);if(!sr.ok)soft.push("Cachet de l'organisation non reconnu au verso.")}catch(e){soft.push("Verso illisible : cachet non contrôlé.")}}}
- if(hard.length){
-  if(confirm("❌ CONFIRMATION REFUSÉE par le détecteur\n\n• "+hard.join("\n• ")+"\n\nAnnuler cette commande maintenant ?")){try{await api("orders?id=eq."+o.id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"cancelled"})});loadOrders(eid)}catch(e){alert("Échec de la mise à jour")}}
-  return{go:false}}
- if(soft.length){
-  if(!confirm("⚠️ Le détecteur n'est pas sûr\n\n• "+soft.join("\n• ")+"\n\nOuvrez la photo (📸) et vérifiez vous-même. Confirmer quand même ?"))return{go:false};
-  return{go:true,patch:code&&r&&r.result==="valid"?{status:"confirmed",paper_code:code,paper_check:"manual"}:{status:"confirmed",paper_check:"manual"}}}
- toast("✅ Ticket n° "+(r&&r.serial||"")+" reconnu");
- return{go:true,patch:{status:"confirmed",paper_code:code,paper_check:"auto"}}}
 setOrd=async function(eid,id,s){
  if(s!=="confirmed"){try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:s})});loadOrders(eid)}catch(x){if(x)alert("Échec de la mise à jour")}return}
  const o0=(ORD[eid]||[]).find(x=>x.id===id),auto=ld("lrr_autowa")!=="0"&&o0&&o0.kind!=="online";let w=null;if(auto){try{w=window.open("about:blank","_blank")}catch(e){}}
- try{const dv=await p7Detect(eid,o0);if(!dv.go){if(w)try{w.close()}catch(e){}return}
-  await p7Patch(id,dv.patch);await loadOrders(eid);
+ try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:"confirmed"})});await loadOrders(eid);
   const o=(ORD[eid]||[]).find(x=>x.id===id)||o0,ev=evOf(eid),l=link(o,ev);
   if(w&&!w.closed){w.location.href=l;toast("✅ Confirmé : WhatsApp s'ouvre avec le message")}else modal(o,l,msg(o,ev))}
  catch(x){if(w)try{w.close()}catch(e){}alert("Échec de la mise à jour")}};
@@ -3938,7 +3919,7 @@ window.p6Auto=c=>sv("lrr_autowa",c?"1":"0");
 window.p6Civ=async(eid,id,v)=>{try{await api("orders?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({civility:v})});loadOrders(eid)}catch(x){alert("Échec : le SQL 22-ventes-especes.sql est-il installé ?")}};
 /* --- liste des commandes : espèces regroupées par date (Jour 1, Jour 2, …), numérotées dans l'ordre d'achat --- */
 function card(eid,o,n){const ev=evOf(eid),conf=o.status==="confirmed",l=link(o,ev),kind=({cash:"Espèces",paper:"Ticket papier",door:"Caisse porte",online:"En ligne"})[o.kind]||"Réservation";
- return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>${o.paper_check==="auto"?`<div class="sm" style="color:#2f9e6e">✅ Ticket papier vérifié automatiquement (QR reconnu)</div>`:o.paper_check==="manual"?`<div class="sm" style="color:#d9822b">⚠️ QR non lu : vérifiez la photo du ticket</div>`:(o.kind==="cash"&&o.status==="pending"?`<div class="sm" style="color:#6b7280">🔍 Le détecteur testera ce ticket quand vous cliquerez sur Confirmer</div>`:"")}
+ return`<div class="x3"><b>${n?`<span class="p6n">N°${n}</span>`:""}${esc(civ(o)+o.name)}</b> <span class="sm">${esc(o.paper_code||ocode(o))} • ${kind} • ${o.hold&&o.status==="pending"?"⏳ À PAYER"+(o.expires_at?" avant "+esc(fdate(o.expires_at)):""):(o.kind==="online"&&o.status==="pending"?"⏳ paiement en cours (confirmation automatique)":esc(o.status))}${o.used?" • ✔ entré":""}</span>${o.paper_check==="auto"?`<div class="sm" style="color:#2f9e6e">✅ Ticket papier vérifié automatiquement (QR reconnu)</div>`:o.paper_check==="manual"?`<div class="sm" style="color:#d9822b">⚠️ QR non lu : vérifiez la photo du ticket</div>`:""}
 <div class="sm">📞 <a href="https://wa.me/${ph(o.phone)}" target="_blank" rel="noopener" style="color:inherit">${esc(o.phone)}</a> • 🎟 ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}${Object.keys(o.amounts||{}).length?" • 💰 "+esc(amtTxt(o.amounts)):""}</div>
 <div class="sm">🛒 Acheté le <b>${esc(D(o.created_at))}</b> à <b>${esc(T(o.created_at))}</b>${o.seller?" • Vendeur : <b>"+esc(o.seller)+"</b>":""}</div>${recLine(o)}
 ${o.confirmed_at?`<div class="sm">✅ Confirmé le <b>${esc(D(o.confirmed_at))}</b> à <b>${esc(T(o.confirmed_at))}</b></div>`:""}
@@ -3977,31 +3958,38 @@ function csv(rows,name){const q=v=>{v=v==null?"":String(v);return /[;"\n]/.test(
 
 /* ================= 🎫 TICKETS PAPIER ================= */
 async function tPaper(b){const id=CUR(),e=EVT(),bk=await ra("booklet_report",{p_event:id}),tk=e.tickets||[];
- b.innerHTML=`<div class="p5cd"><b>➕ Nouveau carnet de tickets papier</b><div class="p5row"><input id="bk_l" maxlength="40" placeholder="Nom du carnet (ex : Carnet A)"><input id="bk_s" maxlength="60" placeholder="Vendeur (ex : Mutombo)"></div><div class="p5row"><input id="bk_p" placeholder="WhatsApp du vendeur (facultatif)"><select id="bk_t">${tk.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select></div><div class="p5cd" style="margin:8px 0"><b>🖼️ Design de votre billet (facultatif)</b><small>Ajoutez l'image de votre billet : le site y ajoute le numéro et le QR, puis vous imprimez et donnez aux vendeurs. Sans image, le modèle automatique est utilisé.</small><input id="bk_d" type="file" accept="image/*"><select id="bk_pos"><option value="br">QR et numéro : en bas à droite</option><option value="bl">QR et numéro : en bas à gauche</option><option value="tr">QR et numéro : en haut à droite</option><option value="tl">QR et numéro : en haut à gauche</option></select></div><div class="p5row"><input id="bk_a" type="number" min="1" placeholder="N° de début (ex : 1)"><input id="bk_z" type="number" min="1" placeholder="N° de fin (ex : 100)"></div><button class="btn dk" onclick="p7BkAdd()">🎫 Créer les tickets</button><p class="sm">Chaque ticket a un <b>numéro</b> et un <b>code unique (QR)</b>. Il n'est valable qu'<b>une fois vendu</b> : un ticket papier non vendu, perdu ou copié est refusé à l'entrée. Maximum 500 tickets par carnet.</p></div>
+ b.innerHTML=`<div class="p5cd"><b>➕ Nouveau carnet de tickets papier</b><div class="p5row"><input id="bk_l" maxlength="40" placeholder="Nom du carnet (ex : Carnet A)"><input id="bk_s" maxlength="60" placeholder="Vendeur (ex : Mutombo)"></div><div class="p5row"><input id="bk_p" placeholder="WhatsApp du vendeur (facultatif)"><select id="bk_t">${tk.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select></div><div class="p5cd" style="margin:8px 0"><b>🖼️ Design de votre billet (facultatif)</b><small>Ajoutez l'image de votre billet : le site y ajoute le numéro et le QR, puis vous imprimez et donnez aux vendeurs. Sans image, le modèle automatique est utilisé.</small><input id="bk_d" type="file" accept="image/*"><select id="bk_pos"><option value="br">QR et numéro : en bas à droite</option><option value="bl">QR et numéro : en bas à gauche</option><option value="tr">QR et numéro : en haut à droite</option><option value="tl">QR et numéro : en haut à gauche</option></select><label class="sm" style="display:flex;gap:8px;align-items:flex-start;margin-top:8px"><input id="bk_nq" type="checkbox" style="width:auto;margin-top:3px"><span><b>Mon image a déjà son propre QR</b> : le site ajoute <b>seulement le numéro</b> (pas de QR). Laissez décoché si votre image n'a pas de QR : le site y ajoutera le QR et le numéro.</span></label></div><div class="p5row"><input id="bk_a" type="number" min="1" placeholder="N° de début (ex : 1)"><input id="bk_z" type="number" min="1" placeholder="N° de fin (ex : 100)"></div><button class="btn dk" onclick="p7BkAdd()">🎫 Créer les tickets</button><p class="sm">Chaque ticket a un <b>numéro</b> et un <b>code unique (QR)</b>. Il n'est valable qu'<b>une fois vendu</b> : un ticket papier non vendu, perdu ou copié est refusé à l'entrée. Maximum 500 tickets par carnet.</p></div>
  ${p7StampCard(e)}
  ${p7SellerSum(bk)}
  ${bk.map(x=>`<div class="p5cd"><b>${esc(x.label)}</b> <span class="p5k">${esc(x.ticket||"")}</span><small>Vendeur : <b>${esc(x.seller)}</b> · tickets n° ${x.from} à ${x.to} · ${nf(x.price)} ${cur(x.currency)} l'unité</small><small>🎫 ${x.total} imprimés · ✅ <b>${x.sold} vendus</b> · 📦 ${x.stock} en stock · 🚫 ${x.void} annulés · 💰 attendu : <b>${nf(x.sold*x.price)} ${cur(x.currency)}</b></small>
  <button class="p4b" onclick="p7Serials('${x.id}')">👁️ Voir les numéros (vendus / en stock)</button><div id="p7sn_${x.id}"></div> <button class="p4b" onclick="p7Design('${x.id}')">🖼️ Ajouter / changer le design du billet</button> <button class="p4b o" onclick="p7Print('${x.id}')">🖨️ Imprimer les tickets</button>
  <details style="margin-top:8px"><summary class="sm" style="cursor:pointer"><b>Le vendeur a vendu des tickets ?</b></summary><div class="p5row"><input id="sr_a_${x.id}" type="number" placeholder="du n°"><input id="sr_z_${x.id}" type="number" placeholder="au n°"></div><button class="p4b" onclick="p7SellRange('${x.id}')">✅ Marquer vendus (plage)</button>
  <p class="sm" style="margin-top:8px">Ou un seul ticket avec les infos de l'acheteur :</p><div class="p5row"><input id="s1_c_${x.id}" placeholder="N° ou code (PT-…)"><select id="s1_v_${x.id}"><option value="">Civilité</option><option>Monsieur</option><option>Madame</option></select></div><div class="p5row"><input id="s1_n_${x.id}" placeholder="Nom de l'acheteur (facultatif)"><input id="s1_p_${x.id}" placeholder="WhatsApp (facultatif)"></div><button class="p4b" onclick="p7SellOne('${x.id}')">✅ Vendre ce ticket</button>
- <p class="sm" style="margin-top:8px">Ticket perdu ou volé :</p><div class="p5row"><input id="vd_${x.id}" placeholder="N° ou code"><button class="p4b" style="flex:none" onclick="p7Void('${x.id}')">🚫 Annuler</button></div></details></div>`).join("")||'<p class="sm">Aucun carnet pour le moment.</p>'}`}
+ <p class="sm" style="margin-top:8px">Ticket perdu ou volé :</p><div class="p5row"><input id="vd_${x.id}" placeholder="N° ou code"><button class="p4b" style="flex:none" onclick="p7Void('${x.id}')">🚫 Annuler</button></div></details></div>`).join("")||'<p class="sm">Aucun carnet pour le moment.</p>'}`;{const _a=$("bk_a");if(_a&&!_a.value)_a.value=p7NextNo(bk)}}
 function p7StampCard(e){const t=(e.modes||{}).stamp;return`<div class="p5cd"><b>🔖 Cachet de l'organisation (obligatoire au verso des tickets papier)</b><small>Envoyez l'image de votre cachet (photo ou scan net, fond clair). Quand un client ajoute son ticket papier, il doit envoyer le <b>recto et le verso</b> : le verso est accepté seulement si le même cachet y est reconnu. Chaque organisation a son propre cachet.</small>${t&&t.img?`<div style="margin:6px 0"><img alt="" src="${t.img}" style="height:80px;background:#fff;border-radius:10px;padding:4px"> <small>${t.name?"Nom : <b>"+esc(t.name)+"</b> · ":""}✅ cachet enregistré</small></div>`:`<small style="color:#b00020"><b>⚠️ Aucun cachet enregistré : le cachet ne sera pas vérifié automatiquement.</b></small>`}<input id="stp_n" maxlength="60" placeholder="Nom écrit sur le cachet (ex : Restau du Rire · Gala d'humour)" value="${esc((t&&t.name)||"")}"><input id="stp_f" type="file" accept="image/*"><button class="p4b o" onclick="p7StampSave()">💾 ${t?"Remplacer":"Enregistrer"} le cachet</button>${t?`<button class="p4b" onclick="p7StampDel()">🗑️ Retirer</button>`:""}<div id="stp_s" class="sm"></div></div>`}
 async function p7SaveModes(patch){const e=EVT(),m=Object.assign({},e.modes||{}),k=Object.keys(patch);k.forEach(x=>{if(patch[x]===null)delete m[x];else m[x]=patch[x]});await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m})});e.modes=m;const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(d)d.modes=m}
 window.p7StampSave=async function(){const f=$("stp_f")&&$("stp_f").files[0],st=$("stp_s");if(!f){alert("Choisissez d'abord l'image de votre cachet.");return}
  try{if(st)st.textContent="⏳ Analyse du cachet…";const t=await stampTemplate(f);t.name=($("stp_n").value||"").trim().slice(0,60);await p7SaveModes({stamp:t});toast("Cachet enregistré ✅");p5Tab("paper")}catch(x){if(st)st.innerHTML="❌ "+esc((x&&x.message)||String(x));else alert("❌ "+((x&&x.message)||x))}};
 window.p7StampDel=async function(){if(!confirm("Retirer le cachet ? Les versos ne seront plus vérifiés automatiquement."))return;try{await p7SaveModes({stamp:null});toast("Cachet retiré");p5Tab("paper")}catch(x){err(x)}};
-function p7SellerSum(bk){if(!bk||!bk.length)return"";const M={};bk.forEach(x=>{const k=String(x.seller||"—").trim()||"—",m=M[k]||(M[k]={n:0,sold:0,stock:0,vd:0,ex:0,r:[]});m.n+=+x.total||0;m.sold+=+x.sold||0;m.stock+=+x.stock||0;m.vd+=+x.void||0;m.ex+=(+x.sold||0)*(+x.price||0);m.r.push("n° "+x.from+"–"+x.to+" ("+esc(x.label)+")");m.c=x.currency});
- return`<div class="p5cd"><b>👥 Mes tickets numérotés par vendeur</b>`+Object.keys(M).map(k=>{const m=M[k];return`<small><b>${esc(k)}</b> : ${m.r.join(", ")}<br>🎫 ${m.n} imprimés · ✅ ${m.sold} vendus · 📦 ${m.stock} en stock · 🚫 ${m.vd} annulés · 💰 ${nf(m.ex)} ${cur(m.c)}</small>`}).join("")+`</div>`}
+function p7NextNo(bk){return (bk||[]).reduce((m,x)=>Math.max(m,+x.to||0),0)+1}
+function p7SellerSum(bk){if(!bk||!bk.length)return"";window.__p7bk=bk;const NX=p7NextNo(bk);const M={};bk.forEach(x=>{const k=String(x.seller||"—").trim()||"—",m=M[k]||(M[k]={n:0,sold:0,stock:0,vd:0,ex:0,r:[]});m.n+=+x.total||0;m.sold+=+x.sold||0;m.stock+=+x.stock||0;m.vd+=+x.void||0;m.ex+=(+x.sold||0)*(+x.price||0);m.r.push("n° "+x.from+"–"+x.to+" ("+esc(x.label)+")");m.c=x.currency});
+ return`<div class="p5cd"><b>👥 Mes tickets numérotés par vendeur</b>`+Object.keys(M).map(k=>{const m=M[k];const ek=encodeURIComponent(k);return`<small><b>${esc(k)}</b> — <b>🎫 Total : ${m.n} ticket${m.n>1?"s":""}</b><br>${m.r.join(", ")}<br>🎫 ${m.n} imprimés · ✅ ${m.sold} vendus · 📦 ${m.stock} en stock · 🚫 ${m.vd} annulés · 💰 ${nf(m.ex)} ${cur(m.c)}<br><span style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><input id="sa_a_${ek}" type="number" min="1" value="${NX}" placeholder="du n°" style="width:84px"><input id="sa_z_${ek}" type="number" min="1" placeholder="au n°" style="width:84px"><button class="p4b" style="flex:none" onclick="p7SellerAdd('${ek}')">➕ Ajouter des tickets à ${esc(k)}</button></span></small>`}).join("")+`</div>`}
+window.p7SellerAdd=async function(ek){const k=decodeURIComponent(ek),bk=window.__p7bk||[],x=bk.filter(b=>String(b.seller||"—").trim()===k).slice(-1)[0],a=Math.floor(+$("sa_a_"+ek).value),z=Math.floor(+$("sa_z_"+ek).value);
+ if(!x||!(a>=1)||!(z>=a)){alert("Indiquez le n° de début et le n° de fin (ex : 21 à 40).");return}
+ if(z-a+1>500){alert("Maximum 500 tickets à la fois.");return}
+ const tk=(EVT().tickets||[]).find(t=>t.id===x.ticket_id||t.id===x.ticket||t.name===x.ticket);if(!tk){alert("Type de billet introuvable : utilisez « Nouveau carnet » ci-dessus.");return}
+ if(!confirm("Ajouter les tickets n° "+a+" à "+z+" ("+(z-a+1)+") pour "+k+" ?"))return;
+ try{const nid=await ra("booklet_create",{p_event:CUR(),p_label:(x.label||k)+" +",p_seller:k,p_phone:x.phone||x.seller_phone||null,p_ticket:tk.id,p_from:a,p_to:z});let dz=null;for(const b of bk.filter(b=>String(b.seller||"—").trim()===k).reverse()){try{const r=(await api("ticket_booklets?id=eq."+b.id+"&select=design,design_pos"))[0];if(r&&r.design){dz=r;break}}catch(_){}}if(dz&&nid)await ra("booklet_set_design",{p_booklet:nid,p_design:dz.design,p_pos:dz.design_pos||"br|1.727"});toast("Tickets ajoutés ✅"+(dz?" (design repris)":""));p5Tab("paper")}catch(e){err(e)}};
 window.p7Serials=async function(id){const el=$("p7sn_"+id);if(!el)return;if(el.innerHTML){el.innerHTML="";return}el.innerHTML='<p class="sm">⏳</p>';
  try{const l=await api("paper_tickets?booklet_id=eq."+id+"&select=serial,code,status&order=serial");el.innerHTML='<p class="sm">✅ vendu · 📦 en stock · 🚫 annulé</p><div style="display:flex;flex-wrap:wrap;gap:4px;margin:6px 0">'+l.map(t=>{const s=String(t.status||""),ic=/sold|vend|used|enter/i.test(s)?"✅":/void|annul/i.test(s)?"🚫":"📦";return`<span style="border:1px solid #ccc;border-radius:8px;padding:3px 7px;font-size:12px;font-weight:700" title="${esc(t.code)}">${ic} ${String(t.serial).padStart(4,"0")}</span>`}).join("")+"</div>"}catch(x){el.innerHTML="";err(x)}};
 window.p7BkAdd=async function(){const g=i=>$(i).value.trim();if(!g("bk_s")||!(+g("bk_a")>=1)||!(+g("bk_z")>=+g("bk_a"))){alert("Vendeur, n° de début et n° de fin obligatoires.");return}
- try{const _bid=await ra("booklet_create",{p_event:CUR(),p_label:g("bk_l")||"Carnet",p_seller:g("bk_s"),p_phone:g("bk_p")||null,p_ticket:g("bk_t"),p_from:Math.floor(+g("bk_a")),p_to:Math.floor(+g("bk_z"))});const _f=$("bk_d")&&$("bk_d").files[0];if(_f&&_bid){const _d=await p7Img(_f);await ra("booklet_set_design",{p_booklet:_bid,p_design:_d.url,p_pos:$("bk_pos").value+"|"+_d.r})}toast("Carnet créé ✅");p5Tab("paper")}catch(x){err(x)}};
+ try{const _bid=await ra("booklet_create",{p_event:CUR(),p_label:g("bk_l")||"Carnet",p_seller:g("bk_s"),p_phone:g("bk_p")||null,p_ticket:g("bk_t"),p_from:Math.floor(+g("bk_a")),p_to:Math.floor(+g("bk_z"))});const _f=$("bk_d")&&$("bk_d").files[0];if(_f&&_bid){const _d=await p7Img(_f);await ra("booklet_set_design",{p_booklet:_bid,p_design:_d.url,p_pos:$("bk_pos").value+"|"+_d.r+($("bk_nq")&&$("bk_nq").checked?"|n":"")})}toast("Carnet créé ✅");p5Tab("paper")}catch(x){err(x)}};
 window.p7Img=function(f){return new Promise((ok,ko)=>{const im=new Image(),u=URL.createObjectURL(f);im.onload=()=>{const w=Math.min(1400,im.width),h=Math.round(im.height*w/im.width),c=document.createElement("canvas");c.width=w;c.height=h;c.getContext("2d").drawImage(im,0,0,w,h);URL.revokeObjectURL(u);ok({url:c.toDataURL("image/jpeg",.85),r:+(w/h).toFixed(3)})};im.onerror=()=>ko(new Error("Image illisible"));im.src=u})};
-window.p7Design=function(id){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=async()=>{if(!i.files[0])return;const q=prompt("Place du QR et du numéro : 1 = bas droite, 2 = bas gauche, 3 = haut droite, 4 = haut gauche","1");const pos={"1":"br","2":"bl","3":"tr","4":"tl"}[String(q).trim()]||"br";try{const d=await p7Img(i.files[0]);await ra("booklet_set_design",{p_booklet:id,p_design:d.url,p_pos:pos+"|"+d.r});toast("Design enregistré ✅");p5Tab("paper")}catch(x){err(x)}};i.click()};
-window.p7PrintDesign=function(bk,l,pl,bid){const a=String(bk.design_pos||"br|1.727").split("|"),p=a[0]||"br",r=+a[1]||1.727,W=95,H=+(W/r).toFixed(2),no=(P7L[pl]||{}).no||"N°",v=p[0]==="t"?"top:1.5mm":"bottom:1.5mm",h=p[1]==="l"?"left:1.5mm":"right:1.5mm";
- const css="<style>.p7pg{display:grid;grid-template-columns:repeat(2,"+W+"mm);justify-content:start;margin:0 auto;width:"+(2*W)+"mm}@media screen and (max-width:700px){.p7pg{zoom:.46}}.p7d{position:relative;box-sizing:border-box;width:"+W+"mm;height:"+H+"mm;overflow:hidden;outline:.2mm dashed #888;break-inside:avoid;page-break-inside:avoid;background:url("+bk.design+") center/100% 100% no-repeat;-webkit-print-color-adjust:exact;print-color-adjust:exact}.p7d .m{position:absolute;"+v+";"+h+";background:#fff;padding:1mm;text-align:center;font:700 8px system-ui,sans-serif;color:#000;border-radius:1mm}.p7d .m img{display:block;width:17mm;height:17mm}.p7d .m b{display:block;font:900 12px Georgia,serif}@media print{@page{size:A4;margin:8mm}}</style>";
- const tk=l.map(t=>`<div class="p7d"><div class="m"><img alt="" src="${qrImg(t.code,140)}"><b>${no} ${String(t.serial).padStart(4,"0")}</b>${esc(t.code)}</div></div>`).join("");
- overlay(`${css}<div class="bx" style="max-width:none"><div class="no" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${p7Bar()}<button class="p4b" onclick="p5RcClose()">Fermer</button><span class="sm" style="align-self:center">${l.length} billets avec votre design · numéro et QR ajoutés · découpez le long des pointillés</span></div><div class="p7pg">${tk}</div></div>`)};
+window.p7Design=function(id){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=async()=>{if(!i.files[0])return;const q=prompt("Place du QR et du numéro : 1 = bas droite, 2 = bas gauche, 3 = haut droite, 4 = haut gauche","1");const pos={"1":"br","2":"bl","3":"tr","4":"tl"}[String(q).trim()]||"br";const nq=confirm("Cette image a-t-elle déjà son propre QR ?\n\nOK = oui : le site ajoute seulement le numéro.\nAnnuler = non : le site ajoute le QR et le numéro.");try{const d=await p7Img(i.files[0]);await ra("booklet_set_design",{p_booklet:id,p_design:d.url,p_pos:pos+"|"+d.r+(nq?"|n":"")});toast("Design enregistré ✅");p5Tab("paper")}catch(x){err(x)}};i.click()};
+window.p7PrintDesign=function(bk,l,pl,bid){const a=String(bk.design_pos||"br|1.727").split("|"),p=a[0]||"br",r=+a[1]||1.727,nq=a[2]==="n",W=95,H=+(W/r).toFixed(2),no=(P7L[pl]||{}).no||"N°",v=p[0]==="t"?"top:1.5mm":"bottom:1.5mm",h=p[1]==="l"?"left:1.5mm":"right:1.5mm";
+ const css="<style>.p7pg{display:grid;grid-template-columns:repeat(2,"+W+"mm);justify-content:start;margin:0 auto;width:"+(2*W)+"mm}@media screen and (max-width:700px){.p7pg{zoom:.46}}.p7d{position:relative;box-sizing:border-box;width:"+W+"mm;height:"+H+"mm;overflow:hidden;outline:.2mm dashed #888;break-inside:avoid;page-break-inside:avoid;background:url("+bk.design+") center/100% 100% no-repeat;-webkit-print-color-adjust:exact;print-color-adjust:exact}.p7d .m{position:absolute;"+v+";"+h+";background:#fff;padding:1mm;text-align:center;font:700 8px system-ui,sans-serif;color:#000;border-radius:1mm}.p7d .m img{display:block;width:17mm;height:17mm}.p7d .m.o{padding:.8mm 1.6mm}.p7d .m b{display:block;font:900 12px Georgia,serif}@media print{@page{size:A4;margin:8mm}}</style>";
+ const tk=l.map(t=>nq?`<div class="p7d"><div class="m o"><b>${no} ${String(t.serial).padStart(4,"0")}</b></div></div>`:`<div class="p7d"><div class="m"><img alt="" src="${qrImg(t.code,140)}"><b>${no} ${String(t.serial).padStart(4,"0")}</b>${esc(t.code)}</div></div>`).join("");
+ overlay(`${css}<div class="bx" style="max-width:none"><div class="no" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">${p7Bar()}<button class="p4b" onclick="p5RcClose()">Fermer</button><span class="sm" style="align-self:center">${l.length} billets avec votre design · ${nq?'numéro seulement (votre QR est déjà sur l\'image)':'numéro et QR ajoutés'} · découpez le long des pointillés</span></div><div class="p7pg">${tk}</div></div>`)};
 
 window.p7SellRange=async function(id){const a=+$("sr_a_"+id).value,z=+$("sr_z_"+id).value;if(!(a>=1&&z>=a)){alert("Indiquez les numéros (du … au …).");return}if(!confirm("Marquer vendus les tickets n° "+a+" à "+z+" ?"))return;try{const n=await ra("paper_sell_range",{p_booklet:id,p_from:a,p_to:z});alert("✅ "+n+" ticket(s) marqué(s) vendu(s).");p5Tab("paper")}catch(x){err(x)}};
 window.p7SellOne=async function(id){const g=i=>$(i+"_"+id).value.trim();if(!g("s1_c")){alert("Indiquez le n° ou le code du ticket.");return}try{await ra("paper_sell",{p_event:CUR(),p_code:g("s1_c"),p_name:g("s1_n")||null,p_phone:g("s1_p")||null,p_civility:g("s1_v")||null});toast("Ticket vendu ✅");p5Tab("paper")}catch(x){err(x)}};
@@ -4393,6 +4381,9 @@ function eaDraw(){
  <label>Nom complet *</label><input value="${esc(S.name)}" oninput="EAS.name=this.value" autocomplete="name">
  <label>Votre numéro WhatsApp ${cc?"(+"+cc+"…)":"(avec l'indicatif du pays)"} *</label><input type="tel" inputmode="tel" placeholder="${cc?"+"+cc+"7…":"+33…"}" value="${esc(S.phone)}" oninput="EAS.phone=this.value">
  <label>E-mail (facultatif)</label><input type="email" value="${esc(S.email)}" oninput="EAS.email=this.value">
+ <label>📍 Ville *</label><input value="${esc(S.ville||"")}" oninput="EAS.ville=this.value" autocomplete="address-level2" placeholder="Votre ville">
+ <label>📍 Adresse complète (quartier, rue et numéro) *</label><input value="${esc(S.adr||"")}" oninput="EAS.adr=this.value" autocomplete="street-address" placeholder="Ex : Quartier…, rue…, n°…">
+ <label>📍 Point de repère *</label><input value="${esc(S.loc||"")}" oninput="EAS.loc=this.value" placeholder="Ex : près de l'église, portail bleu…">
  <label>Code groupe (facultatif)</label><input value="${esc(S.grp||"")}" oninput="EAS.grp=this.value.toUpperCase()" maxlength="8" placeholder="Ex : G4F2A">
  ${pn.length?`<label>Destinataire de votre envoi *</label><select onchange="EAS.rec=this.value"><option value="">Choisissez…</option>${pn.map(p=>{const t=[p.op,p.name,p.number].filter(Boolean).join(" — ");return`<option${S.rec===t?" selected":""}>${esc(t)}</option>`}).join("")}</select>`:""}
  <label>Numéro ou compte qui a envoyé l'argent *</label><input value="${esc(S.payer)}" oninput="EAS.payer=this.value" placeholder="Ex : +250 78…">
@@ -4404,6 +4395,7 @@ async function eaSubmit(){
  const S=EAS,e=EV.e,T2=evTotals(),cc=EACC[S.pays]||"",name=(S.name||"").trim(),phone=eaPhone(S.phone,cc),payer=(S.payer||"").trim(),ref=(S.ref||"").trim(),f=$("eapf")&&$("eapf").files[0];
  const pn=pnOf(e).filter(p=>String(p.number||"").trim());
  if(name.length<3||phone.replace(/\D/g,"").length<8){alert("Indiquez votre nom complet et votre numéro WhatsApp avec l'indicatif du pays.");return}
+ if(!(S.ville||"").trim()||!(S.adr||"").trim()||!(S.loc||"").trim()){alert("Indiquez votre adresse complète : ville, adresse et point de repère.");return}
  if(!S.op){alert("Choisissez l'opérateur ou le service utilisé.");return}
  if(pn.length&&!S.rec){alert("Choisissez le destinataire de votre envoi.");return}
  if(!payer||ref.length<4){alert("Indiquez le numéro qui a envoyé l'argent et la référence de la transaction.");return}
@@ -4412,7 +4404,7 @@ async function eaSubmit(){
  try{const oid=newId(),path="ord/"+oid+"/"+f.name.replace(/[^\w.\-]/g,"_");
   const u=await fetch(SB+"/storage/v1/object/preuves/"+path,{method:"POST",headers:H("",{"Content-Type":f.type||"image/jpeg"}),body:f});if(!u.ok)throw new Error("Envoi de la capture impossible");
   const items=e.tickets.filter(t=>EV.qty[t.id]).map(t=>({id:t.id,name:t.name,qty:EV.qty[t.id],price:t.price,currency:t.currency}));
-  const row={id:oid,event_id:e.id,kind:"reservation",name,phone,email:(S.email||"").trim()||null,address:{pays:S.pays==="Autre"?((S.paysAutre||"").trim()||"Étranger"):S.pays,via:S.way==="mm"?"Mobile money":"Transfert international",service:S.op,ref,region:"Afrique de l'Est / diaspora",...(String(S.grp||"").trim()?{grp:String(S.grp).trim().toUpperCase().slice(0,8)}:{})},seller:null,items:(EV.sel?items.map(i=>({...i,date:EV.sel})):items),total_qty:T2.n,amounts:T2.amt,payer,rec:S.rec||null,proof_path:path,status:"pending"};
+  const row={id:oid,event_id:e.id,kind:"reservation",name,phone,email:(S.email||"").trim()||null,address:{pays:S.pays==="Autre"?((S.paysAutre||"").trim()||"Étranger"):S.pays,ville:(S.ville||"").trim(),avenue:(S.adr||"").trim(),loc:(S.loc||"").trim(),via:S.way==="mm"?"Mobile money":"Transfert international",service:S.op,ref,region:"Afrique de l'Est / diaspora",...(String(S.grp||"").trim()?{grp:String(S.grp).trim().toUpperCase().slice(0,8)}:{})},seller:null,items:(EV.sel?items.map(i=>({...i,date:EV.sel})):items),total_qty:T2.n,amounts:T2.amt,payer,rec:S.rec||null,proof_path:path,status:"pending"};
   const r=await fetch(SB+"/rest/v1/orders",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(row)});
   if(!r.ok)throw new Error("Enregistrement impossible");
   const code="EV-"+oid.slice(0,8).toUpperCase(),msg=`🌍 *ACHAT DEPUIS L'ÉTRANGER / AFRIQUE DE L'EST*\n🎭 ${e.title}\n🔖 Réf : ${code}\n👤 ${name}\n📞 ${phone}\n🎫 ${items.map(i=>i.name+" × "+i.qty).join(", ")}\n💰 ${amtTxt(T2.amt)}\n💳 ${S.op} depuis ${payer}\n🧾 Transaction : ${ref}\n📸 Capture envoyée via le site`;
@@ -5097,7 +5089,7 @@ const ms=document.getElementById("mlang");if(ms)Object.keys(N).forEach(l=>ms.ins
 if(typeof lang==="string"&&LD[lang]){document.documentElement.dir=lang==="ar"?"rtl":"ltr"}
 /* 3. Adresse simplifiée hors RDC */
 const g=id=>document.getElementById(id);
-setInterval(()=>{const p=g("pays");if(!p||/congo|rdc/i.test(p.value)||!p.value)return;["province","commune","quartier","avenue"].forEach(i=>{const x=g(i);if(x&&!x.value.trim())x.value="—"})},1500);
+/* adresse complète demandée à tous (plus de « — » automatique) */
 /* 4. Note de paiement hors RDC */
 const ph=g("phone");if(ph&&!g("f7note")){ph.insertAdjacentHTML("afterend",'<div id="f7note" class="sm" style="display:none;margin:6px 0;color:#e8b04a"></div>');
  ph.addEventListener("input",()=>{const d=ph.value.replace(/\D/g,""),n=g("f7note"),ea=/^(250|255|254|256|257)/.test(d);n.style.display=ea||(d.length>6&&!/^(243|0)/.test(d))?"block":"none";
@@ -5389,59 +5381,7 @@ function isStade(e){return /stade|stadium|parc|esplanade|arena|plein air/i.test(
 function isOwn(e){try{return typeof ownerView==="function"&&!!e&&ownerView(e.id)}catch(x){return false}}
 function stat(t){const sold=(EV&&EV.sold&&EV.sold[t.id])||0,own=isOwn(EV&&EV.e);if(!t.stock)return{so:false,txt:"Disponible",lo:false};const rem=Math.max(t.stock-sold,0);return{so:rem===0,txt:rem===0?"Complet":own?rem+" place"+(rem>1?"s":"")+" restante"+(rem>1?"s":""):"Disponible",lo:own&&rem>0&&rem/t.stock<=.2}}
 const X=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-/* ===== Plan Concordia : partenaires/sponsors devant à gauche, VVIP/VIP à droite, standards derrière, protocole ===== */
-function isConc(e){try{return /concordia/i.test([e.venue,e.city,e.title].join(" "))||!!(e.modes&&e.modes.hall&&e.modes.hall.kind==="concordia")}catch(x){return false}}
-function svgC(e){
- const Z=zones(e),L=[],R=[],B=[];
- Z.forEach((z,r)=>{const n=String(z.t.name||""),it={z,r};(/vvip|vip/i.test(n)?R:/partenaire|partner|sponsor/i.test(n)?L:B).push(it)});
- if(!L.length&&!R.length)return"";
- if(!L.some(it=>/partenaire|partner/i.test(it.z.t.name)))L.unshift({virtual:true});
- const W=360,INK="#23232e",PAPER="#fdfcf8",gap=6,y0=88,frontH=Math.max(150,56*L.length),xl=34,xr=326,mid=180,ai=16;
- let lx0=0,lx1=0,rx0=0,rx1=0;
- if(L.length&&R.length){lx0=xl;lx1=mid-ai/2;rx0=mid+ai/2;rx1=xr}else if(L.length){lx0=xl;lx1=xr}else{rx0=xl;rx1=xr}
- const nB=B.length,stdH=nB?Math.max(96,nB*60):0,yS0=y0+frontH+gap,yb=y0+frontH+(nB?gap+stdH:0)+34,H=yb+8+86+20;
- const ttl=X(String(e.title||"").slice(0,34)),ven=X([e.venue,e.city].filter(Boolean).join(", ").slice(0,44));
- let o=`<svg class="plsvg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la salle" font-family="system-ui,Arial,sans-serif">`;
- o+=`<defs><pattern id="plg" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M10 0H0V10" fill="none" stroke="#e9e5da" stroke-width=".6"/></pattern><pattern id="plh" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#8d8d8d" stroke-width="1.6"/></pattern><pattern id="plw" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-20)"><line x1="0" y1="0" x2="8" y2="0" stroke="#c9b48a" stroke-width=".7"/></pattern></defs>`;
- o+=`<rect width="${W}" height="${H}" fill="${PAPER}"/><rect width="${W}" height="${H}" fill="url(#plg)"/>`;
- o+=`<rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${INK}" stroke-width="6"/><rect x="10" y="10" width="${W-20}" height="${yb-2}" fill="none" stroke="${PAPER}" stroke-width="1.6"/>`;
- o+=`<rect x="62" y="20" width="236" height="48" fill="#efe3c8" stroke="${INK}" stroke-width="2"/><rect x="62" y="20" width="236" height="48" fill="url(#plw)"/><line x1="62" y1="27" x2="298" y2="27" stroke="${INK}" stroke-width=".8" stroke-dasharray="3 2"/><text x="180" y="52" text-anchor="middle" fill="${INK}" font-size="14" font-weight="800" letter-spacing="3">SCÈNE</text>`;
- const chr=(bx,by,bw,bh,col)=>{let s="";for(let ry=by+8;ry+9<=by+bh-6;ry+=12)for(let rx=bx+6;rx+8<=bx+bw-4;rx+=12)s+=`<rect x="${rx}" y="${ry}" width="8" height="6.5" rx="1.6" fill="#fff" stroke="${col}" stroke-width="1"/><rect x="${rx}" y="${ry+6.5}" width="8" height="2" rx=".8" fill="${col}"/>`;return s};
- const tabs=(bx,by,bw,bh)=>{let s="";for(let ry=by+8;ry+30<=by+bh-2;ry+=32)for(let rx=bx+4;rx+40<=bx+bw-2;rx+=46){s+=`<rect x="${rx}" y="${ry+7}" width="40" height="13" rx="1.5" fill="#d8bf8a" stroke="#6b4e1f" stroke-width=".9"/>`;[8,20,32].forEach(dx=>{s+=`<circle cx="${rx+dx}" cy="${ry+3}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/><circle cx="${rx+dx}" cy="${ry+24}" r="2.6" fill="#fff" stroke="#6b4e1f" stroke-width=".8"/>`});}return s};
- const box=(it,x0,x1,y,h,split)=>{
-  if(it.virtual){const c="#2a8f6f",w=x1-x0,lw=Math.min(w-14,128),cx=x0+w/2,cy=y+h/2;
-   return `<g><rect x="${x0}" y="${y}" width="${w}" height="${h}" fill="${c}" fill-opacity=".1" stroke="${c}" stroke-width="1.4" stroke-dasharray="5 3"/>${chr(x0,y,w,h,c)}<rect x="${cx-lw/2}" y="${cy-12}" width="${lw}" height="24" fill="#fff" fill-opacity=".96" stroke="${INK}" stroke-width=".8"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="800" fill="${INK}">Partenaires</text></g>`}
-  const z=it.z,r=it.r,c=COL[Math.min(r,COL.length-1)],s=stat(z.t),k=kind(z.t.name),col=s.so?"#9a9a9a":c,w=x1-x0;
-  let g=`<g data-z="${z.i}" style="cursor:pointer"><rect x="${x0}" y="${y}" width="${w}" height="${h}" fill="${col}" fill-opacity="${s.so?.12:.1}" stroke="${col}" stroke-width="1.4" stroke-dasharray="5 3"/>`;
-  if(s.so)g+=`<rect x="${x0}" y="${y}" width="${w}" height="${h}" fill="url(#plh)" opacity=".28"/>`;
-  const parts=split?[[x0,mid-ai/2-x0],[mid+ai/2,x1-(mid+ai/2)]]:[[x0,w]];
-  parts.forEach(p=>{g+=k==="tab"?tabs(p[0],y,p[1],h):chr(p[0],y,p[1],h,col)});
-  if(split)g+=`<line x1="${mid}" y1="${y}" x2="${mid}" y2="${y+h}" stroke="#b9b4a6" stroke-width=".7" stroke-dasharray="2 3"/>`;
-  const lbl=X(z.t.name).slice(0,16),pr=z.t.price>0?(typeof nf==="function"?nf(z.t.price):z.t.price)+" "+(z.t.currency==="USD"?"$":"FC"):"Gratuit",lw=Math.min(w-14,128),cx=x0+w/2,cy=y+h/2;
-  g+=`<rect x="${cx-lw/2}" y="${cy-18}" width="${lw}" height="36" fill="#fff" fill-opacity=".96" stroke="${INK}" stroke-width=".8"/><text x="${cx}" y="${cy-4}" text-anchor="middle" font-size="11" font-weight="800" fill="${INK}">${lbl}</text><text x="${cx}" y="${cy+11}" text-anchor="middle" font-size="9.5" font-weight="700" fill="${s.so?"#b00":"#555"}">${s.so?"COMPLET":pr}</text>`;
-  g+=`<circle cx="${x0}" cy="${y}" r="10" fill="${col}" stroke="#fff" stroke-width="1.5"/><text x="${x0}" y="${y+4}" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">${r+1}</text></g>`;
-  return g};
- const col=(arr,x0,x1)=>{const n=arr.length,h=(frontH-gap*(n-1))/n;arr.forEach((it,i)=>{o+=box(it,x0,x1,y0+i*(h+gap),h,false)})};
- if(L.length)col(L,lx0,lx1);
- if(R.length)col(R,rx0,rx1);
- if(nB){const h=(stdH-gap*(nB-1))/nB;B.forEach((it,i)=>{o+=box(it,xl,xr,yS0+i*(h+gap),h,true)})}
- /* allée centrale */
- if(L.length&&R.length)o+=`<text x="${mid}" y="${y0+frontH/2}" text-anchor="middle" font-size="6.5" fill="#8a8a8a" letter-spacing="1" transform="rotate(-90 ${mid} ${y0+frontH/2})">ALLÉE</text>`;
- /* protocole : 4 en salle (le long des murs) + 2 à la porte */
- const pm=(x,y)=>`<g><circle cx="${x}" cy="${y}" r="8" fill="${INK}" stroke="#fff" stroke-width="1.4"/><text x="${x}" y="${y+3.6}" text-anchor="middle" font-size="9.5" font-weight="800" fill="#fff">P</text></g>`;
- const yA=y0+frontH/2,yB=nB?yS0+stdH/2:y0+14;
- o+=pm(22,yA)+pm(338,yA)+pm(22,yB)+pm(338,yB)+pm(128,yb-12)+pm(232,yb-12);
- /* porte */
- const gapR=(x,y,ww,hh)=>`<rect x="${x}" y="${y}" width="${ww}" height="${hh}" fill="${PAPER}"/>`;
- o+=gapR(148,yb+6,64,8);
- o+=`<g fill="none" stroke="${INK}" stroke-width="1.2"><path d="M150 ${yb+10}V${yb-22}"/><path d="M150 ${yb-22}A32 32 0 0 1 182 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/><path d="M210 ${yb+10}V${yb-22}"/><path d="M210 ${yb-22}A32 32 0 0 0 178 ${yb+10}" stroke-width=".7" stroke-dasharray="2 2"/></g>`;
- o+=`<text x="${W/2}" y="${yb+24}" text-anchor="middle" font-size="8.5" font-weight="800" fill="${INK}" letter-spacing="1">ENTRÉE • SORTIE (PORTE UNIQUE)</text>`;
- o+=`<g><circle cx="52" cy="${yb+38}" r="6" fill="${INK}"/><text x="52" y="${yb+41}" text-anchor="middle" font-size="7.5" font-weight="800" fill="#fff">P</text><text x="62" y="${yb+41}" font-size="8" fill="#555">Protocole : 4 en salle · 2 à la porte</text></g>`;
- const cy=H-58;
- o+=`<rect x="10" y="${cy}" width="${W-20}" height="48" fill="#fff" stroke="${INK}" stroke-width="1.6"/><line x1="236" y1="${cy}" x2="236" y2="${cy+48}" stroke="${INK}" stroke-width="1"/><text x="18" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">PLAN DE LA SALLE</text><text x="18" y="${cy+29}" font-size="12" font-weight="800" fill="${INK}">${ttl}</text><text x="18" y="${cy+41}" font-size="8" fill="#555">${ven}</text><text x="244" y="${cy+14}" font-size="7.5" fill="#777" letter-spacing="1">ÉCHELLE</text><text x="244" y="${cy+27}" font-size="9" font-weight="700" fill="${INK}">Schématique</text><text x="244" y="${cy+40}" font-size="7.5" fill="#777">Feuille 1 / 1</text>`;
- return o+`</svg>`}
 function svg(e){
- if(isConc(e)){const c=svgC(e);if(c)return c}
  const Z=zones(e),n=Math.max(Z.length,1),stade=isStade(e),W=360,INK="#23232e",PAPER="#fdfcf8",gap=6,bh=Math.max(64,Math.min(112,Math.floor(300/n))),y0=88,x0=44,w=272,yb=y0+n*(bh+gap)+34,H=yb+8+86;
  const ttl=X(String(e.title||"").slice(0,34)),ven=X([e.venue,e.city].filter(Boolean).join(", ").slice(0,44));
  let o=`<svg class="plsvg" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Plan de la salle" font-family="system-ui,Arial,sans-serif">`;
