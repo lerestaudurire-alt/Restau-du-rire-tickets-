@@ -1900,6 +1900,16 @@ html.dk #pub .dp-h p{color:#9fe0c3!important}
 html.dk #pub .dp-a{color:#6fe0b0!important}
 html.dk #pub .dp #secb .sec-b span{background:#17211f!important;border-color:#2d3f3b!important;color:#e8f0ee!important}
 </style>
+<style id="rr-footer2">
+#pub footer.ftr details.ftr-d{border-top:1px solid rgba(255,255,255,.14);margin:0}
+#pub footer.ftr details.ftr-d:first-of-type{margin-top:30px}
+#pub footer.ftr details.ftr-d summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:18px 2px;font:800 22px/1.2 system-ui,sans-serif;color:#fff;-webkit-tap-highlight-color:transparent}
+#pub footer.ftr details.ftr-d summary::-webkit-details-marker{display:none}
+#pub footer.ftr details.ftr-d summary::after{content:"";width:10px;height:10px;border-right:3px solid #f2c14e;border-bottom:3px solid #f2c14e;transform:rotate(45deg);margin:-4px 6px 0 0;transition:transform .2s}
+#pub footer.ftr details.ftr-d[open] summary::after{transform:rotate(-135deg);margin-top:4px}
+#pub footer.ftr details.ftr-d .ftr-l{padding-bottom:10px}
+#pub footer.ftr .ftr-grid>details.ftr-d+.ftr-col{margin-top:0}
+</style>
 </head><body>
 
 <!-- ========== PAGE PUBLIQUE ========== -->
@@ -1998,25 +2008,14 @@ html.dk #pub .dp #secb .sec-b span{background:#17211f!important;border-color:#2d
 <div id="v-acc" class="view" hidden></div>
 <div id="v-ev" class="view" hidden></div>
 <div id="v-prog" class="view" hidden></div><div id="v-cotis" class="view" hidden></div><div id="v-cot" class="view" hidden></div><div id="v-cotc" class="view" hidden></div><div id="v-cotm" class="view" hidden></div>
-<section id="dataprot" class="dp" aria-labelledby="dpt">
-<div class="dp-h"><span class="dp-i"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><rect x="9" y="10.5" width="6" height="5" rx="1"/><path d="M10.2 10.5V9a1.8 1.8 0 013.6 0v1.5"/></svg></span><div><h2 id="dpt">Vos données sont protégées</h2><p>Votre argent et vos informations restent entre de bonnes mains.</p></div></div>
-<ul class="dp-l">
-<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><b>Connexion HTTPS</b> : tout ce que vous envoyez voyage chiffré.</span></li>
-<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><b>Numéros et e-mails chiffrés</b> en AES-256 dans notre base de données.</span></li>
-<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><b>Captures de paiement</b> gardées dans un espace privé.</span></li>
-<li><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span><b>Accès limité</b> à l'administrateur et à l'organisateur concerné. Nous ne vendons jamais vos données.</span></li>
-</ul>
-<div id="secb"></div>
-<a class="dp-a" role="button" tabindex="0" onclick="showInfo('priv')">Lire notre politique de confidentialité <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></a>
-</section>
 <footer class="ftr" id="ftr">
 <div class="ftr-brand"><img src="icon-192.png" alt="" width="64" height="64" onerror="this.style.display='none'"><b>Le Restau du Rire</b></div>
 <p class="ftr-tag">Servir avec humour ! 🎭</p>
 <div class="fs" id="soc2"></div>
 <div class="ftr-grid">
-<div class="ftr-col"><h3>Navigation</h3><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="nav('home')">Prochaines soirées</a></li><li><a role="button" tabindex="0" onclick="nav('find')">Mes places</a></li><li><a role="button" tabindex="0" onclick="nav('cotis')">Cotisations</a></li><li><a role="button" tabindex="0" onclick="nav('create')">Publier mes billets</a></li><li><a role="button" tabindex="0" onclick="nav('cotcreate')">Lancer une cotisation</a></li><li><a role="button" tabindex="0" onclick="nav('account')">Mon espace</a></li><li><a role="button" tabindex="0" onclick="nav('gift')">La carte cadeau</a></li></ul></div>
-<div class="ftr-col"><h3>Explorer</h3><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="qfGo('top')">🔥 Top coups de cœur</a></li><li><a role="button" tabindex="0" onclick="qfGo('we')">📅 Ce week-end</a></li><li><a role="button" tabindex="0" onclick="qfGo('free')">🆓 Gratuit</a></li><li><a role="button" tabindex="0" onclick="qfGo('cheap')">💸 Petits prix</a></li><li><a role="button" tabindex="0" onclick="p4Artists()">🎤 Les artistes</a></li><li><a role="button" tabindex="0" onclick="p4Cities()">📍 Toutes les villes</a></li></ul></div>
-<div class="ftr-col"><h3>Aide</h3><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="showInfo('how')">Mode d'emploi</a></li><li><a role="button" tabindex="0" onclick="showInfo('help')">Une question ? Une panne ?</a></li><li><a role="button" tabindex="0" onclick="showInfo('cgv')">Règles de vente</a></li><li><a role="button" tabindex="0" onclick="showInfo('install')">Ajouter à l'écran d'accueil</a></li><li><a role="button" tabindex="0" onclick="openMenu()">Français / English</a></li></ul></div>
+<details class="ftr-col ftr-d"><summary>Navigation</summary><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="nav('home')">Prochaines soirées</a></li><li><a role="button" tabindex="0" onclick="nav('find')">Mes places</a></li><li><a role="button" tabindex="0" onclick="nav('cotis')">Cotisations</a></li><li><a role="button" tabindex="0" onclick="nav('create')">Publier mes billets</a></li><li><a role="button" tabindex="0" onclick="nav('cotcreate')">Lancer une cotisation</a></li><li><a role="button" tabindex="0" onclick="nav('account')">Mon espace</a></li><li><a role="button" tabindex="0" onclick="nav('gift')">La carte cadeau</a></li></ul></details>
+<details class="ftr-col ftr-d"><summary>Explorer</summary><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="qfGo('top')">🔥 Top coups de cœur</a></li><li><a role="button" tabindex="0" onclick="qfGo('we')">📅 Ce week-end</a></li><li><a role="button" tabindex="0" onclick="qfGo('free')">🆓 Gratuit</a></li><li><a role="button" tabindex="0" onclick="qfGo('cheap')">💸 Petits prix</a></li><li><a role="button" tabindex="0" onclick="p4Artists()">🎤 Les artistes</a></li><li><a role="button" tabindex="0" onclick="p4Cities()">📍 Toutes les villes</a></li></ul></details>
+<details class="ftr-col ftr-d"><summary>Aide</summary><ul class="ftr-l"><li><a role="button" tabindex="0" onclick="showInfo('how')">Mode d'emploi</a></li><li><a role="button" tabindex="0" onclick="showInfo('help')">Une question ? Une panne ?</a></li><li><a role="button" tabindex="0" onclick="showInfo('cgv')">Règles de vente</a></li><li><a role="button" tabindex="0" onclick="showInfo('install')">Ajouter à l'écran d'accueil</a></li><li><a role="button" tabindex="0" onclick="openMenu()">Français / English</a></li></ul></details>
 <div class="ftr-col ftr-about"><h3>Qui sommes-nous ?</h3><p>Né à Bukavu, Le Restau du Rire est un gala d'humour qui a grandi avec son public. Cet espace a été pensé pour vous : repérer une soirée, réserver sa place, régler depuis son téléphone et entrer avec un simple QR code. Vous êtes artiste, promoteur ou association ? Mettez votre soirée en ligne et suivez vos encaissements en direct.</p><p>Prochain grand rendez-vous : l'Édition 1.5, le 27 décembre 2026 à la Salle Concordia. « Servir avec humour ! »</p></div>
 <div class="ftr-col" id="contact"><h3>Une question ? Écrivez-nous</h3>
 <div class="ftr-cta"><a class="w" href="https://wa.me/243902704475" target="_blank" rel="noopener"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4.2A8 8 0 1112 20a8 8 0 01-3.8-1z"/><path d="M9 8.5c0 3.500 3 6.500 6.500 6.500l1-1.500-2-1-1 .8a4 4 0 01-2-2l.8-1-1-2z"/></svg>WhatsApp</a><a href="tel:+243902704475"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"/></svg>Appeler</a></div>
@@ -6018,4 +6017,5 @@ window._pdfBlob=pdfBlob;
 </script>
 
 <script>(function(){function f(){var e=document.getElementById("secb");if(e&&window.secBadges&&!e.firstChild)e.innerHTML=window.secBadges()}if(document.readyState==="loading")addEventListener("DOMContentLoaded",function(){setTimeout(f,0)});else setTimeout(f,0);addEventListener("load",f)})();</script>
+<script>(function(){try{if(matchMedia("(min-width:760px)").matches)document.querySelectorAll("footer.ftr details.ftr-d").forEach(function(d){d.open=true})}catch(e){}})();</script>
 </body></html>
