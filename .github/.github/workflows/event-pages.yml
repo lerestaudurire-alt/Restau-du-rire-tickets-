@@ -1,0 +1,24 @@
+name: Pages d'aperçu des événements
+on:
+  schedule: [{cron: "*/10 * * * *"}]
+  workflow_dispatch:
+  push:
+    paths: ["tools/gen_event_pages.py", "affiche.jpg"]
+permissions:
+  contents: write
+concurrency: event-pages
+jobs:
+  gen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12"}
+      - run: pip install pillow
+      - run: python tools/gen_event_pages.py
+      - name: Publier si changement
+        run: |
+          git config user.name "event-pages-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -A e
+          git diff --cached --quiet || (git commit -m "Aperçus événements" && git push)
