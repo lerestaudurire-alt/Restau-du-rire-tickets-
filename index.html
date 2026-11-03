@@ -2683,7 +2683,7 @@ async function submitEvent(){const t=$("cst");if(t)t.textContent="⏳ Vérificat
 function slugify(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’`]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)||"evenement"}
 const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x||""));
 function evSlug(e,list){if(!e)return"";const b=slugify(e.title);const same=(list||DBEV||[]).filter(x=>slugify(x.title)===b).sort((a,c)=>String(a.created_at||a.id).localeCompare(String(c.created_at||c.id)));const i=same.findIndex(x=>x.id===e.id);return i>0?b+"-"+(i+1):b}
-function evUrlKey(e){return e?evSlug(e,(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:DBEV)):""} function evShare(e){return location.origin+location.pathname.replace(/index\.html$/,"").replace(/\/?$/,"/")+"e/"+(e?evUrlKey(e):"")+"/"}
+function evUrlKey(e){return e?evSlug(e,(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:DBEV)):""} function evShare(e){return location.origin+location.pathname.replace(/index\.html$/,"").replace(/\/?$/,"/")+"evenement/"+(e?evUrlKey(e):"")+"/"}
 function findEvBySlug(sl,list){const m={};for(const x of list||[]){const k=evSlug(x,list);m[k]=x}return m[sl]||null}
 async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc/expire_holds",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"})}catch(x){}el.innerHTML='<p class="sm" style="padding:20px">⏳</p>';
  let e=isUuid(id)?DBEV.find(x=>x.id===id):findEvBySlug(decodeURIComponent(id||""),DBEV);

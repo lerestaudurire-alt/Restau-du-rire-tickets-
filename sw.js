@@ -4,7 +4,7 @@ self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.a
 self.addEventListener("fetch",e=>{
  const u=new URL(e.request.url);
  if(e.request.method!=="GET")return;
- if(new URL(e.request.url).pathname.indexOf("/e/")>-1)return;
+ if(new URL(e.request.url).pathname.indexOf("/evenement/")>-1)return;
  if(u.hostname.endsWith("supabase.co"))return;
  if(u.origin!==location.origin&&u.hostname!=="cdnjs.cloudflare.com")return;
  e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(V).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request).then(m=>m||caches.match("index.html"))));
