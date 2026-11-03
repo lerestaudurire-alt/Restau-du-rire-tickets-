@@ -6040,7 +6040,7 @@ async function loadViews(force){if(!force&&Date.now()-VT<15000)return;VT=Date.no
  try{const r=await fetch(SB+"/rest/v1/rpc/event_view_counts",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok){VT=Date.now()-12000;if(DG&&!window.__dg1){window.__dg1=1;let t="";try{t=await r.text()}catch(x){}alert("event_view_counts : HTTP "+r.status+" "+t.slice(0,250))}return}const l=await r.json();VOK=true;if(DG&&!window.__dg2){window.__dg2=1;alert("event_view_counts OK : "+JSON.stringify(l).slice(0,300))}(Array.isArray(l)?l:[]).forEach(x=>VW[x.event_id]=+(x.n??x.views??x.count)||0);Object.keys(OWN).forEach(id=>{if(!(VW[id]>0))VW[id]=1});try{localStorage.setItem("lrr_vw",JSON.stringify(VW))}catch(e){}paintViews()}catch(e){VT=Date.now()-12000}}
 function isPast(id,fb){let L=[];try{const d=(DBEV||[]).find(x=>x.id===id);if(d)L=evDates(d)}catch(x){}
  let last=L.length?L[L.length-1]:(fb?new Date(fb):null);if(!last||isNaN(last))return false;return last.getTime()+6*36e5<Date.now()}
-function vwHTML(id){return id==="official"?"":`<span class="vw" data-vw="${esc(String(id))}" hidden title="Visites de la page">${EYE}<b>0</b></span>`}
+function vwHTML(id){return `<span class="vw" data-vw="${esc(String(id))}" hidden title="Visites de la page">${EYE}<b>0</b></span>`}
 const _ec99=evCard;
 evCard=function(e){let h=_ec99(e);try{const past=isPast(e.id,e.ts),v=vwHTML(e.id);
  const row=(v||past)?`<div class="vwr">${v}${past?'<span class="pst">Passé</span>':""}</div>`:"";
