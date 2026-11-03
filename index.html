@@ -6049,12 +6049,13 @@ evCard=function(e){let h=_ec99(e);try{const past=isPast(e.id,e.ts),v=vwHTML(e.id
 const _de99=drawEvents;
 drawEvents=function(){const r=_de99.apply(this,arguments);try{paintViews();loadViews()}catch(x){}return r};
 const _oe99=openEvent;
-openEvent=async function(id){const r=await _oe99.apply(this,arguments);try{const e=EV&&EV.e;if(!e)return r;
+openEvent=async function(id){const r=await _oe99.apply(this,arguments);try{const e=EV&&EV.e;if(!e){if(DG)alert("diag vue : aucun événement ouvert (EV.e vide)");return r}
  const t=document.querySelector("#v-ev h2.sec2")||document.querySelector("#v-ev");
  if(t&&!document.getElementById("vwbig")){const past=isPast(e.id,null);t.insertAdjacentHTML(t.id==="v-ev"?"afterbegin":"afterend",`<div class="vwr big" id="vwbig">${vwHTML(e.id)}${past?'<span class="pst">Passé</span>':""}</div>`)}
  paintViews();
  const k="lrr_v_"+e.id;let fresh=false;try{fresh=!sessionStorage.getItem(k)}catch(x){fresh=true}window.__tv=window.__tv||{};if(window.__tv[e.id])fresh=false;
- if(fresh){window.__tv[e.id]=1;rp("lrr_view_add",{p_event:e.id}).then(r=>{try{sessionStorage.setItem(k,"1")}catch(x){}OWN[e.id]=1;try{localStorage.setItem("lrr_vo",JSON.stringify(OWN))}catch(x){}const rn=Array.isArray(r)?+r[0]:+r;VW[e.id]=Math.max(+VW[e.id]||0,isFinite(rn)&&rn>0?rn:1);paintViews();window.__tv[e.id]=0;loadViews(true)}).catch(x=>{window.__tv[e.id]=0;if(DG)alert("lrr_view_add a échoué : "+((x&&x.message)||x));loadViews(true)})}else loadViews(true)}catch(x){}return r};
+ if(DG)alert("diag vue : événement "+e.id+" | nouvelle vue à compter : "+(fresh?"oui":"non (déjà comptée dans cette session)"));
+ if(fresh){window.__tv[e.id]=1;window.p5rp("lrr_view_add",{p_event:e.id}).then(r=>{if(DG)alert("diag vue : ajout réussi, réponse = "+JSON.stringify(r));try{sessionStorage.setItem(k,"1")}catch(x){}OWN[e.id]=1;try{localStorage.setItem("lrr_vo",JSON.stringify(OWN))}catch(x){}const rn=Array.isArray(r)?+r[0]:+r;VW[e.id]=Math.max(+VW[e.id]||0,isFinite(rn)&&rn>0?rn:1);paintViews();window.__tv[e.id]=0;loadViews(true)}).catch(x=>{window.__tv[e.id]=0;if(DG)alert("lrr_view_add a échoué : "+((x&&x.message)||x));loadViews(true)})}else loadViews(true)}catch(x){if(DG)alert("diag vue : erreur du script : "+((x&&x.message)||x))}return r};
 try{Object.assign(EN,{"Événements en vedette":"Featured events","Découvrez, réservez et profitez en quelques clics !":"Discover, book and enjoy in just a few clicks!","Bienvenue sur notre billetterie… une plateforme ouverte à tous les organisateurs, pas seulement au Restau du Rire. Concerts, conférences, spectacles, festivals ou sports : trouvez vos places en quelques clics. Découvrez les événements en vedette, réservez en toute sécurité, et profitez de chaque moment !":"Welcome to our ticketing platform… open to all organizers, not only Restau du Rire. Concerts, conferences, shows, festivals or sports: find your seats in just a few clicks. Discover the featured events, book safely, and enjoy every moment!","Passé":"Past"})}catch(x){}
 loadViews(true);
 })();</script>
