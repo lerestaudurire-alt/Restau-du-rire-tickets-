@@ -2683,7 +2683,7 @@ async function submitEvent(){const t=$("cst");if(t)t.textContent="⏳ Vérificat
 function slugify(t){return String(t||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/['’`]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,80)||"evenement"}
 const isUuid=x=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(x||""));
 function evSlug(e,list){if(!e)return"";const b=slugify(e.title);const same=(list||DBEV||[]).filter(x=>slugify(x.title)===b).sort((a,c)=>String(a.created_at||a.id).localeCompare(String(c.created_at||c.id)));const i=same.findIndex(x=>x.id===e.id);return i>0?b+"-"+(i+1):b}
-function evUrlKey(e){return e?evSlug(e,(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:DBEV)):""}
+function evUrlKey(e){return e?evSlug(e,(typeof ALLEV!=="undefined"&&ALLEV.length?ALLEV:DBEV)):""} function evShare(e){return location.origin+location.pathname.replace(/index\.html$/,"").replace(/\/?$/,"/")+"e/"+(e?evUrlKey(e):"")+"/"}
 function findEvBySlug(sl,list){const m={};for(const x of list||[]){const k=evSlug(x,list);m[k]=x}return m[sl]||null}
 async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc/expire_holds",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"})}catch(x){}el.innerHTML='<p class="sm" style="padding:20px">⏳</p>';
  let e=isUuid(id)?DBEV.find(x=>x.id===id):findEvBySlug(decodeURIComponent(id||""),DBEV);
@@ -2946,13 +2946,13 @@ const RRN=[["Amani Michael","+243 997 998 460"],["Daniel Mugisho","+243 975 340 
 function drawEPay(){const pn=pnOf(EV.e),c=$("epch");if(!c)return;EV.pi=Math.min(EV.pi||0,Math.max(pn.length-1,0));
  c.innerHTML=pn.map((p,i)=>`<button type="button" class="pch${i===EV.pi?" on":""}" onclick="EV.pi=${i};drawEPay()">${opImg(p.op)}${esc((p.name||"").split(" ")[0]||p.number)}</button>`).join("");
  const p=pn[EV.pi];$("epc").innerHTML=p?`<b>${esc(p.name)}</b><span style="font-size:20px;font-weight:900;color:var(--ink)">${esc(p.number)}</span>${p.op?`<span style="display:inline-flex;align-items:center;gap:6px">${opImg(p.op)}${esc(p.op)}</span>`:""}<button type="button" class="ab" onclick="copyNum('${esc(p.number)}')">📋 Copier</button>`:""}
-function shareEv(){const e=EV.e,u=location.origin+location.pathname+"#event/"+evUrlKey(e),t=e.title;shareSheet(t,u)}
+function shareEv(){const e=EV.e,u=evShare(e),t=e.title;shareSheet(t,u)}
 function icsEv(){const e=EV.e,f=d=>d.toISOString().replace(/[-:]/g,"").slice(0,15)+"Z",L=evDates(e),loc=[e.venue,e.city].filter(Boolean).join(" ").replace(/[,;]/g," ");
  const ev=L.map((s,i)=>["BEGIN:VEVENT","UID:"+e.id+"-"+i+"@restau-du-rire","DTSTAMP:"+f(new Date()),"DTSTART:"+f(s),"DTEND:"+f(new Date(s.getTime()+3*36e5)),"SUMMARY:"+e.title.replace(/[,;]/g," ")+(L.length>1?" ("+(i+1)+"/"+L.length+")":""),"LOCATION:"+loc,"END:VEVENT"].join("\r\n"));
  const ics=["BEGIN:VCALENDAR","VERSION:2.0",...ev,"END:VCALENDAR"].join("\r\n");
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([ics],{type:"text/calendar"}));a.download="evenement.ics";a.click()}
 const progUrl=t=>location.origin+location.pathname+"#progress/"+t;
-const buyUrl=id=>{const e=(MYEV||[]).find(x=>x.id===id)||(ALLEV||[]).find(x=>x.id===id)||DBEV.find(x=>x.id===id);return location.origin+location.pathname+"#event/"+(e?evUrlKey(e):id)};
+const buyUrl=id=>{const e=(MYEV||[]).find(x=>x.id===id)||(ALLEV||[]).find(x=>x.id===id)||DBEV.find(x=>x.id===id);return (e?evShare(e):location.origin+location.pathname+"#event/"+id)};
 function copyBuy(id){const u=buyUrl(id);navigator.clipboard.writeText(u).then(()=>alert("✅ Lien d'achat copié :\n"+u)).catch(()=>prompt("Copiez ce lien :",u))}
 function waBuy(id){const e=MYEV.find(x=>x.id===id)||ALLEV.find(x=>x.id===id)||{title:""};window.open("https://wa.me/?text="+encodeURIComponent("🎟️ Réservez vos billets pour *"+e.title+"* :\n"+buyUrl(id)),"_blank")}
 function copyLink(t){const u=progUrl(t);navigator.clipboard.writeText(u).then(()=>alert("Lien copié : "+u)).catch(()=>prompt("Copiez ce lien :",u))}
@@ -3296,7 +3296,7 @@ window.toggleLow=function(){LOW=!LOW;sv("lrr_low",LOW?"1":"0");document.document
 /* 6. Page événement : inviter, description dépliable, badges de sécurité */
 function secBadges(){return `<div class="sec-b"><span>${SVG('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/>')}Connexion chiffrée</span><span>${SVG('<rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/>')}Mobile Money vérifié</span><span>${SVG('<path d="M12 3l8 3v6c0 4.500-3.400 8-8 9-4.600-1-8-4.500-8-9V6z"/><path d="M9 12l2 2 4-4"/>')}Billet à QR unique</span></div>`}
 window.secBadges=secBadges;
-window.inviteFriends=function(){const e=EV.e,u=location.origin+location.pathname+"#event/"+evUrlKey(e),t="On y va ensemble ? "+e.title+" — "+fmtRange(e)+" — "+[e.venue,e.city].filter(Boolean).join(", ")+". Réserve ta place : "+u;
+window.inviteFriends=function(){const e=EV.e,u=evShare(e),t="On y va ensemble ? "+e.title+" — "+fmtRange(e)+" — "+[e.venue,e.city].filter(Boolean).join(", ")+". Réserve ta place : "+u;
  if(navigator.share&&/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)){navigator.share({title:e.title,text:t}).catch(()=>{});return}
  window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank","noopener")};
 
@@ -3539,13 +3539,13 @@ async function drawCard(withPoster){const e=EV.e,W=1080,H=1920,c=document.create
  x.fillStyle="#ffc83d";x.font="800 40px system-ui,sans-serif";ln=wrap(x,"📅 "+fmtRange(e),90,y,900,50,2);y+=(ln-1)*50+56;
  x.fillStyle="#fff";x.font="700 38px system-ui,sans-serif";ln=wrap(x,"📍 "+[e.venue,e.city].filter(Boolean).join(", "),90,y,900,48,2);y+=(ln-1)*48+54;
  x.fillStyle="#ffc83d";x.font="900 44px system-ui,sans-serif";x.fillText("Dès "+minPrice(e),90,y);const o=orgName(e);if(o){x.fillStyle="rgba(255,255,255,.8)";x.font="700 30px system-ui,sans-serif";x.textAlign="right";x.fillText("par "+(o.length>26?o.slice(0,25)+"…":o),990,y);x.textAlign="left"}
- x.fillStyle="#fff";rr(x,90,1620,900,230,32);x.fill();const u=location.origin+location.pathname+"#event/"+evUrlKey(e);
+ x.fillStyle="#fff";rr(x,90,1620,900,230,32);x.fill();const u=evShare(e);
  try{const t=document.createElement("div");new QRCode(t,{text:u,width:190,height:190});const qc=t.querySelector("canvas");if(qc)x.drawImage(qc,780,1640,190,190)}catch(z){}
  x.fillStyle="#1c1b2e";x.font="900 54px system-ui,sans-serif";x.fillText("Réserve ta place",125,1710);x.font="700 30px system-ui,sans-serif";x.fillStyle="#6f6a7d";x.fillText("Scanne le code ou ouvre le lien",125,1756);x.font="800 26px system-ui,sans-serif";x.fillStyle="#ff6b1a";let sh=u.replace(/^https?:\/\//,"");while(x.measureText(sh).width>620&&sh.length>10)sh=sh.slice(0,-2);x.fillText(sh+(sh.length<u.replace(/^https?:\/\//,"").length?"…":""),125,1812);return c}
 window.p4Card=async function(){const e=EV&&EV.e;if(!e)return;toast("Création du visuel…");let c=await drawCard(true),blob=await new Promise(r=>{try{c.toBlob(r,"image/png")}catch(z){r(null)}});if(!blob){c=await drawCard(false);blob=await new Promise(r=>c.toBlob(r,"image/png"))}
  const url=URL.createObjectURL(blob),file=new File([blob],"billet-"+(e.title||"evenement").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+".png",{type:"image/png"});window._p4f=file;window._p4u=url;
  mo.classList.add("on");$("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:340px;margin:auto;text-align:center;max-height:94vh;overflow:auto"><h2 style="color:#000;font-size:17px;margin-bottom:8px">🖼️ Votre visuel</h2><img src="${url}" alt="" style="width:100%;border-radius:12px"><p class="sm" style="margin:8px 0">Publiez-le dans votre statut WhatsApp, Instagram ou Facebook : vos amis scannent le code et réservent.</p><button class="ab" onclick="p4Share()">📤 Partager</button><a class="ab" style="display:block;text-decoration:none" download="${esc(file.name)}" href="${url}">⬇️ Télécharger</a><button class="ab" onclick="closeMo()">Fermer</button></div>`};
-window.p4Share=async function(){const f=window._p4f,e=EV.e,t=e.title+" — "+location.origin+location.pathname+"#event/"+evUrlKey(e);try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:t});return}}catch(z){return}toast("Téléchargez l'image puis publiez-la")};
+window.p4Share=async function(){const f=window._p4f,e=EV.e,t=e.title+" — "+evShare(e);try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:t});return}}catch(z){return}toast("Téléchargez l'image puis publiez-la")};
 
 /* 7. Cotiser entre amis pour sortir ; liste d'attente via WhatsApp */
 window.p4Tribe=function(){const e=EV.e,T=evTotals(),cu=Object.keys(T.amt).find(k=>T.amt[k]>0),tk=(e.tickets||[]).filter(t=>t.price>0).sort((a,b)=>a.price-b.price)[0],goal=cu?T.amt[cu]:(tk?tk.price*4:""),cur=cu||(tk?tk.currency:"FC");
@@ -3728,7 +3728,7 @@ async function queue(e){const M=MD(e);if(!M.queue)return;const st=M.sales_start?
  const go=async()=>{if(!EV||EV.e!==e){clearInterval(Q.t);return}try{const r=await rp("queue_pass",{p_event:e.id,p_device:dev()}),b=$("p5q");if(!b)return;Q.wait=!r.ok;$("v-ev").classList.toggle("p5lock",!r.ok);b.innerHTML=r.ok?"✅ <b>C'est votre tour !</b> Vous pouvez réserver.":`🚦 <b>Salle d'attente</b> : vous êtes n° <b>${r.pos}</b>. Attente estimée : environ ${Math.max(1,r.wait_min)} min. Ne quittez pas cette page.`;if(r.ok)clearInterval(Q.t)}catch(x){Q.wait=false}};
  clearInterval(Q.t);go();Q.t=setInterval(go,6000)}
 const _evq5=evq;evq=function(id,d){if(d>0&&Q.wait){alert("Vous êtes en salle d'attente : patientez jusqu'à votre tour.");return}return _evq5(id,d)};
-function ics(e){const d=evDates(e)[0];if(!d)return;const z=x=>new Date(x).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""),end=new Date(d.getTime()+3*36e5),T=s=>String(s||"").replace(/[\\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n"),u=location.origin+location.pathname+"#event/"+evUrlKey(e);
+function ics(e){const d=evDates(e)[0];if(!d)return;const z=x=>new Date(x).toISOString().replace(/[-:]/g,"").replace(/\.\d+/,""),end=new Date(d.getTime()+3*36e5),T=s=>String(s||"").replace(/[\\;,]/g,m=>"\\"+m).replace(/\n/g,"\\n"),u=evShare(e);
  const t=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//Restau du Rire Tickets//FR","BEGIN:VEVENT","UID:"+e.id+"@restau-du-rire","DTSTAMP:"+z(Date.now()),"DTSTART:"+z(d),"DTEND:"+z(end),"SUMMARY:"+T(e.title),"LOCATION:"+T([e.venue,e.city].filter(Boolean).join(", ")),"DESCRIPTION:"+T("Votre billet : "+u),"BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:Demain : "+T(e.title),"END:VALARM","BEGIN:VALARM","TRIGGER:-PT2H","ACTION:DISPLAY","DESCRIPTION:Dans 2 heures : "+T(e.title),"END:VALARM","END:VEVENT","END:VCALENDAR"].join("\r\n");
  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/calendar"}));a.download="rappel-evenement.ics";document.body.appendChild(a);a.click();setTimeout(()=>a.remove(),500);toast("Rappels ajoutés à votre calendrier (veille et 2 h avant)")}
 window.p5Ics=()=>ics(EV.e);
@@ -3767,7 +3767,7 @@ function draw(L){const ov=$("p5m");ov.innerHTML=`<button class="btn" onclick="p5
 window.p5Pick=v=>{CUR=v;load()};window.p5Tab=t=>{TAB=t;document.querySelectorAll(".p5tb button").forEach(b=>b.classList.toggle("on",b.textContent===(TABS.find(x=>x[0]===t)||[])[1]));load()};
 const ev=()=>(MYEV||[]).find(e=>e.id===CUR)||{};window.p5Cur=()=>CUR;window.p5Ev=()=>ev();
 async function load(){const b=$("p5b");if(!b)return;b.innerHTML='<p class="sm">⏳ Chargement…</p>';try{const H9=Object.assign({promo,door,amb,inv,inst,live,news,stat,rem},window.P7T||{});if(typeof H9[TAB]!=="function"){b.innerHTML='<p class="sm">⚠️ Cet outil n\'est pas chargé. Tirez la page vers le bas pour la recharger, ou ouvrez le site avec ?v=23 à la fin de l\'adresse.</p>';return}await H9[TAB](b)}catch(x){b.innerHTML='<p class="sm">❌ '+esc(x.message||"Erreur de chargement")+' (le SQL 21-fonctions-pro.sql est-il installé ?)</p>'}}
-const evLink=e=>BASE()+"#event/"+evUrlKey(e);
+const evLink=e=>evShare(e);
 
 async function promo(b){const l=await api("promo_codes?event_id=eq."+CUR+"&select=*&order=created_at.desc");
  b.innerHTML=`<div class="p5cd"><b>Créer un code promo</b><div class="p5row"><div><small>Code</small><input id="pc_c" maxlength="20" placeholder="NOEL20" style="text-transform:uppercase"></div><div><small>Type</small><select id="pc_k"><option value="percent">% de remise</option><option value="amount">Montant fixe</option></select></div></div><div class="p5row"><div><small>Valeur</small><input id="pc_v" type="number" min="1" placeholder="20"></div><div><small>Devise (montant fixe)</small><select id="pc_u"><option>FC</option><option>USD</option></select></div></div><div class="p5row"><div><small>Utilisations max (vide = illimité)</small><input id="pc_m" type="number" min="1"></div><div><small>Expire le</small><input id="pc_e" type="datetime-local"></div></div><button class="btn dk" onclick="p5PromoAdd()">➕ Ajouter</button></div>
@@ -3788,7 +3788,7 @@ window.p5ScDel=async id=>{if(!confirm("Supprimer ce scanneur ?"))return;try{awai
 
 async function amb(b){const[l,rep]=await Promise.all([api("ambassadors?event_id=eq."+CUR+"&select=*&order=created_at"),ra("ambassador_report",{p_event:CUR})]),e=ev(),R={};rep.forEach(r=>R[r.code.toUpperCase()]=r);
  b.innerHTML=`<div class="p5cd"><b>Ajouter un ambassadeur / promoteur</b><div class="p5row"><div><input id="am_n" maxlength="40" placeholder="Nom"></div><div><input id="am_c" maxlength="20" placeholder="Code (ex : JEAN)" style="text-transform:uppercase"></div></div><div class="p5row"><div><input id="am_p" placeholder="WhatsApp (facultatif)"></div><div><input id="am_m" type="number" min="0" max="100" placeholder="Commission % (10)"></div></div><button class="btn dk" onclick="p5AmbAdd()">➕ Ajouter</button></div>
- ${l.map(a=>{const r=R[a.code.toUpperCase()]||{},lk=BASE()+"?ref="+encodeURIComponent(a.code)+"#event/"+evUrlKey(e);return`<div class="p5cd"><b>${esc(a.name)}</b> <span class="p5k">${esc(a.code)}</span> <span class="p5k">${a.commission_pct} %</span><small>${r.orders||0} commande(s) · ${r.qty||0} billet(s) confirmé(s)${r.fc?" · "+nf(r.fc)+" FC":""}${r.usd?" · "+nf(r.usd)+" $":""}</small><small><b>Commission due :</b> ${nf(r.com_fc||0)} FC${r.com_usd?" + "+nf(r.com_usd)+" $":""}</small><button class="p4b o" onclick="p5Copy('${esc(lk)}')">🔗 Copier son lien</button><button class="p4b" onclick="p5AmbDel('${a.id}')">🗑️</button></div>`}).join("")||'<p class="sm">Aucun ambassadeur. Chaque ambassadeur reçoit un lien personnel ; ses ventes confirmées sont comptées automatiquement.</p>'}`}
+ ${l.map(a=>{const r=R[a.code.toUpperCase()]||{},lk=evShare(e)+"?ref="+encodeURIComponent(a.code);return`<div class="p5cd"><b>${esc(a.name)}</b> <span class="p5k">${esc(a.code)}</span> <span class="p5k">${a.commission_pct} %</span><small>${r.orders||0} commande(s) · ${r.qty||0} billet(s) confirmé(s)${r.fc?" · "+nf(r.fc)+" FC":""}${r.usd?" · "+nf(r.usd)+" $":""}</small><small><b>Commission due :</b> ${nf(r.com_fc||0)} FC${r.com_usd?" + "+nf(r.com_usd)+" $":""}</small><button class="p4b o" onclick="p5Copy('${esc(lk)}')">🔗 Copier son lien</button><button class="p4b" onclick="p5AmbDel('${a.id}')">🗑️</button></div>`}).join("")||'<p class="sm">Aucun ambassadeur. Chaque ambassadeur reçoit un lien personnel ; ses ventes confirmées sont comptées automatiquement.</p>'}`}
 window.p5AmbAdd=async function(){const n=$("am_n").value.trim(),c=($("am_c").value.trim()||n.split(" ")[0]).toUpperCase().replace(/[^A-Z0-9_-]/g,"");if(n.length<2||c.length<2){alert("Nom et code obligatoires.");return}try{await api("ambassadors",{method:"POST",headers:{Prefer:"return=representation"},body:JSON.stringify({event_id:CUR,name:n,code:c,phone:$("am_p").value.trim()||null,commission_pct:$("am_m").value!==""?Math.min(100,Math.max(0,+$("am_m").value)):10})});load()}catch(x){alert("❌ Ce code existe déjà.")}};
 window.p5AmbDel=async id=>{if(!confirm("Supprimer cet ambassadeur ?"))return;try{await api("ambassadors?id=eq."+id,{method:"DELETE"});load()}catch(x){err(x)}};
 
@@ -4257,7 +4257,7 @@ window.p9RefAll=async function(){try{const O=(await orders()).filter(o=>o.status
  for(const o of O){const p=String(o.phone).replace(/\D/g,"");if(have.has(p)||seen.has(p))continue;seen.add(p);const base=String(o.name).split(" ")[0].toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,8)||"AMI";
   for(let t=0;t<4;t++){const code=base+String(Math.floor(Math.random()*90)+10);try{await api("ambassadors",{method:"POST",headers:{Prefer:"return=minimal"},body:JSON.stringify({event_id:CUR(),name:o.name,code,phone:o.phone,commission_pct:0})});n++;break}catch(x){}}}
  alert("✅ "+n+" lien(s) créé(s).");window.p5Tab("ref")}catch(x){alert("❌ "+x.message)}};
-window.p9RefSend=function(code){const a=(window.RF9.A||[]).find(x=>x.code===code),e=EVT(),R=window.RF9.R,lk=BASEU()+"?ref="+encodeURIComponent(code)+"#event/"+evUrlKey(e);
+window.p9RefSend=function(code){const a=(window.RF9.A||[]).find(x=>x.code===code),e=EVT(),R=window.RF9.R,lk=evShare(e)+"?ref="+encodeURIComponent(code);
  const t=`Bonjour ${String(a.name).split(" ")[0]} 🎭 Voici votre lien personnel pour « ${e.title} » : ${lk}\nPour chaque ${R.n||3} billets achetés par vos amis avec ce lien, vous gagnez : ${R.reward||"1 billet offert"} !`;
  window.open("https://wa.me/"+ph(a.phone)+"?text="+encodeURIComponent(t),"_blank","noopener")};
 window.p9RefGive=function(code){const g=jl("lrr_refgiven_"+CUR(),{});g[code]=(g[code]||0)+1;sv("lrr_refgiven_"+CUR(),JSON.stringify(g));window.p5Tab("ref")};
@@ -4618,7 +4618,7 @@ function grpOpen(){const e=EV.e,mine=localStorage.getItem("lrr_grp_"+e.id)||"";
  <label style="margin-top:16px">Vous avez déjà un code ?</label><input id="gl_c" placeholder="G…" style="text-transform:uppercase"><button class="eab" style="margin-top:8px" onclick="grpStatus($('gl_c').value)">Voir le suivi du groupe</button>`)}
 async function grpCreate(){const n=($("gl_n").value||"").trim(),t=+$("gl_t").value||2;if(n.length<2){alert("Indiquez votre nom.");return}try{const c=await grpRpc("group_create",{p_event:EV.e.id,p_leader:n,p_target:t});localStorage.setItem("lrr_grp_"+EV.e.id,c);try{const i=$("ogrp");if(i)i.value=c}catch(x){}grpStatus(c)}catch(x){alert("❌ "+x.message)}}
 async function grpStatus(code){code=String(code||"").trim().toUpperCase();if(!code)return;try{const g=await grpRpc("group_status",{p_code:code});if(!g){alert("Code de groupe introuvable.");return}grpDraw(g);clearInterval(window._gI);window._gI=setInterval(async()=>{if(!$("grpov")){clearInterval(window._gI);return}try{const x=await grpRpc("group_status",{p_code:code});if(x)grpDraw(x)}catch(e){}},20000)}catch(x){alert("❌ "+x.message)}}
-function grpDraw(g){const tot=(+g.confirmed||0)+(+g.pending||0),pct=Math.min(100,Math.round((+g.confirmed||0)/(+g.target||1)*100)),link=location.href.split("#")[0]+"#event/"+(EV&&EV.e&&EV.e.id===g.event_id?evUrlKey(EV.e):""),
+function grpDraw(g){const tot=(+g.confirmed||0)+(+g.pending||0),pct=Math.min(100,Math.round((+g.confirmed||0)/(+g.target||1)*100)),link=(EV&&EV.e&&EV.e.id===g.event_id?evShare(EV.e):location.href.split("#")[0]),
  msg=`👥 Rejoins le groupe de ${g.leader} pour *${g.title}* !\nChoisis ton billet ici : ${link}\n🔑 Code groupe à saisir dans le formulaire : *${g.code}*`;
  grpOv(`<h2>👥 Groupe ${esc(g.code)}</h2><p class="eas">${esc(g.title)} • meneur : ${esc(g.leader)}</p><div class="grpc"><b>${g.confirmed} billet(s) payé(s) sur ${g.target} prévus</b><div class="grpb"><i style="width:${pct}%"></i></div><small>${g.pending||0} en attente de confirmation</small></div>
  ${(g.members||[]).map(m=>`<div class="grpc">${m.s==="confirmed"?"✅":"⏳"} <b>${esc(m.n)}</b> • ${m.q} billet(s) • ${m.s==="confirmed"?"payé":"en attente"}</div>`).join("")||'<p class="eas">Personne n\'a encore acheté avec ce code.</p>'}
@@ -4985,7 +4985,7 @@ html.dk .leaflet-tile{filter:invert(.9) hue-rotate(180deg) brightness(.9)}
 <script>
 /* ===== V17 : affiche prête à partager (WhatsApp, Facebook, Status) ===== */
 window.shareAffiche=async function(){try{
- var e=EV.e,u=location.origin+location.pathname+"#event/"+evUrlKey(e),c=document.createElement("canvas");c.width=1080;c.height=1350;var x=c.getContext("2d");
+ var e=EV.e,u=evShare(e),c=document.createElement("canvas");c.width=1080;c.height=1350;var x=c.getContext("2d");
  var g=x.createLinearGradient(0,0,0,1350);g.addColorStop(0,"#0e2f2b");g.addColorStop(1,"#1c1b2e");x.fillStyle=g;x.fillRect(0,0,1080,1350);
  var im=await new Promise(function(r){if(!e.img||/^data:/.test(e.img)&&false)return r(null);var i=new Image();i.crossOrigin="anonymous";i.onload=function(){r(i)};i.onerror=function(){r(null)};i.src=e.img});
  var y=90;if(im){x.save();x.beginPath();x.roundRect?x.roundRect(90,90,900,560,36):x.rect(90,90,900,560);x.clip();var k=Math.max(900/im.width,560/im.height);x.drawImage(im,90+(900-im.width*k)/2,90+(560-im.height*k)/2,im.width*k,im.height*k);x.restore();y=720}else y=200;
@@ -6032,11 +6032,11 @@ html.dk .pst{background:#2f453f;color:#e8f0ee}
 </style>
 <script>(function(){
 const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
-const VW={};let VT=0;
+const VW={};let VT=0,VOK=false;try{Object.assign(VW,JSON.parse(localStorage.getItem("lrr_vw")||"{}"))}catch(e){}
 const fmtN=n=>n>=1000?(n/1000).toFixed(1).replace(".0","").replace(".",",")+"k":String(n);
-function paintViews(){document.querySelectorAll("[data-vw]").forEach(el=>{const n=VW[el.dataset.vw];if(n==null){el.hidden=true;return}el.hidden=false;const b=el.querySelector("b");if(b)b.textContent=fmtN(n)})}
+function paintViews(){document.querySelectorAll("[data-vw]").forEach(el=>{let n=VW[el.dataset.vw];if(n==null&&VOK)n=0;if(n==null){el.hidden=true;return}el.hidden=false;const b=el.querySelector("b");if(b)b.textContent=fmtN(n)})}
 async function loadViews(force){if(!force&&Date.now()-VT<15000)return;VT=Date.now();
- try{const r=await fetch(SB+"/rest/v1/rpc/event_view_counts",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;const l=await r.json();(l||[]).forEach(x=>VW[x.event_id]=+x.n||0);paintViews()}catch(e){}}
+ try{const r=await fetch(SB+"/rest/v1/rpc/event_view_counts",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok){VT=Date.now()-12000;return}const l=await r.json();VOK=true;(Array.isArray(l)?l:[]).forEach(x=>VW[x.event_id]=+(x.n??x.views??x.count)||0);try{localStorage.setItem("lrr_vw",JSON.stringify(VW))}catch(e){}paintViews()}catch(e){VT=Date.now()-12000}}
 function isPast(id,fb){let L=[];try{const d=(DBEV||[]).find(x=>x.id===id);if(d)L=evDates(d)}catch(x){}
  let last=L.length?L[L.length-1]:(fb?new Date(fb):null);if(!last||isNaN(last))return false;return last.getTime()+6*36e5<Date.now()}
 function vwHTML(id){return id==="official"?"":`<span class="vw" data-vw="${esc(String(id))}" hidden title="Visites de la page">${EYE}<b>0</b></span>`}
@@ -6048,8 +6048,8 @@ const _de99=drawEvents;
 drawEvents=function(){const r=_de99.apply(this,arguments);try{paintViews();loadViews()}catch(x){}return r};
 const _oe99=openEvent;
 openEvent=async function(id){const r=await _oe99.apply(this,arguments);try{const e=EV&&EV.e;if(!e)return r;
- const t=document.querySelector("#v-ev h2.sec2");
- if(t&&!document.getElementById("vwbig")){const past=isPast(e.id,null);t.insertAdjacentHTML("afterend",`<div class="vwr big" id="vwbig">${vwHTML(e.id)}${past?'<span class="pst">Passé</span>':""}</div>`)}
+ const t=document.querySelector("#v-ev h2.sec2")||document.querySelector("#v-ev");
+ if(t&&!document.getElementById("vwbig")){const past=isPast(e.id,null);t.insertAdjacentHTML(t.id==="v-ev"?"afterbegin":"afterend",`<div class="vwr big" id="vwbig">${vwHTML(e.id)}${past?'<span class="pst">Passé</span>':""}</div>`)}
  paintViews();
  const k="lrr_v_"+e.id;let fresh=false;try{if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");fresh=true}}catch(x){fresh=true}
  if(fresh)rp("track_view",{p_event:e.id}).then(()=>loadViews(true)).catch(()=>{});else loadViews(true)}catch(x){}return r};

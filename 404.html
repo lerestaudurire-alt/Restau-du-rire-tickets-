@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Redirection…</title>
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Le Restau du Rire Tickets</title><meta name="theme-color" content="#0e2f2b">
 <script>
-(function(){var p=location.pathname,k="/evenement/",i=p.indexOf(k);
-if(i>-1){var b=p.slice(0,i+1),s=p.slice(i+k.length).replace(/\/+$/,"");
-location.replace(location.origin+b+"?e="+s+location.hash);}
-else{var seg=p.split("/")[1];location.replace(location.origin+(seg&&seg.indexOf(".")<0?"/"+seg+"/":"/"));}})();
-</script></head><body style="font-family:sans-serif;text-align:center;padding:40px">
-<p>Redirection…</p><p><a href="./">Retour à l'accueil</a></p></body></html>
+/* Lien d'événement créé il y a moins de 10 min (page d'aperçu pas encore générée) : on ouvre quand même l'événement */
+var m=location.pathname.match(/^(.*\/)e\/([^\/]+)\/?$/);
+location.replace(m?m[1]+location.search+"#event/"+m[2]:location.pathname.replace(/[^\/]*$/,""));
+</script></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:40px;background:#0e2f2b;color:#fff">
+<p>Ouverture…</p><p><a style="color:#ffc83d" href="./">Retour à l’accueil</a></p></body></html>
