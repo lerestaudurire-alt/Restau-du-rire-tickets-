@@ -3,11 +3,12 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
-    paths: ["scripts/**"]
+    paths: ["scripts/**", "affiche.jpg"]
   schedule:
-    - cron: "0 */6 * * *"
+    - cron: "*/15 * * * *"
 permissions:
   contents: write
+concurrency: seo-build
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,6 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: 20 }
+      - run: npm install --no-save --no-package-lock sharp
       - run: node scripts/build-seo.mjs
       - name: Enregistrer les changements
         run: |
