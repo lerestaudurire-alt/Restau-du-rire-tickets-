@@ -1920,6 +1920,7 @@ html.dk #pub .dp #secb .sec-b span{background:#17211f!important;border-color:#2d
 <div id="v-home" class="view">
 <section class="hm"><span class="hm-k">🎭 La scène vous attend</span><h1>Votre place,<br><em>votre fou rire.</em></h1><p>Choisissez votre soirée, réglez en quelques gestes et gardez votre billet numérique dans la poche.</p>
 <div class="hm-s"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="qs1" placeholder="Un spectacle, un artiste, une ville ?" oninput="setQ(this.value)"></div></section>
+<section class="vdi" id="vdi"><h2>Événements en vedette</h2><h3>Découvrez, réservez et profitez en quelques clics !</h3><p>Bienvenue sur notre billetterie… une plateforme ouverte à tous les organisateurs, pas seulement au Restau du Rire. Concerts, conférences, spectacles, festivals ou sports : trouvez vos places en quelques clics. Découvrez les événements en vedette, réservez en toute sécurité, et profitez de chaque moment !</p></section>
 <div class="stub" id="rrfun"><div class="stub-b"><b>☕ La blague du jour</b><p class="sm" id="rrjoke"></p></div></div>
 <div class="cats" id="ctabs"></div>
 <div class="sech"><h2>Prochains rendez-vous</h2><span class="sm" id="evcount"></span></div>
@@ -2462,7 +2463,7 @@ function payModal(id,kind,method){mo.classList.add("on");
  const t0=Date.now(),max=card?30*60e3:15*60e3;let failN=0;clearInterval(payTimer);
  const end=h=>{clearInterval(payTimer);payTimer=0;localStorage.removeItem("lrr_pay");const b=$("pbox");if(b)b.innerHTML=h};
  const tick=async()=>{const pw=$("pwt");if(pw){const sc=Math.floor((Date.now()-t0)/1000);pw.textContent=" ("+Math.floor(sc/60)+":"+String(sc%60).padStart(2,"0")+")"}try{const d=await fnCall({action:"status",kind,id});
-   if(d.status==="success"){const k=d.ticket;end(`<div style="font-size:42px">✅</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement confirmé !</h2><b>${esc(k.name)}</b><br><span style="font-size:13px">${esc(k.desc)}</span><div id="pqr" style="display:flex;justify-content:center;margin:10px 0"></div><div style="font-size:20px;font-weight:900;letter-spacing:1px">${esc(k.code)}</div><p style="font-size:12px;color:#555;margin-top:6px">Présentez ce QR code à l'entrée. Retrouvez-le à tout moment dans « Mes places ».</p>`);
+   if(d.status==="success"){const k=d.ticket;end(`<div style="font-size:42px">✅</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement confirmé !</h2><b>${esc(k.name)}</b><br><span style="font-size:13px">${esc(k.desc)}</span><div id="pqr" style="display:flex;justify-content:center;margin:10px 0"></div><div style="font-size:20px;font-weight:900;letter-spacing:1px">${esc(k.code)}</div><p style="font-size:12px;color:#555;margin-top:6px">Présentez ce QR code à l'entrée. Retrouvez-le à tout moment dans « Mes places ».</p>${window.tkBtns?tkBtns(k):""}`);
     try{new QRCode($("pqr"),{text:String(k.id),width:200,height:200})}catch(e){}return}
    if(d.status==="error"){end(`<div style="font-size:42px">⚠️</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement reçu</h2><p style="font-size:13px;color:#555">${esc(d.message||"Confirmation en cours de traitement.")}</p><p style="font-size:12px;color:#777">Contactez-nous avec ce code : ${esc(String(id).slice(0,8).toUpperCase())}</p>`);return}
    if(d.status==="failed"||d.status==="cancelled"){end(`<div style="font-size:42px">⚠️</div><h2 style="color:#000;font-size:18px;margin:6px 0">Paiement non confirmé</h2><p style="font-size:13px;color:#555;line-height:1.45">Le paiement n'a pas été validé sur votre téléphone, aucun billet n'a été émis. Si vous l'avez validé entre-temps, votre billet sera confirmé automatiquement dans quelques minutes (« Mes places »).</p><div style="margin-top:10px"><button class="ab" onclick="payModal('${id}','${kind}','resume')">🔄 Vérifier à nouveau</button> <button class="ab" onclick="payStop()">Fermer</button></div>`);return}
@@ -2480,7 +2481,7 @@ function evForm(){const v=i=>$(i).value.trim(),hasA=!!$("opays");const A=hasA?{p
  return{event_id:EV.e.id,customer:{group:String(($("ogrp")||{}).value||"").trim().toUpperCase().slice(0,8),name:v("on"),phone:v("op"),email:v("oe"),...(cy&&cy.value?{pays:cy.value}:{}),...A},qty}}
 function ocyChg(){const c=$("ocy");if(c&&!/^(Congo|Autre pays d'Afrique)/.test(c.value)&&!$("oe").value)$("oe").placeholder="obligatoire hors d'Afrique"}
 function showTicket(k,title){mo.classList.add("on");
- $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:18px;width:100%;max-width:340px;margin:auto;text-align:center"><div style="font-size:42px">✅</div><h2 style="color:#000;font-size:18px;margin:6px 0">${esc(title)}</h2><b>${esc(k.name)}</b><br><span style="font-size:13px">${esc(k.desc)}</span><div id="pqr" style="display:flex;justify-content:center;margin:10px 0"></div><div style="font-size:20px;font-weight:900;letter-spacing:1px">${esc(k.code)}</div><p style="font-size:12px;color:#555;margin-top:6px">Présentez ce QR code à l'entrée. Retrouvez-le à tout moment dans « Mes places ».</p><div style="margin-top:10px"><button class="ab" onclick="closeMo()">Fermer</button></div></div>`;
+ $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:18px;width:100%;max-width:340px;margin:auto;text-align:center"><div style="font-size:42px">✅</div><h2 style="color:#000;font-size:18px;margin:6px 0">${esc(title)}</h2><b>${esc(k.name)}</b><br><span style="font-size:13px">${esc(k.desc)}</span><div id="pqr" style="display:flex;justify-content:center;margin:10px 0"></div><div style="font-size:20px;font-weight:900;letter-spacing:1px">${esc(k.code)}</div><p style="font-size:12px;color:#555;margin-top:6px">Présentez ce QR code à l'entrée. Retrouvez-le à tout moment dans « Mes places ».</p>${window.tkBtns?tkBtns(k):""}<div style="margin-top:10px"><button class="ab" onclick="closeMo()">Fermer</button></div></div>`;
  try{new QRCode($("pqr"),{text:String(k.id),width:200,height:200})}catch(e){}}
 async function evFree(){const f=evForm();if(!f)return;const b=$("obtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Réservation...";
  try{const d=await fnCall({action:"free",kind:"event",...f});EV.qty={};drawTk();showTicket(d.ticket,"Réservation confirmée !")}catch(x){alert("❌ "+x.message)}
@@ -2639,6 +2640,7 @@ function renderCreate(){const el=$("v-create");
  <div class="g"><div><label>Ville *</label><input id="cv"></div><div><label>Lieu / salle *</label><input id="cl"></div></div><div id="cls"></div><button type="button" class="btn dk" id="cadds" onclick="addSalle()">➕ Ajouter une autre salle</button><p class="sm" style="margin:6px 0 8px">Votre événement a lieu dans 2 ou 3 salles ? Ajoutez-les ici : chaque salle a ses propres dates (3 salles au maximum). Un seul événement, une seule affiche, un seul lien d'achat.</p>
  <label>Date et heure *</label><input id="cd" type="datetime-local"><input id="cdp" placeholder="Lieu de cette date (facultatif, sinon le lieu ci-dessus)" style="margin-top:6px"><div id="cdx"></div><button type="button" class="btn dk" onclick="addDT()">➕ Ajouter une autre date</button><p class="sm" style="margin:6px 0 8px">Festival ou spectacle sur plusieurs jours ? Ajoutez chaque date (ex : 1, 2, 3 et 4) : même salle ou salles différentes. Le dernier jour est le jour J. Les dates ci-dessus sont celles de la salle principale.</p><label>🧭 Plan d'accès (facultatif)</label><input id="cmap" placeholder="Lien Google Maps (facultatif)"><textarea id="cacc" rows="2" placeholder="Conseils : repère, parking, transport…"></textarea><label>Description de l'événement</label><textarea id="cx"></textarea><label>Description de la billetterie</label><textarea id="ctd" placeholder="Ex : comment acheter, conditions d'entrée, remboursement, places numérotées…"></textarea>
  <label>Affiche (image, 50 Mo maximum)</label><input id="cp2" type="file" accept="image/*">
+ <label>🎫 Design du billet en ligne (image)</label><input id="ctkd" type="file" accept="image/*"><p class="sm">C'est le billet que vos clients téléchargeront (image + PDF) après un achat en ligne. Le QR code, le nom et le code du client sont ajoutés automatiquement sous votre design. Obligatoire si l'achat en ligne est activé.</p>
  <h3>🎟️ Catégories de billets *</h3><p class="sm">Prix à <b>0</b> = billet gratuit : le client réserve et reçoit son billet tout de suite, sans paiement.</p><div class="note" style="margin:8px 0">🔢 Pour chaque catégorie, indiquez le <b>nombre total de billets</b> : il comprend les ventes <b>en ligne ET en espèces</b>. Quand il est atteint, la catégorie affiche <b>Sold out</b> sur la billetterie.</div><div id="trs"></div><button class="btn dk" onclick="addTR()">➕ Ajouter une catégorie</button>
  <h3>💳 Modes de vente</h3>
  <label class="ck"><input type="checkbox" id="cm1" checked><span>Réservation (paiement mobile money + capture)</span></label>
@@ -5914,8 +5916,32 @@ window.p5RcImg=()=>{const r=window._rcv;if(!r)return;deliver(dataBlob(r.c),"cart
 window.p5RcPdf=()=>{const r=window._rcv;if(!r)return;deliver(pdfBlob(pageCanvas(r.c)),"carte-"+r.o.code+".pdf",r.o.title,"PDF téléchargé ✅")};
 
 /* ===== CARTE BANCAIRE : QR + nom + téléphone + billet + vendeur + montant ===== */
-function pageCanvas(f){const PW=1240,PH=1754,m=70,w=PW-2*m,h=Math.round(f.height*w/f.width),c=document.createElement("canvas");c.width=PW;c.height=PH;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.drawImage(f,m,90,w,h);x.fillStyle="#6b6577";x.font="500 24px "+FF;x.textAlign="center";x.fillText("Restau du Rire Tickets · billet nominatif à usage unique",PW/2,90+h+70);return c}
+function pageCanvas(f){const PW=1240,m=70,w=PW-2*m,h=Math.round(f.height*w/f.width),PH=Math.max(1754,h+90+130),c=document.createElement("canvas");c.width=PW;c.height=PH;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.drawImage(f,m,90,w,h);x.fillStyle="#6b6577";x.font="500 24px "+FF;x.textAlign="center";x.fillText("Restau du Rire Tickets · billet nominatif à usage unique",PW/2,90+h+70);return c}
+async function buildDesign(o,e,img){
+ const CW=1200,PD=40,ok=o.status==="confirmed",SERIF="Georgia,'Times New Roman',serif",INK="#1a1530",MUT="#6b6577";
+ const dh=Math.round(img.height*CW/img.width),SH=520,c=document.createElement("canvas");c.width=CW;c.height=dh+SH;const x=c.getContext("2d");
+ x.fillStyle="#fff";x.fillRect(0,0,CW,dh+SH);x.drawImage(img,0,0,CW,dh);
+ const T=(t,xx,yy,font,col,al,ls)=>{x.font=font;x.fillStyle=col;x.textAlign=al||"left";try{x.letterSpacing=ls||"0px"}catch(z){}x.fillText(t,xx,yy);try{x.letterSpacing="0px"}catch(z){}};
+ const fit=(t,mw,px,wt)=>{let s=px;while(s>16){x.font=wt+" "+s+"px "+FF;if(x.measureText(t).width<=mw)break;s-=2}return wt+" "+s+"px "+FF};
+ const lab=(t,xx,yy)=>T(t,xx,yy,"700 19px "+FF,MUT,"left","3px");
+ x.strokeStyle="#b9b4c4";x.lineWidth=3;x.setLineDash([16,12]);x.beginPath();x.moveTo(40,dh+1);x.lineTo(CW-40,dh+1);x.stroke();x.setLineDash([]);
+ const y0=dh+44,M0=64,items=Array.isArray(o.items)?o.items:[];
+ const cat=items.map(r=>r.name).filter(Boolean).join(", ")||o.desc||"Billet";
+ lab("TITULAIRE",M0,y0+22);const nm=String(o.name||"—");T(nm,M0,y0+76,fit(nm,660,50,"800"),INK);
+ lab("CATÉGORIE",M0,y0+138);T(cat,M0,y0+180,fit(cat,660,32,"700"),INK);
+ let yy=y0+246;
+ if(o.seats&&o.seats.length){lab("PLACES",M0,yy);const t=o.seats.map(q=>String(q).split("-")[1]).join(", ");T(t,M0,yy+42,fit(t,660,32,"700"),INK);yy+=108}
+ const dd=o.starts_at?new Date(o.starts_at).toLocaleDateString(lc(),{day:"numeric",month:"long",year:"numeric"}):"",lieu=[o.venue||e.venue,o.city||e.city].filter(Boolean).join(", "),dl=[dd,lieu].filter(Boolean).join(" · ");
+ if(dl){lab("DATE · LIEU",M0,yy);T(dl,M0,yy+40,fit(dl,660,26,"600"),INK)}
+ const qx=776,qs=360;
+ if(ok){const q=qrCanvas(o.id,300);x.fillStyle="#fff";x.strokeStyle="#e3dfea";x.lineWidth=3;rr(x,qx,y0,qs,qs,26);x.fill();x.stroke();if(q)x.drawImage(q,qx+30,y0+30,300,300);
+  const cd=String(o.code||"");T(cd,qx+qs/2,y0+qs+52,fit(cd,qs,40,"900"),INK,"center","2px");T("Billet nominatif · usage unique",qx+qs/2,y0+qs+86,"500 21px "+FF,MUT,"center")}
+ else{x.strokeStyle="#b9b4c4";x.lineWidth=3;x.setLineDash([14,10]);rr(x,qx,y0,qs,qs,26);x.stroke();x.setLineDash([]);T("Le QR code s'affichera",qx+qs/2,y0+qs/2-6,"700 26px "+FF,INK,"center");T("dès la confirmation",qx+qs/2,y0+qs/2+30,"700 26px "+FF,INK,"center")}
+ T("Billetterie · Restau du Rire Tickets",M0,dh+SH-26,"500 20px "+FF,MUT,"left");
+ const f=document.createElement("canvas");f.width=CW+2*PD;f.height=c.height+2*PD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
+ fx.save();rr(fx,PD,PD,CW,c.height,40);fx.clip();fx.drawImage(c,PD,PD);fx.restore();fx.strokeStyle="#e3dfea";fx.lineWidth=2;rr(fx,PD,PD,CW,c.height,40);fx.stroke();return f}
 async function buildBank(o,noimg){
+ if(!noimg){try{const e0=evOf(o),du=window.tkdUrl?window.tkdUrl(e0):"";if(du){const im=await loadImg(du);if(im){const cv=await buildDesign(o,e0,im);cv.toDataURL("image/jpeg",.5);return cv}}}catch(z){}}
  const CW=1200,CH=800,PD=40,ok=o.status==="confirmed",e=evOf(o),M0=64,SOFT="rgba(255,255,255,.72)",WH="#fff",SERIF="Georgia,'Times New Roman',serif";
  const c=document.createElement("canvas");c.width=CW;c.height=CH;const x=c.getContext("2d");
  const g=x.createLinearGradient(0,0,CW,CH);g.addColorStop(0,"#1f1b33");g.addColorStop(.5,"#5b3ca6");g.addColorStop(1,"#f26a2a");x.fillStyle=g;x.fillRect(0,0,CW,CH);
@@ -5925,7 +5951,7 @@ async function buildBank(o,noimg){
  const lab=(t,xx,yy)=>T(t,xx,yy,"700 19px "+FF,SOFT,"left","3px");
  const val=(t,xx,yy,mw,px)=>{t=String(t||"—");T(t,xx,yy,fit(t,mw,px||32,"700"),WH)};
  const items=Array.isArray(o.items)?o.items:[],qty=items.reduce((a,r)=>a+(+r.qty||0),0)||1;
- const cat=items.map(r=>r.name).filter(Boolean).join(", ")||"Billet",price=items.map(r=>num(r.price)+" "+money(r.currency)).join(" / ")||"—";
+ const cat=items.map(r=>r.name).filter(Boolean).join(", ")||o.desc||"Billet",price=items.map(r=>num(r.price)+" "+money(r.currency)).join(" / ")||"—";
  const ph=(window.MY&&MY.phone)||o.phone||"—";
  const kd=String(o.kind||"").toLowerCase(),sl=String(o.seller||o.vendeur||o.seller_name||"").trim();
  const sLab=kd==="online"?"ACHAT":"VENDEUR",seller=kd==="online"?"En ligne":kd==="reservation"?"Organisation":kd==="cash"?(sl||"—"):(sl||"—");
@@ -5957,6 +5983,8 @@ async function buildBank(o,noimg){
  /* carte arrondie sur fond blanc */
  const f=document.createElement("canvas");f.width=CW+2*PD;f.height=CH+2*PD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
  fx.save();rr(fx,PD,PD,CW,CH,56);fx.clip();fx.drawImage(c,PD,PD);fx.restore();return f}
+window.p5Dl=async function(o,type){let c;try{c=await buildBank(o,false)}catch(e){c=await buildBank(o,true)}
+ if(type==="pdf")deliver(pdfBlob(pageCanvas(c)),"billet-"+o.code+".pdf",o.title,"PDF téléchargé ✅");else deliver(dataBlob(c),"billet-"+o.code+".png",o.title,"Image téléchargée ✅")};
 window._bk={};try{new MutationObserver(()=>{});}catch(e){}
 let _meta=null;
 function bkMeta(){return _meta||(_meta=bkMeta0())}
@@ -5985,4 +6013,92 @@ window._pdfBlob=pdfBlob;
 
 <script>(function(){function f(){var e=document.getElementById("secb");if(e&&window.secBadges&&!e.firstChild)e.innerHTML=window.secBadges()}if(document.readyState==="loading")addEventListener("DOMContentLoaded",function(){setTimeout(f,0)});else setTimeout(f,0);addEventListener("load",f)})();</script>
 <script>(function(){try{if(matchMedia("(min-width:760px)").matches)document.querySelectorAll("footer.ftr details.ftr-d").forEach(function(d){d.open=true})}catch(e){}})();</script>
+<style id="v99css">
+.vdi{margin:14px 0 6px;padding:18px 16px;border-radius:18px;background:#fff;border:1px solid #e6ece9}
+.vdi h2{font:900 26px/1.15 Georgia,serif;margin:0 0 4px;color:var(--ink)}
+.vdi h3{font-size:17px;font-weight:800;margin:0 0 10px;color:var(--ink);line-height:1.3}
+.vdi p{margin:0;font-style:italic;font-size:14.5px;line-height:1.6;color:var(--mut)}
+.vwr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
+.vwr:empty{display:none}
+.vw{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:800;color:var(--mut)}
+.vw svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.vw[hidden]{display:none}
+.pst{margin-left:auto;background:#eef0f3;color:#3b3f4a;border-radius:8px;padding:4px 12px;font-size:12px;font-weight:800}
+.vwr.big{margin:0 0 10px}
+html.dk .vdi{background:#24342f;border-color:#2f453f}
+html.dk .vdi h2,html.dk .vdi h3{color:#f2f7f5}
+html.dk .vdi p,html.dk .vw{color:#9fb3ae}
+html.dk .pst{background:#2f453f;color:#e8f0ee}
+</style>
+<script>(function(){
+const EYE='<svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>';
+const VW={};let VT=0;
+const fmtN=n=>n>=1000?(n/1000).toFixed(1).replace(".0","").replace(".",",")+"k":String(n);
+function paintViews(){document.querySelectorAll("[data-vw]").forEach(el=>{const n=VW[el.dataset.vw];if(n==null){el.hidden=true;return}el.hidden=false;const b=el.querySelector("b");if(b)b.textContent=fmtN(n)})}
+async function loadViews(force){if(!force&&Date.now()-VT<15000)return;VT=Date.now();
+ try{const r=await fetch(SB+"/rest/v1/rpc/event_view_counts",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;const l=await r.json();(l||[]).forEach(x=>VW[x.event_id]=+x.n||0);paintViews()}catch(e){}}
+function isPast(id,fb){let L=[];try{const d=(DBEV||[]).find(x=>x.id===id);if(d)L=evDates(d)}catch(x){}
+ let last=L.length?L[L.length-1]:(fb?new Date(fb):null);if(!last||isNaN(last))return false;return last.getTime()+6*36e5<Date.now()}
+function vwHTML(id){return id==="official"?"":`<span class="vw" data-vw="${esc(String(id))}" hidden title="Visites de la page">${EYE}<b>0</b></span>`}
+const _ec99=evCard;
+evCard=function(e){let h=_ec99(e);try{const past=isPast(e.id,e.ts),v=vwHTML(e.id);
+ const row=(v||past)?`<div class="vwr">${v}${past?'<span class="pst">Passé</span>':""}</div>`:"";
+ if(row)h=h.replace('<div class="ev3-b">','<div class="ev3-b">'+row)}catch(x){}return h};
+const _de99=drawEvents;
+drawEvents=function(){const r=_de99.apply(this,arguments);try{paintViews();loadViews()}catch(x){}return r};
+const _oe99=openEvent;
+openEvent=async function(id){const r=await _oe99.apply(this,arguments);try{const e=EV&&EV.e;if(!e)return r;
+ const t=document.querySelector("#v-ev h2.sec2");
+ if(t&&!document.getElementById("vwbig")){const past=isPast(e.id,null);t.insertAdjacentHTML("afterend",`<div class="vwr big" id="vwbig">${vwHTML(e.id)}${past?'<span class="pst">Passé</span>':""}</div>`)}
+ paintViews();
+ const k="lrr_v_"+e.id;let fresh=false;try{if(!sessionStorage.getItem(k)){sessionStorage.setItem(k,"1");fresh=true}}catch(x){fresh=true}
+ if(fresh)rp("track_view",{p_event:e.id}).then(()=>loadViews(true)).catch(()=>{});else loadViews(true)}catch(x){}return r};
+try{Object.assign(EN,{"Événements en vedette":"Featured events","Découvrez, réservez et profitez en quelques clics !":"Discover, book and enjoy in just a few clicks!","Bienvenue sur notre billetterie… une plateforme ouverte à tous les organisateurs, pas seulement au Restau du Rire. Concerts, conférences, spectacles, festivals ou sports : trouvez vos places en quelques clics. Découvrez les événements en vedette, réservez en toute sécurité, et profitez de chaque moment !":"Welcome to our ticketing platform… open to all organizers, not only Restau du Rire. Concerts, conferences, shows, festivals or sports: find your seats in just a few clicks. Discover the featured events, book safely, and enjoy every moment!","Passé":"Past"})}catch(x){}
+loadViews(true);
+})();</script>
+<style id="v100css">
+.tkb{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:12px 0 2px}
+.tkb button{width:auto;margin:0;border:0;border-radius:12px;padding:11px 14px;font:800 14px system-ui;cursor:pointer}
+.tkb .tkbi{background:#27c97f;color:#10201d}.tkb .tkbp{background:#f2b84b;color:#10201d}
+.tkd-w{display:inline-block;margin:6px 0 0;background:#fff3d6;color:#7a4b00;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:800}
+.tkd-ok{display:inline-block;margin:6px 0 0;background:#dff7ea;color:#0a6b3a;border-radius:8px;padding:5px 10px;font-size:12px;font-weight:800}
+</style>
+<script>(function(){
+const PUB=p=>SB+"/storage/v1/object/public/affiches/"+p;
+window.tkdUrl=e=>{try{return e&&e.modes&&e.modes.tkd?PUB(e.modes.tkd):""}catch(x){return ""}};
+function shrinkImg(f,m){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);b?res(b):rej(new Error("Image illisible"))},"image/jpeg",.9)}catch(e){rej(e)}};im.onerror=()=>rej(new Error("Image illisible"));im.src=u})}
+async function upTkd(f){const b=await shrinkImg(f,1600),p=myId()+"/tkd-"+Date.now()+".jpg";const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:b});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error("Envoi impossible : "+(er.message||er.error||u.status))}return p}
+function findEv(id){for(const L of [typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]]){const e=(L||[]).find(x=>String(x.id)===String(id));if(e)return e}return null}
+/* ajouter / changer le design d'un événement déjà publié */
+window.tkdPick=function(id){if(!(typeof myId==="function"&&myId())){alert("Connectez-vous pour ajouter le design du billet.");return}
+ const i=document.createElement("input");i.type="file";i.accept="image/*";
+ i.onchange=async()=>{const f=i.files[0];if(!f)return;try{toast("⏳ Envoi du design…");const path=await upTkd(f),e=findEv(id)||{},m=Object.assign({},e.modes||{},{tkd:path});
+  const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({modes:m})});const d=await r.json().catch(()=>null);
+  if(!r.ok||!Array.isArray(d)||!d.length)throw new Error("Enregistrement refusé ("+r.status+")");
+  [typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]].forEach(L=>(L||[]).forEach(y=>{if(String(y.id)===String(id))y.modes=m}));
+  toast("Design du billet enregistré ✅");tkdMark()}catch(x){alert("❌ "+(x.message||x))}};i.click()};
+window.tkdPreview=function(id){const e=findEv(id),u=window.tkdUrl(e);if(u)window.open(u,"_blank")};
+/* boutons + avertissement dans « Mes événements » */
+function tkdMark(){document.querySelectorAll("#myev .x3").forEach(b=>{const m=(b.innerHTML.match(/copyBuy\('([^']+)'\)/)||[])[1];if(!m)return;const e=findEv(m)||{},has=!!(e.modes&&e.modes.tkd),on=!!(e.modes&&e.modes.online);
+ b.querySelectorAll(".tkd").forEach(n=>n.remove());
+ const h=`<span class="tkd">${has?'<span class="tkd-ok">🎫 Design du billet ajouté</span>':on?'<br><span class="tkd-w">⚠️ Achat en ligne actif : ajoutez le design du billet</span>':""}<button class="ab" onclick="tkdPick('${m}')">🎫 ${has?"Changer":"Ajouter"} le design du billet</button>${has?`<button class="ab" onclick="tkdPreview('${m}')">👁️ Voir</button>`:""}</span>`;
+ const a=b.querySelector('button[onclick^="copyBuy"]');if(a)a.insertAdjacentHTML("beforebegin",h)})}
+if(typeof loadMine==="function"){const _lm=loadMine;loadMine=async function(){const r=await _lm.apply(this,arguments);try{tkdMark()}catch(x){}return r}}
+/* création d'un événement : envoi du design */
+window.TKDP="";
+if(typeof _createEvent==="function"){const _ce=_createEvent;_createEvent=async function(){const f=(document.getElementById("ctkd")||{}).files&&document.getElementById("ctkd").files[0],on=(document.getElementById("cm3")||{}).checked;
+ if(on&&!f&&!window.TKDP){cmsg("Ajoutez le design du billet en ligne : vos clients le téléchargeront en image et en PDF.");return}
+ if(f&&!window.TKDP){try{cmsg("⏳ Envoi du design du billet…");window.TKDP=await upTkd(f)}catch(x){cmsg("❌ "+(x.message||x));return}}
+ try{return await _ce.apply(this,arguments)}finally{}}}
+const _exT=window.evExtra;window.evExtra=function(){const r=_exT?_exT():{};if(window.TKDP)r.tkd=window.TKDP;return r};
+const _rcT=renderCreate;renderCreate=function(){window.TKDP="";return _rcT.apply(this,arguments)};
+/* acheteur : télécharger le billet (image + PDF) juste après le paiement */
+window.tkBtns=function(k){window._tk=k;window._tkEv=(typeof EV!=="undefined"&&EV&&EV.e)||null;return '<div class="tkb"><button class="tkbi" onclick="tkDl(\'img\')">🖼️ Télécharger en image</button><button class="tkbp" onclick="tkDl(\'pdf\')">📄 Télécharger en PDF</button></div>'};
+window.tkDl=async function(type){const k=window._tk;if(!k)return;let e=window._tkEv||null;
+ if(!e||!e.id){e=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.title===k.title)||e||{}}
+ const d=(typeof evDates==="function"&&e.id)?evDates(e)[0]:null;
+ const o={id:k.id,code:k.code,name:k.name,title:e.title||k.title||"",desc:k.desc,event_id:e.id,starts_at:d?d.toISOString():null,venue:e.venue,city:e.city,organizer:e.organizer_name,status:"confirmed",kind:"online",items:[],amounts:k.amounts||null};
+ try{toast("⏳ Création du billet…");await window.p5Dl(o,type)}catch(x){alert("❌ Impossible de créer le billet.")}};
+setTimeout(()=>{try{if($("myev"))tkdMark()}catch(x){}},1500);
+})();</script>
 </body></html>
