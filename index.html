@@ -6134,6 +6134,13 @@ setTimeout(()=>{try{if($("myev"))tkdMark()}catch(x){}},1500);
 html.dk .lrfree{background:#2b2a17;border-color:#8a6d1c;color:#f6e9bd}
 .ch.lrfr{background:#f2c14e!important;color:#0e2f2b!important;font-weight:800}
 </style>
+<style id="lrcomcss">
+.lrcom{margin:14px 0;background:#fff7dc;border:2px solid #f2c14e;border-radius:16px;padding:14px 14px 12px;color:#0e2f2b}
+.lrcom h3{margin:0 0 6px;font-size:17px}.lrcom p{margin:6px 0;font-size:14px;line-height:1.5}
+.lrcom .lrcb{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.lrcom .lrcb .btn{flex:1 1 150px;margin:0}
+.lrcom .ck{margin:8px 0}.lrcom .ck span,.lrcom .ck input:checked+span{text-decoration:none!important;opacity:1!important;color:inherit!important}.lrcom #lrcst{color:#4d5f5a}
+html.dk .lrcom{background:#2b2a17;border-color:#8a6d1c;color:#f6e9bd}
+</style>
 <script>(function(){
 const R=document.getElementById("lrb");if(!R)return;
 const S=[...R.querySelectorAll(".lrs")],D=[...R.querySelectorAll(".lrd button")],DUR=3800,RM=window.matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
@@ -6155,5 +6162,27 @@ const allFree=e=>{const L=(e&&e.tickets)||[];return L.length>0&&L.every(x=>+x.pr
 try{const _ec=evCard;evCard=function(e){let h=_ec.apply(this,arguments);try{if(allFree(e))h=h.replace('<span class="ch">Gratuit</span>','<span class="ch lrfr">🎟 Gratuit · sur réservation</span>')}catch(x){}return h}}catch(x){}
 try{const _oe=openEvent;openEvent=async function(){const r=await _oe.apply(this,arguments);try{const e=EV&&EV.e;if(e&&allFree(e)&&!document.getElementById("lrfree")){const h='<div class="lrfree" id="lrfree"><b>🎟 Entrée gratuite sur réservation</b>Aucun paiement : réservez votre place pour recevoir votre billet QR. Il sera scanné à l’entrée.</div>',v=document.getElementById("vwbig"),h2=document.getElementById("v-ev");if(v)v.insertAdjacentHTML("afterend",h);else if(h2)h2.insertAdjacentHTML("afterbegin",h)}}catch(x){}return r}}catch(x){}
 try{Object.assign(EN,{"Choisissez, riez":"Choose, laugh","et célébrez.":"and celebrate.","Votre billetterie à Bukavu et partout en RDC.":"Your ticketing in Bukavu and across the DRC.","Choisissez":"Choose","votre soirée":"your night","Payez par":"Pay with","Mobile Money":"Mobile Money","Gratuit ?":"Free?","Réservez !":"Book it!","Recevez votre":"Get your","billet QR":"QR ticket","Scannez,":"Scan,","entrez, riez !":"enter, laugh!","Concerts, spectacles, festivals.":"Concerts, shows, festivals.","Payez par Mobile Money":"Pay with Mobile Money","Gratuit ? Réservez !":"Free? Book it!","Pas de paiement, mais l’entrée se fait sur réservation.":"No payment, but entry is by reservation only.","Recevez votre billet QR":"Get your QR ticket","Il vous attend dans « Mes places ».":"It is waiting in “My tickets”.","Scannez, entrez, riez !":"Scan, enter, laugh!","Présentez votre QR code à l’entrée.":"Show your QR code at the door.","🎟 Gratuit · sur réservation":"🎟 Free · by reservation","🎟 Entrée gratuite sur réservation":"🎟 Free entry by reservation","🎁 Entrée gratuite sur réservation : aucun paiement à faire. Votre billet avec QR code est confirmé tout de suite et sera scanné à l’entrée.":"🎁 Free entry by reservation: no payment needed. Your QR ticket is confirmed right away and will be scanned at the door."})}catch(x){}
+})();</script>
+<script>(function(){
+/* ===== Contribution à l'organisation (événements sans achat automatique en ligne) ===== */
+const ORG_PCT=(typeof PLAT_PCT==="number"&&PLAT_PCT>0)?PLAT_PCT:10; /* pourcentage reversé : changez ce chiffre si besoin */
+const ORG_WA="243902704475",ORG_MAIL="lerestaudurire@gmail.com";
+const gv=i=>((document.getElementById(i)||{}).value||"").trim();
+const isAdm=()=>{try{return role==="admin"}catch(x){return false}};
+const allFreeTk=()=>{try{syncTR();const L=TR.filter(t=>t.name.trim()&&t.price!=="");return L.length>0&&L.every(t=>+t.price===0)}catch(x){return false}};
+const needCom=()=>{if(isAdm())return false;const c=document.getElementById("cm3");if(c&&c.checked)return false;return !allFreeTk()};
+function msg(){let tk="";try{syncTR();tk=TR.filter(t=>t.name.trim()&&t.price!=="").map(t=>t.name.trim()+" : "+(+t.price>0?t.price+" "+t.currency:"gratuit")+(t.stock?" × "+t.stock:"")).join(" ; ")}catch(x){}
+ const d=gv("cd");let dt="";try{if(d)dt=new Date(d).toLocaleString("fr-FR",{dateStyle:"long",timeStyle:"short"})}catch(x){}
+ return "Bonjour, je programme un événement sur la billetterie et il n’a pas d’achat automatique en ligne.\n\n🎭 Événement : "+(gv("ct")||"(à préciser)")+"\n🏢 Organisateur : "+(gv("co")||"(à préciser)")+"\n📍 Lieu : "+[gv("cl"),gv("cv")].filter(Boolean).join(", ")+"\n🗓️ Date : "+(dt||"(à préciser)")+"\n🎟️ Billets : "+(tk||"(à préciser)")+"\n📱 Mon WhatsApp : "+(gv("cw")||"(à préciser)")+"\n\nJe m’engage à reverser "+ORG_PCT+" % des ventes à l’organisation de l’application. Merci de me dire comment et quand vous verser cette part."}
+function panel(){if(document.getElementById("lrcom"))return;const b=document.getElementById("cbtn");if(!b||isAdm())return;
+ b.insertAdjacentHTML("beforebegin",'<div class="lrcom" id="lrcom"><h3>🤝 Contribution à l’organisation</h3><p>Sans achat automatique en ligne, la billetterie ne peut pas prélever sa part toute seule. En publiant votre événement, vous vous engagez à reverser <b>'+ORG_PCT+' % des ventes</b> à l’organisation de l’application, pour qu’elle continue de vous offrir cet outil.</p><p>👉 <b>Avant l’envoi</b>, laissez un message à l’organisation (WhatsApp ou e-mail) : il est pré-rempli avec les détails de votre événement.</p><div class="lrcb"><button type="button" class="btn wa" id="lrcw">💬 Écrire sur WhatsApp</button><button type="button" class="btn dk" id="lrce">✉️ Écrire par e-mail</button></div><label class="ck"><input type="checkbox" id="lrcok"><span>Je m’engage à reverser '+ORG_PCT+' % des ventes de cet événement à l’organisation.</span></label><p class="sm" id="lrcst">Inutile si tous vos billets sont gratuits.</p></div>');
+ window.__lrcVia="";
+ document.getElementById("lrcw").onclick=()=>{window.__lrcVia="whatsapp";window.open("https://wa.me/"+ORG_WA+"?text="+encodeURIComponent(msg()),"_blank");st()};
+ document.getElementById("lrce").onclick=()=>{window.__lrcVia="email";location.href="mailto:"+ORG_MAIL+"?subject="+encodeURIComponent("Événement sans achat en ligne : "+(gv("ct")||"nouvel événement"))+"&body="+encodeURIComponent(msg());st()};
+ function st(){const e=document.getElementById("lrcst");if(e)e.textContent="✅ Message préparé ("+(window.__lrcVia==="email"?"e-mail":"WhatsApp")+"). Envoyez-le, puis cochez l’engagement et validez."}}
+try{const _rc=renderCreate;renderCreate=function(){const r=_rc.apply(this,arguments);try{panel()}catch(x){}return r}}catch(x){}
+try{const _ce=_createEvent;_createEvent=async function(){if(needCom()){const ok=document.getElementById("lrcok");if(!window.__lrcVia){cmsg("🤝 Avant l’envoi, laissez un message à l’organisation : touchez « Écrire sur WhatsApp » ou « Écrire par e-mail ».");const p=document.getElementById("lrcom");if(p)p.scrollIntoView({behavior:"smooth",block:"center"});return}if(!ok||!ok.checked){cmsg("🤝 Cochez l’engagement de reverser "+ORG_PCT+" % des ventes à l’organisation.");const p=document.getElementById("lrcom");if(p)p.scrollIntoView({behavior:"smooth",block:"center"});return}}return _ce.apply(this,arguments)}}catch(x){}
+try{const _ex=window.evExtra;window.evExtra=function(){const r=_ex?_ex():{};try{if(needCom())r.commission={pct:ORG_PCT,ack:true,via:window.__lrcVia||"",at:new Date().toISOString()}}catch(x){}return r}}catch(x){}
+try{Object.assign(EN,{"🤝 Contribution à l’organisation":"🤝 Contribution to the organization","💬 Écrire sur WhatsApp":"💬 Write on WhatsApp","✉️ Écrire par e-mail":"✉️ Write by e-mail","Inutile si tous vos billets sont gratuits.":"Not needed if all your tickets are free."})}catch(x){}
 })();</script>
 </body></html>
