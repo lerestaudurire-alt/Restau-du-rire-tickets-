@@ -6267,4 +6267,241 @@ try{const _ce=_createEvent;_createEvent=async function(){if(needCom()){const ok=
 try{const _ex=window.evExtra;window.evExtra=function(){const r=_ex?_ex():{};try{if(needCom())r.commission={pct:ORG_PCT,ack:true,via:window.__lrcVia||"",at:new Date().toISOString()}}catch(x){}return r}}catch(x){}
 try{Object.assign(EN,{"🤝 Contribution à l’organisation":"🤝 Contribution to the organization","💬 Écrire sur WhatsApp":"💬 Write on WhatsApp","✉️ Écrire par e-mail":"✉️ Write by e-mail","Inutile si tous vos billets sont gratuits.":"Not needed if all your tickets are free."})}catch(x){}
 })();</script>
+<!-- ===== PAGE PUBLIQUE ORGANISATEUR (#org/<id>) + éditeur (#orgedit) ===== -->
+<style id="orgp-css">
+#v-org .op{--oa:#ff6b1a}
+#v-org .op-ban{position:relative;margin:0 -12px;aspect-ratio:16/7;min-height:150px;background:linear-gradient(135deg,var(--ink),var(--oa));overflow:hidden}
+#v-org .op-ban::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 2px,transparent 2px 14px)}
+#v-org .op-ban img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#v-org .op-ban::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:10px;background:radial-gradient(circle at 50% 100%,var(--bg) 6px,transparent 6.5px) 0 0/16px 10px repeat-x}
+#v-org .op-ib{position:absolute;top:12px;z-index:2;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:var(--ink);font:900 18px system-ui;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.18)}
+#v-org .op-ib.l{left:12px}#v-org .op-ib.r{right:12px}
+#v-org .op-seal{position:relative;z-index:3;width:96px;height:96px;margin:-48px 0 0 6px;border-radius:50%;background:#fff;border:4px solid #fff;outline:2px dashed var(--oa);outline-offset:4px;overflow:hidden;display:flex;align-items:center;justify-content:center;font:900 30px Georgia,serif;color:#fff;box-shadow:0 8px 20px rgba(28,27,46,.18)}
+#v-org .op-seal span{position:absolute;inset:0;background:var(--oa);display:flex;align-items:center;justify-content:center}
+#v-org .op-seal img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#fff}
+#v-org .op-nm{font:900 26px Georgia,serif;margin:16px 0 2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+#v-org .op-nm .vf{position:static;background:none;padding:0;display:inline-flex}
+#v-org .op-nm .vf svg{width:22px;height:22px}
+#v-org .op-meta{color:var(--mut);font-weight:700;font-size:14px;display:flex;gap:12px;flex-wrap:wrap}
+#v-org .op-bio{margin:10px 0 0;font-size:15px;line-height:1.45;white-space:pre-line}
+#v-org .op-next{margin:14px 0 0;background:#fff3d6;border:1px dashed var(--gd);border-radius:14px;padding:10px 12px;font-weight:800;font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer}
+#v-org .op-next small{display:block;font-weight:600;color:var(--mut)}
+#v-org .op-act{display:flex;gap:10px;margin:14px 0;flex-wrap:wrap}
+#v-org .op-act .fol{padding:12px 20px;font-size:15px}
+#v-org .op-ghost{border:2px solid var(--ink);background:transparent;color:var(--ink);border-radius:999px;font:800 14px system-ui;padding:10px 18px;cursor:pointer}
+#v-org .op-stubs{display:grid;grid-template-columns:repeat(3,1fr);background:#fff;border-radius:18px;box-shadow:0 6px 18px rgba(28,27,46,.08);margin:6px 0 18px}
+#v-org .op-st{position:relative;padding:14px 8px;text-align:center}
+#v-org .op-st+.op-st{border-left:2px dashed #e6ddd2}
+#v-org .op-st+.op-st::before,#v-org .op-st+.op-st::after{content:"";position:absolute;left:-9px;width:16px;height:16px;border-radius:50%;background:var(--bg)}
+#v-org .op-st+.op-st::before{top:-8px}#v-org .op-st+.op-st::after{bottom:-8px}
+#v-org .op-st b{display:block;font:900 26px Georgia,serif;color:var(--oa)}
+#v-org .op-st small{font:800 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+#v-org .op-tabs{display:flex;gap:6px;border-bottom:2px solid #e9e1d8;margin-bottom:12px}
+#v-org .op-tabs button{border:0;background:none;font:800 15px system-ui;color:var(--mut);padding:10px 12px;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px}
+#v-org .op-tabs button.on{color:var(--ink);border-bottom-color:var(--oa)}
+#v-org .op-tabs i{font-style:normal;font-size:12px;background:#efe7dd;border-radius:999px;padding:2px 8px;margin-left:4px}
+#v-org .op-sub{display:inline-flex;background:#efe7dd;border-radius:999px;padding:4px;margin-bottom:14px}
+#v-org .op-sub button{border:0;background:none;border-radius:999px;padding:8px 14px;font:800 13px system-ui;color:var(--mut);cursor:pointer}
+#v-org .op-sub button.on{background:#fff;color:var(--ink);box-shadow:0 2px 6px rgba(0,0,0,.1)}
+#v-org .op-past .ev3{opacity:.72;filter:grayscale(.35)}
+#v-org .op-empty{text-align:center;color:var(--mut);padding:26px 10px;font-weight:700}
+#opcs{position:fixed;inset:0;z-index:90;background:rgba(28,27,46,.55);display:flex;align-items:flex-end;justify-content:center}
+#opcs[hidden]{display:none}
+#opcs .bx{width:100%;max-width:520px;background:#fff;border-radius:24px 24px 0 0;padding:18px 16px 26px;display:grid;gap:10px}
+#opcs h3{font:900 18px Georgia,serif;margin:0 0 4px}
+#opcs a,#opcs button{display:block;text-align:center;text-decoration:none;border:0;border-radius:14px;padding:14px;font:800 15px system-ui;cursor:pointer;background:var(--ink);color:#fff}
+#opcs a.wa{background:#1fa855}#opcs button{background:#efe7dd;color:var(--ink)}
+#v-orgedit label{display:block;font:800 13px system-ui;margin:12px 0 4px}
+#v-orgedit input[type=text],#v-orgedit input[type=email],#v-orgedit input[type=url],#v-orgedit input[type=tel],#v-orgedit textarea{width:100%;border:1.5px solid #e2d9ce;border-radius:12px;padding:11px;font:600 15px system-ui;background:#fff}
+#v-orgedit textarea{min-height:84px;resize:vertical}
+#v-orgedit .oe-prev{aspect-ratio:16/7;border-radius:14px;background:linear-gradient(135deg,var(--ink),var(--oa,#ff6b1a));overflow:hidden;position:relative}
+#v-orgedit .oe-prev img{width:100%;height:100%;object-fit:cover;display:block}
+#v-orgedit .oe-live{background:#f4efe7;border:1px dashed var(--oa,#ff6b1a);border-radius:16px;padding:12px;margin:12px 0;display:grid;gap:10px}
+#v-orgedit .oe-tg{display:flex;gap:12px;align-items:center;cursor:pointer;margin:0}
+#v-orgedit .oe-tg input{width:22px;height:22px;accent-color:var(--oa,#ff6b1a);flex:none}
+#v-orgedit .oe-tg small{display:block;font-weight:600;color:var(--mut)}
+#v-orgedit .oe-bt{display:grid;gap:8px}#v-orgedit .oe-bt .btn{margin:0}
+#v-orgedit .oe-sw{display:flex;gap:10px;flex-wrap:wrap}
+#v-orgedit .oe-sw button{width:38px;height:38px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 2px #e2d9ce;cursor:pointer}
+#v-orgedit .oe-sw button.on{box-shadow:0 0 0 3px var(--ink)}
+</style>
+<script id="orgp-js">
+(function(){
+"use strict";
+const OA={},ACC=["#ff6b1a","#0b8f5b","#6a4cff","#e0357a","#1f7ae0","#c9921a"];
+let curO="",tab="ev",sub="up",bannerBlob=null,accSel=ACC[0];
+const g=id=>document.getElementById(id);
+const URLO=o=>location.origin+location.pathname+"#org/"+o;
+const pubUrl=(p)=>SB+"/storage/v1/object/public/affiches/"+p;
+const safeUrl=u=>{u=String(u||"").trim();if(!u)return"";if(!/^https?:\/\//i.test(u))u="https://"+u;try{return new URL(u).href}catch(e){return""}};
+const digits=s=>String(s||"").replace(/\D/g,"");
+const hexOk=h=>/^#[0-9a-fA-F]{6}$/.test(h||"");
+
+g("v-cotm").insertAdjacentHTML("afterend",'<div id="v-org" class="view" hidden></div><div id="v-orgedit" class="view" hidden></div>');
+document.body.insertAdjacentHTML("beforeend",'<div id="opcs" hidden></div>');
+g("opcs").onclick=e=>{if(e.target.id==="opcs")g("opcs").hidden=true};
+PAGES.org="v-org";PAGES.orgedit="v-orgedit";NAVMAP.org="home";NAVMAP.orgedit="account";
+
+async function getOrg(o){
+  if(OA[o]!==undefined)return OA[o];
+  let r=null;
+  try{const x=await fetch(SB+"/rest/v1/organizers?owner_id=eq."+encodeURIComponent(o)+"&select=*",{headers:H("")});if(x.ok){const l=await x.json();r=(l&&l[0])||null}}catch(e){}
+  OA[o]=r;return r;
+}
+const evsOf=o=>DBEV.filter(e=>e.owner_id===o);
+const endOf=e=>{const L=evDates(e);return L.length?L[L.length-1].getTime():0};
+function split(o){
+  const ids=new Set(evsOf(o).map(e=>e.id)),now=Date.now()-6*36e5,up=[],pa=[];
+  allEvents().filter(x=>ids.has(x.id)).forEach(x=>{const d=DBEV.find(e=>e.id===x.id);(endOf(d)>=now?up:pa).push(x)});
+  up.sort((a,b)=>new Date(a.ts)-new Date(b.ts));pa.sort((a,b)=>new Date(b.ts)-new Date(a.ts));
+  return{up,pa};
+}
+const cotsOf=(o,nm)=>(typeof COTS!=="undefined"?COTS:[]).filter(c=>c.owner_id===o||(nm&&c.organizer_name&&String(c.organizer_name).trim()===nm));
+
+async function renderOrg(o,quiet){
+  curO=o;const v=g("v-org");
+  if(!o){v.innerHTML='<div class="x2"><p>Organisateur introuvable.</p><button class="btn dk" onclick="nav(\'home\')">Accueil</button></div>';return}
+  if(!quiet)v.innerHTML='<p class="sm" style="padding:30px;text-align:center">⏳</p>';
+  const rec=await getOrg(o);if(curO!==o)return;
+  const d0=evsOf(o)[0];
+  if(rec&&rec.is_public===false&&!(typeof myId==="function"&&tok&&myId()===o)){
+    v.innerHTML='<div class="x2"><h2>Page non disponible</h2><p class="sm">Cet organisateur n’a pas encore mis sa page en ligne.</p><button class="btn dk" onclick="nav(\'home\')">Accueil</button></div>';
+    return;
+  }
+  if(!d0&&!rec){
+    v.innerHTML=DBEV.length?'<div class="x2"><p>Organisateur introuvable.</p><button class="btn dk" onclick="nav(\'home\')">Accueil</button></div>':'<p class="sm" style="padding:30px;text-align:center">⏳</p>';
+    return;
+  }
+  const nm=(rec&&rec.name)||(d0&&d0.organizer_name)||"Organisateur",
+        city=(rec&&rec.city)||(d0&&d0.city)||"",
+        acc=hexOk(rec&&rec.accent)?rec.accent:ACC[0],
+        S=split(o),C=cotsOf(o,nm),
+        logo=window.orgLogoUrl?orgLogoUrl(o):"",
+        ban=rec&&rec.banner_path?pubUrl(rec.banner_path):"",
+        mine=typeof myId==="function"&&myId()===o,
+        hasContact=!!(rec&&(rec.whatsapp||rec.email||rec.website)),
+        nx=S.up[0],nxd=nx&&nx.ts?new Date(nx.ts):null;
+  let nextHtml="";
+  if(nx&&nxd&&!isNaN(nxd)){
+    const days=Math.ceil((nxd-Date.now())/864e5);
+    const when=days<=0?"C’est aujourd’hui":days===1?"Demain":"Dans "+days+" jours";
+    nextHtml='<div class="op-next" onclick="'+nx.href+'"><span>⏳</span><div>'+when+'<small>'+esc(nx.title)+'</small></div></div>';
+  }
+  const list=tab==="ev"?(sub==="up"?S.up:S.pa):[];
+  let body="";
+  if(tab==="ev"){
+    body='<div class="op-sub"><button class="'+(sub==="up"?"on":"")+'" onclick="opSub(\'up\')">À venir · '+S.up.length+'</button><button class="'+(sub==="pa"?"on":"")+'" onclick="opSub(\'pa\')">Passées · '+S.pa.length+'</button></div>'+
+      '<div class="list'+(sub==="pa"?" op-past":"")+'">'+(list.map(evCard).join("")||'<div class="op-empty">'+(sub==="up"?"Aucune soirée programmée pour le moment.":"Aucune soirée passée.")+'</div>')+'</div>';
+  }else{
+    body='<div class="list">'+(C.map(cotCard).join("")||'<div class="op-empty">Aucune cotisation.</div>')+'</div>';
+  }
+  v.innerHTML='<div class="op" style="--oa:'+acc+'">'+
+   (rec&&rec.is_public===false?'<div class="op-next" style="margin:0 0 10px" onclick="nav(\'orgedit\')"><span>🔒</span><div>Votre page est hors ligne<small>Touchez pour la mettre en ligne</small></div></div>':'')+
+   '<div class="op-ban">'+(ban?'<img alt="" src="'+esc(ban)+'" onerror="this.remove()">':'')+
+     '<button class="op-ib l" aria-label="Retour" onclick="history.length>1?history.back():nav(\'home\')">←</button>'+
+     '<button class="op-ib r" aria-label="Partager" onclick="opShare()">⤴</button></div>'+
+   '<div class="op-seal"><span>'+esc(nm.trim().slice(0,2).toUpperCase())+'</span>'+(logo?'<img alt="" src="'+esc(logo)+'" onerror="this.remove()">':'')+'</div>'+
+   '<div class="op-nm">'+esc(nm)+'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+(VER.has(o)?'':' hidden')+'>'+VSVG+'</span></div>'+
+   '<div class="op-meta"><span>Organisateur</span>'+(city?'<span>📍 '+esc(city)+'</span>':'')+'</div>'+
+   (rec&&rec.bio?'<p class="op-bio">'+esc(rec.bio)+'</p>':'')+
+   nextHtml+
+   '<div class="op-act">'+fbtn(o)+(hasContact?'<button class="op-ghost" onclick="opContact()">✉️ Contact</button>':'')+(mine?'<button class="op-ghost" onclick="nav(\'orgedit\')">✏️ Modifier ma page</button>':'')+'</div>'+
+   '<div class="op-stubs"><div class="op-st"><b>'+evsOf(o).length+'</b><small>Soirées</small></div><div class="op-st"><b>'+C.length+'</b><small>Cotisations</small></div><div class="op-st"><b data-ofn="'+esc(o)+'">'+(FLN[o]||0)+'</b><small>Abonnés</small></div></div>'+
+   '<div class="op-tabs"><button class="'+(tab==="ev"?"on":"")+'" onclick="opTab(\'ev\')">🎟️ Soirées<i>'+evsOf(o).length+'</i></button>'+(C.length?'<button class="'+(tab==="cot"?"on":"")+'" onclick="opTab(\'cot\')">🤝 Cotisations<i>'+C.length+'</i></button>':'')+'</div>'+
+   body+'</div>';
+  document.title=nm+" — Restau du Rire Tickets";
+  try{paintFollows();paintLikes()}catch(e){}
+  if(typeof COTS!=="undefined"&&!COTS.length&&!window.__opCots){window.__opCots=1;fetch(SB+"/rest/v1/cotisations?status=eq.published&select=*&order=created_at.desc",{headers:H("")}).then(r=>r.ok?r.json():[]).then(l=>{if(l&&l.length){COTS=l;if(!g("v-org").hidden&&curO===o)renderOrg(o,true)}}).catch(()=>{})}
+}
+window.opTab=t=>{tab=t;renderOrg(curO,true)};
+window.opSub=s=>{sub=s;renderOrg(curO,true)};
+window.opShare=function(){
+  const o=curO,u=URLO(o),t=(OA[o]&&OA[o].name)||(evsOf(o)[0]&&evsOf(o)[0].organizer_name)||"Organisateur";
+  if(navigator.share){navigator.share({title:t,url:u}).catch(()=>{})}
+  else if(navigator.clipboard){navigator.clipboard.writeText(u).then(()=>alert("Lien copié ✅"),()=>prompt("Copiez le lien :",u))}
+  else prompt("Copiez le lien :",u);
+};
+window.opContact=function(){
+  const r=OA[curO]||{},m=g("opcs"),b=[];
+  if(r.whatsapp&&digits(r.whatsapp).length>=8)b.push('<a class="wa" target="_blank" rel="noopener" href="https://wa.me/'+digits(r.whatsapp)+'">💬 WhatsApp</a>');
+  if(r.email)b.push('<a href="mailto:'+esc(r.email)+'">✉️ E-mail</a>');
+  const w=safeUrl(r.website);if(w)b.push('<a target="_blank" rel="noopener" href="'+esc(w)+'">🌐 Site web</a>');
+  m.innerHTML='<div class="bx"><h3>Contacter l’organisateur</h3>'+b.join("")+'<button onclick="document.getElementById(\'opcs\').hidden=true">Fermer</button></div>';
+  m.hidden=false;
+};
+window.orgSheet=function(o){const s=g("osh");if(s)s.hidden=true;nav("org/"+o)};
+
+/* ---------- Éditeur ---------- */
+async function renderEdit(){
+  const v=g("v-orgedit");
+  if(!tok){v.innerHTML='<div class="x2"><h2>Ma page publique</h2><p class="sm">Connectez-vous pour personnaliser votre page.</p><button class="btn dk" onclick="nav(\'account\')">Se connecter</button></div>';return}
+  const o=myId();delete OA[o];const rec=await getOrg(o)||{},d0=evsOf(o)[0]||{};
+  bannerBlob=null;accSel=hexOk(rec.accent)?rec.accent:ACC[0];
+  const nm=rec.name||d0.organizer_name||"",city=rec.city||d0.city||"";
+  v.innerHTML='<div class="x2" style="--oa:'+accSel+'"><h2>✏️ Ma page publique</h2><p class="sm">Ce que les visiteurs voient sur votre page organisateur. Le contact renseigné ci-dessous sera visible par tous.</p>'+
+   '<div class="oe-live" id="oeL"></div>'+
+   '<label>Bannière (format large conseillé)</label><div class="oe-prev" id="oeP">'+(rec.banner_path?'<img alt="" src="'+esc(pubUrl(rec.banner_path))+'">':'')+'</div><input type="file" id="oeB" accept="image/*" style="margin-top:8px">'+
+   '<label>Nom affiché</label><input type="text" id="oeN" maxlength="60" value="'+esc(nm)+'">'+
+   '<label>Ville</label><input type="text" id="oeC" maxlength="60" value="'+esc(city)+'" placeholder="Ex : Bukavu">'+
+   '<label>Présentation <span class="sm" id="oeCnt"></span></label><textarea id="oeBio" maxlength="200" placeholder="Qui êtes-vous ? Quel type de soirées organisez-vous ?">'+esc(rec.bio||"")+'</textarea>'+
+   '<label>WhatsApp (avec indicatif, ex : 243976403050)</label><input type="tel" id="oeW" value="'+esc(rec.whatsapp||"")+'">'+
+   '<label>E-mail de contact</label><input type="email" id="oeE" value="'+esc(rec.email||"")+'">'+
+   '<label>Site web</label><input type="url" id="oeS" value="'+esc(rec.website||"")+'" placeholder="https://">'+
+   '<label>Couleur de votre page</label><div class="oe-sw" id="oeA">'+ACC.map(c=>'<button type="button" data-c="'+c+'" class="'+(c===accSel?"on":"")+'" style="background:'+c+'" aria-label="'+c+'"></button>').join("")+'</div>'+
+   '<p class="sm" id="oeM" style="margin:12px 0 0"></p>'+
+   '<button class="btn dk" id="oeSave">Enregistrer</button><button class="btn wh" onclick="nav(\'org/'+esc(o)+'\')">Voir ma page</button></div>';
+  liveBox(o,rec.is_public!==false,evsOf(o).length>0);
+  const cnt=()=>{g("oeCnt").textContent=g("oeBio").value.length+"/200"};cnt();g("oeBio").oninput=cnt;
+  g("oeA").onclick=e=>{const b=e.target.closest("button");if(!b)return;accSel=b.dataset.c;g("oeA").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));v.firstChild.style.setProperty("--oa",accSel)};
+  g("oeB").onchange=async e=>{const f=e.target.files[0];if(!f)return;try{bannerBlob=await shrink(f);const u=URL.createObjectURL(bannerBlob);g("oeP").innerHTML='<img alt="" src="'+u+'">'}catch(x){msg("❌ Image illisible.")}};
+  g("oeSave").onclick=()=>save(rec);
+}
+function liveBox(o,on,hasEv){
+  const u=URLO(o),b=g("oeL");if(!b)return;
+  b.innerHTML='<label class="oe-tg"><input type="checkbox" id="oeLive"'+(on?' checked':'')+'><span><b id="oeLt"></b><small id="oeLs"></small></span></label>'+
+   '<input type="text" id="oeU" readonly value="'+esc(u)+'" onclick="this.select()">'+
+   '<div class="oe-bt"><button type="button" class="btn dk" onclick="opCopy()">📋 Copier le lien</button><button type="button" class="btn wa" onclick="opWA()">💬 Partager sur WhatsApp</button></div>';
+  const paint=()=>{const c=g("oeLive").checked;g("oeLt").textContent=c?"🟢 Ma page est en ligne":"🔒 Ma page est hors ligne";g("oeLs").textContent=c?(hasEv?"Visible par tous, avec votre événement déjà publié.":"Visible par tous dès que vous publiez un événement."):"Seul vous pouvez la voir. Pensez à enregistrer.";};
+  g("oeLive").onchange=paint;paint();
+}
+window.opCopy=function(){const u=g("oeU").value;if(navigator.clipboard)navigator.clipboard.writeText(u).then(()=>msg("✅ Lien copié."),()=>{g("oeU").select()});else g("oeU").select()};
+window.opWA=function(){const o=myId(),n=(g("oeN")&&g("oeN").value.trim())||"ma page";window.open("https://wa.me/?text="+encodeURIComponent("Retrouvez "+n+" et ses soirées sur Restau du Rire Tickets : "+URLO(o)),"_blank")};
+const msg=t=>{const m=g("oeM");if(m)m.textContent=t};
+function shrink(f,maxW=1600,q=.82){return new Promise((ok,ko)=>{const u=URL.createObjectURL(f),i=new Image();i.onload=()=>{const k=Math.min(1,maxW/i.width),c=document.createElement("canvas");c.width=Math.round(i.width*k);c.height=Math.round(i.height*k);c.getContext("2d").drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>b?ok(b):ko(new Error("x")),"image/jpeg",q)};i.onerror=()=>{URL.revokeObjectURL(u);ko(new Error("x"))};i.src=u})}
+async function save(old){
+  const o=myId(),btn=g("oeSave"),w=digits(g("oeW").value),em=g("oeE").value.trim(),site=g("oeS").value.trim();
+  if(w&&(w.length<8||w.length>15)){msg("⚠️ Numéro WhatsApp invalide (indicatif + numéro).");return}
+  if(em&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){msg("⚠️ E-mail invalide.");return}
+  if(site&&!safeUrl(site)){msg("⚠️ Adresse du site invalide.");return}
+  btn.disabled=true;msg("⏳ Enregistrement…");
+  try{
+    let path=old.banner_path||null;
+    if(bannerBlob){
+      path=o+"/banner-"+Date.now()+".jpg";
+      const u=await af(SB+"/storage/v1/object/affiches/"+path,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:bannerBlob});
+      if(!u.ok)throw new Error("Envoi de la bannière impossible ("+u.status+")");
+    }
+    const body={owner_id:o,name:g("oeN").value.trim()||null,city:g("oeC").value.trim()||null,bio:g("oeBio").value.trim()||null,banner_path:path,whatsapp:w||null,email:em||null,website:site?safeUrl(site):null,accent:accSel,is_public:g("oeLive").checked,updated_at:new Date().toISOString()};
+    const r=await af(SB+"/rest/v1/organizers",{method:"POST",headers:{"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},body:JSON.stringify(body)});
+    if(!r.ok){const t=await r.text();throw new Error(/organizers/.test(t)&&/(relation|schema|find)/i.test(t)?"La table « organizers » n’existe pas encore : exécutez organizers.sql dans Supabase.":"Enregistrement refusé ("+r.status+")")}
+    delete OA[o];msg(g("oeLive").checked?"✅ Page enregistrée et en ligne : "+URLO(o):"✅ Enregistré. Votre page est hors ligne.");
+  }catch(e){msg("❌ "+(e.message||e))}
+  btn.disabled=false;
+}
+
+/* ---------- Branchements ---------- */
+const _sp=showPage;
+showPage=function(p){const r=_sp.apply(this,arguments);const a=String(p||"").split("/");if(a[0]==="org")renderOrg(a[1]||"");if(a[0]==="orgedit")renderEdit();return r};
+const _de=drawEvents;
+drawEvents=function(){const r=_de.apply(this,arguments);try{if(!g("v-org").hidden&&curO)renderOrg(curO,true)}catch(e){}return r};
+const _pf=paintFollows;
+paintFollows=function(){const r=_pf.apply(this,arguments);try{document.querySelectorAll("[data-ofn]").forEach(x=>x.textContent=FLN[x.dataset.ofn]||0)}catch(e){}return r};
+const _pv=window.paintVer;
+window.paintVer=function(){const r=_pv&&_pv.apply(this,arguments);try{document.querySelectorAll("[data-ovf]").forEach(x=>x.hidden=!VER.has(x.dataset.ovf))}catch(e){}return r};
+const _ra=renderAcc;
+renderAcc=function(){const r=_ra.apply(this,arguments);try{if(tok&&!g("opAccCard"))g("v-acc").insertAdjacentHTML("beforeend",'<div class="x2" id="opAccCard"><h2>🎭 Ma page organisateur</h2><p class="sm">Bannière, présentation, contact : personnalisez la page que voient vos abonnés. Votre lien : <b style="word-break:break-all">'+URLO(myId())+'</b></p><div class="g" style="margin-top:10px"><button class="btn dk" style="margin:0" onclick="nav(\'orgedit\')">✏️ Modifier ma page</button><button class="btn wh" style="margin:0" onclick="nav(\'org/\'+myId())">👁️ Voir ma page</button></div></div>')}catch(e){}return r};
+if(location.hash.slice(1).split("/")[0]==="org"||location.hash.slice(1)==="orgedit")try{showPage(location.hash.slice(1))}catch(e){}
+})();
+</script>
+
 </body></html>
