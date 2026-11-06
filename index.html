@@ -6023,7 +6023,7 @@ async function buildDesign(o,e,img){
  const f=document.createElement("canvas");f.width=CW+2*PD;f.height=c.height+2*PD;const fx=f.getContext("2d");fx.fillStyle="#fff";fx.fillRect(0,0,f.width,f.height);
  fx.save();rr(fx,PD,PD,CW,c.height,40);fx.clip();fx.drawImage(c,PD,PD);fx.restore();fx.strokeStyle="#e3dfea";fx.lineWidth=2;rr(fx,PD,PD,CW,c.height,40);fx.stroke();return f}
 async function buildBank(o,noimg){
- if(!noimg){try{const e0=evOf(o),du=window.tkdUrl?window.tkdUrl(e0):"";if(du){const im=await loadImg(du);if(im){const cv=await buildDesign(o,e0,im);cv.toDataURL("image/jpeg",.5);return cv}}}catch(z){}}
+ if(!noimg){try{const e0=evOf(o),du=window.tkdUrl?window.tkdUrl(e0,o):"";if(du){const im=await loadImg(du);if(im){const cv=await buildDesign(o,e0,im);cv.toDataURL("image/jpeg",.5);return cv}}}catch(z){}}
  const CW=1200,CH=800,PD=40,ok=o.status==="confirmed",e=evOf(o),M0=64,SOFT="rgba(255,255,255,.72)",WH="#fff",SERIF="Georgia,'Times New Roman',serif";
  const c=document.createElement("canvas");c.width=CW;c.height=CH;const x=c.getContext("2d");
  const g=x.createLinearGradient(0,0,CW,CH);g.addColorStop(0,"#1f1b33");g.addColorStop(.5,"#5b3ca6");g.addColorStop(1,"#f26a2a");x.fillStyle=g;x.fillRect(0,0,CW,CH);
@@ -6149,23 +6149,25 @@ loadViews(true);
 </style>
 <script>(function(){
 const PUB=p=>SB+"/storage/v1/object/public/affiches/"+p;
-window.tkdUrl=e=>{try{return e&&e.modes&&e.modes.tkd?PUB(e.modes.tkd):""}catch(x){return ""}};
+window.tkdUrl=(e,o)=>{try{const m=(e&&e.modes)||{},M=m.tkds||{};if(o){for(const i of (o.items||[])){let id=i.id;if(!M[id]){const t=(e.tickets||[]).find(t=>t.name===i.name);id=t&&t.id}if(id&&M[id])return PUB(M[id])}}return m.tkd?PUB(m.tkd):""}catch(x){return ""}};
 function shrinkImg(f,m){return new Promise((res,rej)=>{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);b?res(b):rej(new Error("Image illisible"))},"image/jpeg",.9)}catch(e){rej(e)}};im.onerror=()=>rej(new Error("Image illisible"));im.src=u})}
 async function upTkd(f){const b=await shrinkImg(f,1600),p=myId()+"/tkd-"+Date.now()+".jpg";const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":"image/jpeg"},body:b});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error("Envoi impossible : "+(er.message||er.error||u.status))}return p}
 function findEv(id){for(const L of [typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]]){const e=(L||[]).find(x=>String(x.id)===String(id));if(e)return e}return null}
 /* ajouter / changer le design d'un événement déjà publié */
-window.tkdPick=function(id){if(!(typeof myId==="function"&&myId())){alert("Connectez-vous pour ajouter le design du billet.");return}
+window.tkdPick=function(id,tid){if(!(typeof myId==="function"&&myId())){alert("Connectez-vous pour ajouter le design du billet.");return}
  const i=document.createElement("input");i.type="file";i.accept="image/*";
- i.onchange=async()=>{const f=i.files[0];if(!f)return;try{toast("⏳ Envoi du design…");const path=await upTkd(f),e=findEv(id)||{},m=Object.assign({},e.modes||{},{tkd:path});
+ i.onchange=async()=>{const f=i.files[0];if(!f)return;try{toast("⏳ Envoi du design…");const path=await upTkd(f),e=findEv(id)||{},m=Object.assign({},e.modes||{},tid?{tkds:Object.assign({},(e.modes||{}).tkds||{},{[tid]:path})}:{tkd:path});
   const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({modes:m})});const d=await r.json().catch(()=>null);
   if(!r.ok||!Array.isArray(d)||!d.length)throw new Error("Enregistrement refusé ("+r.status+")");
   [typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]].forEach(L=>(L||[]).forEach(y=>{if(String(y.id)===String(id))y.modes=m}));
   toast("Design du billet enregistré ✅");tkdMark()}catch(x){alert("❌ "+(x.message||x))}};i.click()};
-window.tkdPreview=function(id){const e=findEv(id),u=window.tkdUrl(e);if(u)window.open(u,"_blank")};
+window.tkdPreview=function(id,tid){const e=findEv(id),M=((e&&e.modes)||{}).tkds||{},u=tid&&M[tid]?PUB(M[tid]):window.tkdUrl(e);if(u)window.open(u,"_blank")};
 /* boutons + avertissement dans « Mes événements » */
 function tkdMark(){document.querySelectorAll("#myev .x3").forEach(b=>{const m=(b.innerHTML.match(/copyBuy\('([^']+)'\)/)||[])[1];if(!m)return;const e=findEv(m)||{},has=!!(e.modes&&e.modes.tkd),on=!!(e.modes&&e.modes.online);
  b.querySelectorAll(".tkd").forEach(n=>n.remove());
- const h=`<span class="tkd">${has?'<span class="tkd-ok">🎫 Design du billet ajouté</span>':on?'<br><span class="tkd-w">⚠️ Achat en ligne actif : ajoutez le design du billet</span>':""}<button class="ab" onclick="tkdPick('${m}')">🎫 ${has?"Changer":"Ajouter"} le design du billet</button>${has?`<button class="ab" onclick="tkdPreview('${m}')">👁️ Voir</button>`:""}</span>`;
+ const tk=e.tickets||[],M=(e.modes&&e.modes.tkds)||{},miss=tk.filter(t=>!M[t.id]&&!(e.modes&&e.modes.tkd)).length;
+ const row=t=>`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0"><span style="min-width:120px">${M[t.id]?"✅":"⚠️"} <b>${esc(t.name)}</b></span><button class="ab" onclick="tkdPick('${m}','${esc(t.id)}')">🎫 ${M[t.id]?"Changer":"Ajouter"} le design</button>${M[t.id]?`<button class="ab" onclick="tkdPreview('${m}','${esc(t.id)}')">👁️ Voir</button>`:""}</span>`;
+ const h=`<span class="tkd" style="display:block;margin:8px 0"><b>🎫 Design du billet, par catégorie</b><br><span class="sm">Ajoutez le design de chaque catégorie : le client reçoit le billet de sa catégorie.</span>${tk.map(row).join("")}${on&&miss?'<br><span class="tkd-w">⚠️ Achat en ligne actif : ajoutez le design de chaque catégorie</span>':""}${has?`<span style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 0"><span class="sm">Design général (catégories sans design propre)</span><button class="ab" onclick="tkdPick('${m}')">🎫 Changer</button><button class="ab" onclick="tkdPreview('${m}')">👁️ Voir</button></span>`:""}</span>`;
  const a=b.querySelector('button[onclick^="copyBuy"]');if(a)a.insertAdjacentHTML("beforebegin",h)})}
 if(typeof loadMine==="function"){const _lm=loadMine;loadMine=async function(){const r=await _lm.apply(this,arguments);try{tkdMark()}catch(x){}return r}}
 /* création d'un événement : envoi du design */
@@ -6177,11 +6179,11 @@ if(typeof _createEvent==="function"){const _ce=_createEvent;_createEvent=async f
 const _exT=window.evExtra;window.evExtra=function(){const r=_exT?_exT():{};if(window.TKDP)r.tkd=window.TKDP;return r};
 const _rcT=renderCreate;renderCreate=function(){window.TKDP="";return _rcT.apply(this,arguments)};
 /* acheteur : télécharger le billet (image + PDF) juste après le paiement */
-window.tkBtns=function(k){window._tk=k;window._tkEv=(typeof EV!=="undefined"&&EV&&EV.e)||null;return '<div class="tkb"><button class="tkbi" onclick="tkDl(\'img\')">🖼️ Télécharger en image</button><button class="tkbp" onclick="tkDl(\'pdf\')">📄 Télécharger en PDF</button></div>'};
+window.tkBtns=function(k){window._tk=k;window._tkEv=(typeof EV!=="undefined"&&EV&&EV.e)||null;try{window._tkIt=(window._tkEv&&window._tkEv.tickets||[]).filter(t=>EV.qty&&EV.qty[t.id]).map(t=>({id:t.id,name:t.name,qty:EV.qty[t.id]}))}catch(x){window._tkIt=[]}return '<div class="tkb"><button class="tkbi" onclick="tkDl(\'img\')">🖼️ Télécharger en image</button><button class="tkbp" onclick="tkDl(\'pdf\')">📄 Télécharger en PDF</button></div>'};
 window.tkDl=async function(type){const k=window._tk;if(!k)return;let e=window._tkEv||null;
  if(!e||!e.id){e=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.title===k.title)||e||{}}
  const d=(typeof evDates==="function"&&e.id)?evDates(e)[0]:null;
- const o={id:k.id,code:k.code,name:k.name,title:e.title||k.title||"",desc:k.desc,event_id:e.id,starts_at:d?d.toISOString():null,venue:e.venue,city:e.city,organizer:e.organizer_name,status:"confirmed",kind:"online",items:[],amounts:k.amounts||null};
+ const o={id:k.id,code:k.code,name:k.name,title:e.title||k.title||"",desc:k.desc,event_id:e.id,starts_at:d?d.toISOString():null,venue:e.venue,city:e.city,organizer:e.organizer_name,status:"confirmed",kind:"online",items:window._tkIt||[],amounts:k.amounts||null};
  try{toast("⏳ Création du billet…");await window.p5Dl(o,type)}catch(x){alert("❌ Impossible de créer le billet.")}};
 setTimeout(()=>{try{if($("myev"))tkdMark()}catch(x){}},1500);
 })();</script>
