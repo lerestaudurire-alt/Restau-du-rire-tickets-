@@ -4011,7 +4011,8 @@ function csv(rows,name){const q=v=>{v=v==null?"":String(v);return /[;"\n]/.test(
 
 /* ================= 🎫 TICKETS PAPIER ================= */
 async function tPaper(b){const id=CUR(),e=EVT(),tk=e.tickets||[];let ol=[],bk=[];try{ol=(await ra("org_orders",{p_event:id}))||[]}catch(x){}try{bk=(await ra("booklet_report",{p_event:id}))||[]}catch(x){}
- const SV=Array.isArray((e.modes||{}).sellers)?e.modes.sellers:[];window.__p8=SV;
+ let SV,TB=false;try{SV=((await api("event_sellers?event_id=eq."+id+"&select=*&order=created_at"))||[]).map(x=>({id:x.id,name:x.name,alloc:x.alloc||{}}));TB=true}catch(x){SV=Array.isArray((e.modes||{}).sellers)?e.modes.sellers:[]}
+ window.__p8=SV;window.__p8t=TB;
  const nk=v=>String(v||"").trim().toLowerCase().replace(/\s+/g," "),CS=["cash","paper","door"],
   sales=ol.filter(o=>o.status!=="cancelled"&&CS.includes(o.kind)),known=new Set(SV.map(s=>nk(s.name)));
  const inCat=(o,t)=>(o.items||[]).filter(i=>i.id===t.id||i.name===t.name).reduce((a,i)=>a+(+i.qty||0),0);
@@ -4033,24 +4034,41 @@ async function tPaper(b){const id=CUR(),e=EVT(),tk=e.tickets||[];let ol=[],bk=[]
  sales.filter(o=>known.has(nk(o.seller))).forEach(o=>Object.entries(sum(o)).forEach(([c,v])=>tot[c]=(tot[c]||0)+v));
  b.innerHTML=`<div class="p5cd"><b>🧑‍💼 Vendeurs (ventes en espèces)</b><small>Ajoutez chaque vendeur et le nombre de billets que vous lui donnez par catégorie. Les ventes se rattachent automatiquement au vendeur dont le nom est indiqué par l'acheteur. Le montant à déposer = billets vendus × prix.</small>
  <small><b>${SV.length}</b> vendeur${SV.length>1?"s":""} · <b>${nG}</b> billets donnés · 💰 à déposer au total : <b>${esc(fmt(tot))}</b></small></div>
- <div class="p5cd"><b>➕ Ajouter un vendeur</b><input id="p8n" maxlength="60" placeholder="Nom du vendeur (ex : Mutombo)"><div class="p5row" style="flex-wrap:wrap">${inputs("p8a",null)}</div><button class="btn dk" onclick="p8Add()">➕ Ajouter ce vendeur</button></div>
+ <div class="p5cd"><b>➕ Ajouter un vendeur</b><input id="p8n" maxlength="60" placeholder="Nom du vendeur (ex : Augustin, Sagesse…)"><div class="p5row" style="flex-wrap:wrap">${inputs("p8a",null)}</div><button class="btn dk" onclick="p8Add()">➕ Ajouter ce vendeur</button></div>
  <div class="p5cd"><b>👥 Ajouter plusieurs vendeurs d'un coup</b><small>Un nom par ligne. Chacun reçoit les mêmes quantités (ex : 20 vendeurs avec 10 Standard chacun).</small><textarea id="p8m" rows="5" placeholder="Mutombo&#10;Amani&#10;Chantal" style="width:100%;border:1px solid #ddd;border-radius:12px;padding:10px;font:inherit"></textarea><div class="p5row" style="flex-wrap:wrap">${inputs("p8b",null)}</div><button class="btn dk" onclick="p8Bulk()">👥 Ajouter la liste</button></div>
  ${SV.map(card).join("")||'<div class="p5cd"><small>Aucun vendeur pour le moment.</small></div>'}
+ ${SV.length?`<button class="btn dk" onclick="p8Focus()">➕ Ajouter un autre vendeur (ex : Sagesse)</button>`:""}
  ${orph.length?`<div class="p5cd" style="border:1px solid #e0b4b4"><b>⚠️ Ventes sans vendeur enregistré (${orph.length})</b><small>Le nom du vendeur saisi par l'acheteur ne correspond à aucun vendeur ci-dessus (faute de frappe ?). Ajoutez le vendeur avec le même nom pour rattacher ces ventes.</small>${orph.map(o=>`<span style="display:block;border-top:1px solid #e3e3e3;padding:5px 0;font-size:13px">👤 <b>${esc(o.name||"—")}</b> · 🧾 Vendeur indiqué : <b>${esc(o.seller||"—")}</b><br>🎟 ${esc(catn(o))} · ${o.status==="confirmed"?"✅ confirmé":"⏳ à confirmer"}</span>`).join("")}</div>`:""}
  ${bk.length?`<details class="p5cd"><summary class="sm" style="cursor:pointer"><b>📦 Anciens carnets numérotés</b></summary>${p7SellerSum(bk,ol)}<div class="p5cd" style="border:1px solid #e0b4b4"><small>Supprime tous les anciens carnets numérotés.</small><button class="p4b" style="color:#c0392b" onclick="p7Reset()">🔄 Tout réinitialiser</button></div></details>`:""}`}
 const p8Read=(px,tk)=>{const a={};tk.forEach(t=>{const v=Math.max(0,Math.floor(+($(px+"_"+t.id)||{}).value||0));if(v)a[t.id]=v});return a};
-async function p8Persist(l,msg){await p7SaveModes({sellers:l});toast(msg||"Enregistré ✅");p5Tab("paper")}
+async function p8Persist(l,msg){let last=null;
+ for(let t=0;t<3;t++){
+  try{const e=EVT(),m=Object.assign({},e.modes||{},{sellers:l});
+   const d=await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=representation"},body:JSON.stringify({modes:m})});
+   if(!Array.isArray(d)||!d.length)throw new Error("La base refuse la modification de cet événement. Lancez une fois le fichier 24-modifier-evenement-publie.sql dans Supabase, puis réessayez.");
+   e.modes=m;const dv=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(dv)dv.modes=m;
+   toast((msg||"Enregistré ✅")+" Vous pouvez ajouter un autre vendeur.");p5Tab("paper");setTimeout(()=>{try{const f=$("p8n");if(f)f.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}} ,900);return}
+  catch(x){last=x;if(!(x instanceof TypeError))break;await new Promise(r=>setTimeout(r,900))}}
+ if(last instanceof TypeError)throw new Error("Connexion au serveur impossible. Vérifiez votre réseau (4G/Wi-Fi) puis réessayez : rien n'a été perdu.");
+ throw last}
+window.p8Focus=function(){const f=$("p8n");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>f.focus(),400)}};
+const p8Net=x=>x instanceof TypeError?new Error("Connexion au serveur impossible. Vérifiez votre réseau (4G/Wi-Fi) puis réessayez : rien n'a été perdu."):x;
+const p8Done=msg=>{toast((msg||"Enregistré ✅")+" Vous pouvez ajouter un autre vendeur.");p5Tab("paper");setTimeout(()=>{try{const f=$("p8n");if(f)f.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}},900)};
+const p8Try=async f=>{let last;for(let t=0;t<3;t++){try{return await f()}catch(x){last=x;if(!(x instanceof TypeError))break;await new Promise(r=>setTimeout(r,900))}}throw p8Net(last)};
+const p8Tbl=(m,q,body)=>p8Try(()=>api("event_sellers"+(q||""),{method:m,headers:{Prefer:"return=minimal"},body:body===undefined?undefined:JSON.stringify(body)}));
 window.p8Add=async function(){const n=($("p8n").value||"").trim().replace(/\s+/g," ").slice(0,60),tk=EVT().tickets||[],a=p8Read("p8a",tk),l=(window.__p8||[]).slice();
  if(!n){alert("Indiquez le nom du vendeur.");return}
  if(l.some(s=>s.name.toLowerCase()===n.toLowerCase())){alert("Ce vendeur existe déjà : utilisez « Modifier les billets donnés ».");return}
- try{l.push({name:n,alloc:a});await p8Persist(l,"Vendeur ajouté ✅")}catch(x){err(x)}};
+ try{if(window.__p8t)await p8Tbl("POST","",{event_id:CUR(),name:n,alloc:a});else{l.push({name:n,alloc:a});await p8Persist(l,"Vendeur ajouté ✅");return}p8Done("Vendeur ajouté ✅")}catch(x){err(x)}};
 window.p8Bulk=async function(){const tk=EVT().tickets||[],a=p8Read("p8b",tk),l=(window.__p8||[]).slice(),names=($("p8m").value||"").split(/\n/).map(x=>x.trim().replace(/\s+/g," ").slice(0,60)).filter(Boolean);
  if(!names.length){alert("Écrivez au moins un nom (un par ligne).");return}
- let n=0;names.forEach(x=>{if(!l.some(s=>s.name.toLowerCase()===x.toLowerCase())){l.push({name:x,alloc:Object.assign({},a)});n++}});
- if(!n){alert("Ces vendeurs existent déjà.");return}
- try{await p8Persist(l,n+" vendeur(s) ajouté(s) ✅")}catch(x){err(x)}};
-window.p8Save=async function(i){const l=(window.__p8||[]).slice(),tk=EVT().tickets||[];if(!l[i])return;l[i]=Object.assign({},l[i],{alloc:p8Read("p8e"+i,tk)});try{await p8Persist(l)}catch(x){err(x)}};
-window.p8Del=async function(i){const l=(window.__p8||[]).slice();if(!l[i]||!confirm("Retirer "+l[i].name+" ? Ses ventes déjà enregistrées ne sont pas effacées."))return;l.splice(i,1);try{await p8Persist(l,"Vendeur retiré")}catch(x){err(x)}};
+ const add=[];names.forEach(x=>{if(!l.some(s=>s.name.toLowerCase()===x.toLowerCase())&&!add.some(s=>s.name.toLowerCase()===x.toLowerCase()))add.push({name:x,alloc:Object.assign({},a)})});
+ if(!add.length){alert("Ces vendeurs existent déjà.");return}
+ try{if(window.__p8t)await p8Tbl("POST","",add.map(v=>({event_id:CUR(),name:v.name,alloc:v.alloc})));else{await p8Persist(l.concat(add),add.length+" vendeur(s) ajouté(s) ✅");return}p8Done(add.length+" vendeur(s) ajouté(s) ✅")}catch(x){err(x)}};
+window.p8Save=async function(i){const l=(window.__p8||[]).slice(),tk=EVT().tickets||[];if(!l[i])return;const al=p8Read("p8e"+i,tk);
+ try{if(window.__p8t)await p8Tbl("PATCH","?id=eq."+l[i].id,{alloc:al});else{l[i]=Object.assign({},l[i],{alloc:al});await p8Persist(l);return}p8Done("Enregistré ✅")}catch(x){err(x)}};
+window.p8Del=async function(i){const l=(window.__p8||[]).slice();if(!l[i]||!confirm("Retirer "+l[i].name+" ? Ses ventes déjà enregistrées ne sont pas effacées."))return;
+ try{if(window.__p8t)await p8Tbl("DELETE","?id=eq."+l[i].id);else{l.splice(i,1);await p8Persist(l,"Vendeur retiré");return}p8Done("Vendeur retiré")}catch(x){err(x)}};
 function p7StampCard(e){const t=(e.modes||{}).stamp;return`<div class="p5cd"><b>🔖 Cachet de l'organisation (obligatoire au verso des tickets papier)</b><small>Envoyez l'image de votre cachet (photo ou scan net, fond clair). Quand un client ajoute son ticket papier, il doit envoyer le <b>recto et le verso</b> : le verso est accepté seulement si le même cachet y est reconnu. Chaque organisation a son propre cachet.</small>${t&&t.img?`<div style="margin:6px 0"><img alt="" src="${t.img}" style="height:80px;background:#fff;border-radius:10px;padding:4px"> <small>${t.name?"Nom : <b>"+esc(t.name)+"</b> · ":""}✅ cachet enregistré</small></div>`:`<small style="color:#b00020"><b>⚠️ Aucun cachet enregistré : le cachet ne sera pas vérifié automatiquement.</b></small>`}<input id="stp_n" maxlength="60" placeholder="Nom écrit sur le cachet (ex : Restau du Rire · Gala d'humour)" value="${esc((t&&t.name)||"")}"><input id="stp_f" type="file" accept="image/*"><button class="p4b o" onclick="p7StampSave()">💾 ${t?"Remplacer":"Enregistrer"} le cachet</button>${t?`<button class="p4b" onclick="p7StampDel()">🗑️ Retirer</button>`:""}<div id="stp_s" class="sm"></div></div>`}
 async function p7SaveModes(patch){const e=EVT(),m=Object.assign({},e.modes||{}),k=Object.keys(patch);k.forEach(x=>{if(patch[x]===null)delete m[x];else m[x]=patch[x]});await api("events?id=eq."+CUR(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m})});e.modes=m;const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===CUR());if(d)d.modes=m}
 window.p7StampSave=async function(){const f=$("stp_f")&&$("stp_f").files[0],st=$("stp_s");if(!f){alert("Choisissez d'abord l'image de votre cachet.");return}
