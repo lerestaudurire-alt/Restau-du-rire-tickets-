@@ -4062,12 +4062,12 @@ const p8Tbl=(m,q,body)=>p8Try(async()=>{const r=await af(SB+"/rest/v1/event_sell
 window.p8Add=async function(){const n=($("p8n").value||"").trim().replace(/\s+/g," ").slice(0,60),tk=EVT().tickets||[],a=p8Read("p8a",tk),l=(window.__p8||[]).slice();
  if(!n){alert("Indiquez le nom du vendeur.");return}
  if(l.some(s=>s.name.toLowerCase()===n.toLowerCase())){alert("Ce vendeur existe déjà : utilisez « Modifier les billets donnés ».");return}
- try{if(window.__p8t)await p8Tbl("POST","",{event_id:CUR(),name:n,alloc:a});else{l.push({name:n,alloc:a});await p8Persist(l,"Vendeur ajouté ✅");return}p8Done("Vendeur ajouté ✅")}catch(x){err(x)}};
+ try{if(window.__p8t)await p8Tbl("POST","",{event_id:CUR(),name:n,alloc:a});else{l.push({name:n,alloc:a});await p8Persist(l,"Vendeur ajouté ✅");return}p8Done("Vendeur ajouté ✅")}catch(x){err(x);if(x&&/existe déjà/.test(x.message))p5Tab("paper")}};
 window.p8Bulk=async function(){const tk=EVT().tickets||[],a=p8Read("p8b",tk),l=(window.__p8||[]).slice(),names=($("p8m").value||"").split(/\n/).map(x=>x.trim().replace(/\s+/g," ").slice(0,60)).filter(Boolean);
  if(!names.length){alert("Écrivez au moins un nom (un par ligne).");return}
  const add=[];names.forEach(x=>{if(!l.some(s=>s.name.toLowerCase()===x.toLowerCase())&&!add.some(s=>s.name.toLowerCase()===x.toLowerCase()))add.push({name:x,alloc:Object.assign({},a)})});
  if(!add.length){alert("Ces vendeurs existent déjà.");return}
- try{if(window.__p8t)await p8Tbl("POST","",add.map(v=>({event_id:CUR(),name:v.name,alloc:v.alloc})));else{await p8Persist(l.concat(add),add.length+" vendeur(s) ajouté(s) ✅");return}p8Done(add.length+" vendeur(s) ajouté(s) ✅")}catch(x){err(x)}};
+ try{if(window.__p8t)await p8Tbl("POST","",add.map(v=>({event_id:CUR(),name:v.name,alloc:v.alloc})));else{await p8Persist(l.concat(add),add.length+" vendeur(s) ajouté(s) ✅");return}p8Done(add.length+" vendeur(s) ajouté(s) ✅")}catch(x){err(x);if(x&&/existe déjà/.test(x.message))p5Tab("paper")}};
 window.p8Save=async function(i){const l=(window.__p8||[]).slice(),tk=EVT().tickets||[];if(!l[i])return;const al=p8Read("p8e"+i,tk);
  try{if(window.__p8t)await p8Tbl("PATCH","?id=eq."+l[i].id,{alloc:al});else{l[i]=Object.assign({},l[i],{alloc:al});await p8Persist(l);return}p8Done("Enregistré ✅")}catch(x){err(x)}};
 window.p8Del=async function(i){const l=(window.__p8||[]).slice();if(!l[i]||!confirm("Retirer "+l[i].name+" ? Ses ventes déjà enregistrées ne sont pas effacées."))return;
