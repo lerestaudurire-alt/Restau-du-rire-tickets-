@@ -4055,7 +4055,10 @@ window.p8Focus=function(){const f=$("p8n");if(f){f.scrollIntoView({behavior:"smo
 const p8Net=x=>x instanceof TypeError?new Error("Connexion au serveur impossible. Vérifiez votre réseau (4G/Wi-Fi) puis réessayez : rien n'a été perdu."):x;
 const p8Done=msg=>{toast((msg||"Enregistré ✅")+" Vous pouvez ajouter un autre vendeur.");p5Tab("paper");setTimeout(()=>{try{const f=$("p8n");if(f)f.scrollIntoView({behavior:"smooth",block:"center"})}catch(_){}},900)};
 const p8Try=async f=>{let last;for(let t=0;t<3;t++){try{return await f()}catch(x){last=x;if(!(x instanceof TypeError))break;await new Promise(r=>setTimeout(r,900))}}throw p8Net(last)};
-const p8Tbl=(m,q,body)=>p8Try(()=>api("event_sellers"+(q||""),{method:m,headers:{Prefer:"return=minimal"},body:body===undefined?undefined:JSON.stringify(body)}));
+const p8Tbl=(m,q,body)=>p8Try(async()=>{const r=await af(SB+"/rest/v1/event_sellers"+(q||""),{method:m,headers:{"Content-Type":"application/json",Prefer:"return=minimal"},body:body===undefined?undefined:JSON.stringify(body)});
+ if(r.status===401){logout();throw new Error("Session expirée, reconnectez-vous.")}
+ if(!r.ok){let t=await r.text(),j=null;try{j=JSON.parse(t)}catch(_){}if(j&&j.code==="23505")throw new Error("Ce vendeur existe déjà pour cet événement.");throw new Error((j&&(j.message||j.hint))||t||("Erreur "+r.status))}
+ return null});
 window.p8Add=async function(){const n=($("p8n").value||"").trim().replace(/\s+/g," ").slice(0,60),tk=EVT().tickets||[],a=p8Read("p8a",tk),l=(window.__p8||[]).slice();
  if(!n){alert("Indiquez le nom du vendeur.");return}
  if(l.some(s=>s.name.toLowerCase()===n.toLowerCase())){alert("Ce vendeur existe déjà : utilisez « Modifier les billets donnés ».");return}
