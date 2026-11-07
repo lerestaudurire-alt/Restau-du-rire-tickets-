@@ -3282,7 +3282,7 @@ const _cr=chipsRow;
 chipsRow=function(e){const M=e.modes||{},a=M.audience||"Tout public",t=Array.isArray(M.tags)?M.tags:[];const x=[`<span class="ch aud">${esc(a)}</span>`,...t.map(k=>`<span class="ch tg">#${esc(k)}</span>`)].join("");let b=_cr(e);return b?b.replace('</div>',x+'</div>'):`<div class="chs">${x}</div>`};
 
 /* 4. Organisateurs : vérifiés + page publique + abonnés */
-const VER=window.VER_||(window.VER_=new Set());window.VER=VER;
+const VER=window.VER_||(window.VER_=new Set());window.VER=VER;window.VSVG=VSVG;
 async function loadVer(){try{const r=await fetch(SB+"/rest/v1/rpc/verified_owner_ids",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;(await r.json()).forEach(x=>VER.add(typeof x==="string"?x:(x.owner||x.verified_owner_ids)));paintVer()}catch(e){}}
 function paintVer(){document.querySelectorAll(".orgr").forEach(r=>{const b=r.querySelector("[data-fl]");if(!b)return;const o=b.dataset.fl,n=r.querySelector(".ot b");if(n&&VER.has(o)&&!n.querySelector(".vf"))n.insertAdjacentHTML("beforeend",`<span class="vf" title="Organisateur vérifié">${VSVG}</span>`)})}
 window.orgSheet=function(o){let m=$("osh");if(!m){m=document.createElement("div");m.id="osh";m.onclick=e=>{if(e.target===m)m.hidden=true};document.body.appendChild(m)}
