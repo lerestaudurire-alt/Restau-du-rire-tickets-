@@ -6303,6 +6303,7 @@ try{Object.assign(EN,{"🤝 Contribution à l’organisation":"🤝 Contribution
 #v-org .op-st+.op-st::before{top:-8px}#v-org .op-st+.op-st::after{bottom:-8px}
 #v-org .op-st b{display:block;font:900 26px Georgia,serif;color:var(--oa)}
 #v-org .op-st small{font:800 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#6f6a7d}
+#v-org .op-act>*{flex:1 1 130px;text-align:center;justify-content:center}#v-org .op-act .op-ghost{color:var(--ink);background:#fff;border-color:#e6ddd2}#v-org .op-inf{background:#fff;color:var(--ink);border-radius:18px;padding:14px 16px;margin:0 0 16px;box-shadow:0 6px 18px rgba(28,27,46,.08)}#v-org .op-inf h3{font:900 16px Georgia,serif;margin:0 0 6px}#v-org .op-inf ul{list-style:none;margin:0;padding:0}#v-org .op-inf li{display:flex;gap:12px;align-items:center;padding:9px 0;font:700 14px system-ui;border-top:1px dashed #e6ddd2;min-width:0}#v-org .op-inf li:first-child{border-top:0}#v-org .op-inf li i{font-style:normal;width:34px;height:34px;flex:none;border-radius:50%;background:#fff3d6;display:flex;align-items:center;justify-content:center;font-size:16px}#v-org .op-inf li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#v-org .op-inf li a{color:inherit;text-decoration:none}#v-org .op-seal{width:104px;height:104px;margin-top:-52px}
 #v-org .op-tabs{display:flex;gap:6px;border-bottom:2px solid rgba(128,128,128,.3);margin-bottom:12px}
 #v-org .op-tabs button{border:0;background:none;font:800 15px system-ui;color:inherit;opacity:.6;padding:10px 12px;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px}
 #v-org .op-tabs button.on{opacity:1;border-bottom-color:var(--oa)}
@@ -6391,6 +6392,7 @@ function split(o){
 const cotsOf=(o,nm)=>(typeof COTS!=="undefined"?COTS:[]).filter(c=>c.owner_id===o||(nm&&c.organizer_name&&String(c.organizer_name).trim()===nm));
 function nameOf(o){if(isOff(o))return OFF.name;const r=OA[o],d=evsOf(o)[0];return(r&&r.name)||(d&&d.organizer_name)||"Organisateur"}
 
+window.opFmt=function(n){n=+n||0;return n>=1000?(n/1000).toFixed(n<10000?1:0).replace('.',',').replace(/,0$/,'')+' K':String(n)};
 function build(o){
   if(!o)return NF;
   const off=isOff(o),rec=off?null:(OA[o]||null),d0=evsOf(o)[0];
@@ -6422,11 +6424,25 @@ function build(o){
   const soc=off?'<div class="fs op-soc">'+((g("soc2")||{}).innerHTML||"")+'</div>':"";
   const bio=off?'<p class="op-bio">'+esc(OFF.tag)+'</p>':(rec&&rec.bio?'<p class="op-bio">'+esc(rec.bio)+'</p>':"");
   const act=off
-    ?'<div class="op-act"><a class="op-wa" target="_blank" rel="noopener" href="https://wa.me/'+OFF.wa+'">💬 WhatsApp</a><a class="op-ghost" href="tel:'+OFF.tel+'">📞 Appeler</a></div>'
-    :'<div class="op-act">'+fbtn(o)+(hasContact?'<button class="op-ghost" onclick="opContact()">✉️ Contact</button>':'')+(mineOf(o)?'<button class="op-ghost" onclick="nav(\'orgedit\')">✏️ Modifier ma page</button>':'')+'</div>';
+    ?'<div class="op-act"><a class="op-wa" target="_blank" rel="noopener" href="https://wa.me/'+OFF.wa+'">💬 WhatsApp</a><a class="op-ghost" href="tel:'+OFF.tel+'">📞 Appeler</a><button class="op-ghost" onclick="opShare()">⤴ Partager</button></div>'
+    :'<div class="op-act">'+fbtn(o)+(hasContact?'<button class="op-ghost" onclick="opContact()">✉️ Contact</button>':'')+'<button class="op-ghost" onclick="opShare()">⤴ Partager</button>'+(mineOf(o)?'<button class="op-ghost" onclick="nav(\'orgedit\')">✏️ Modifier ma page</button>':'')+'</div>';
   const stubs=off
     ?'<div class="op-stubs" style="grid-template-columns:repeat(2,1fr)"><div class="op-st"><b>'+total+'</b><small>Soirées</small></div><div class="op-st"><b>'+S.up.length+'</b><small>À venir</small></div></div>'
-    :'<div class="op-stubs"><div class="op-st"><b>'+total+'</b><small>Soirées</small></div><div class="op-st"><b>'+C.length+'</b><small>Cotisations</small></div><div class="op-st"><b data-ofn="'+esc(o)+'">'+(FLN[o]||0)+'</b><small>Abonnés</small></div></div>';
+    :'<div class="op-stubs"><div class="op-st"><b>'+total+'</b><small>Soirées</small></div><div class="op-st"><b>'+C.length+'</b><small>Cotisations</small></div><div class="op-st"><b data-ofn="'+esc(o)+'">'+opFmt(FLN[o]||0)+'</b><small>Abonnés</small></div></div>';
+
+  const R=rec||{},rows=[];
+  const dg=x=>String(x||"").replace(/\D/g,"");
+  const lk=(h,t)=>'<a '+(/^https?:/.test(h)?'target="_blank" rel="noopener" ':'')+'href="'+esc(h)+'">'+esc(t)+'</a>';
+  if(city)rows.push(['📍','<span>'+esc(city)+'</span>']);
+  if(off){rows.push(['📞','<span>'+lk('tel:'+OFF.tel,'+'+String(OFF.tel).replace(/^\+/,''))+'</span>'])}
+  else{
+   if(R.phone&&dg(R.phone).length>=8)rows.push(['📞','<span>'+lk('tel:+'+dg(R.phone),'+'+dg(R.phone))+'</span>']);
+   if(R.whatsapp&&dg(R.whatsapp).length>=8)rows.push(['💬','<span>'+lk('https://wa.me/'+dg(R.whatsapp),'WhatsApp · +'+dg(R.whatsapp))+'</span>']);
+   if(R.email)rows.push(['✉️','<span>'+lk('mailto:'+R.email,R.email)+'</span>']);
+   if(R.website&&/^https?:\/\//.test(String(R.website)))rows.push(['🌐','<span>'+lk(String(R.website),String(R.website).replace(/^https?:\/\//,'').replace(/\/$/,''))+'</span>']);
+  }
+  rows.push(['🎟️','<span>'+total+(total>1?' soirées':' soirée')+(S.up.length?' · '+S.up.length+' à venir':'')+'</span>']);
+  const infoHtml='<div class="op-inf"><h3>Informations</h3><ul>'+rows.map(r=>'<li><i>'+r[0]+'</i>'+r[1]+'</li>').join('')+'</ul></div>';
   const badge=off?'<span class="vf" title="Organisateur officiel">'+VSVG+'</span>':'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+((window.VER_&&window.VER_.has(o))?'':' hidden')+'>'+VSVG+'</span>';
   return '<div class="op" style="--oa:'+acc+'">'+
    (rec&&rec.is_public===false?'<div class="op-next" style="margin:0 0 10px" onclick="nav(\'orgedit\')"><span>🔒</span><div>Votre page est hors ligne<small>Touchez pour la mettre en ligne</small></div></div>':'')+
@@ -6436,7 +6452,7 @@ function build(o){
    '<div class="op-seal"><span>'+esc(nm.trim().slice(0,2).toUpperCase())+'</span>'+(logo?'<img alt="" src="'+esc(logo)+'" onerror="this.remove()">':'')+'</div>'+
    '<div class="op-nm">'+esc(nm)+badge+'</div>'+
    '<div class="op-meta"><span>Organisateur</span>'+(city?'<span>📍 '+esc(city)+'</span>':'')+'</div>'+
-   bio+soc+nextHtml+act+stubs+
+   bio+soc+act+stubs+nextHtml+infoHtml+
    '<div class="op-tabs"><button class="'+(tab==="ev"?"on":"")+'" onclick="opTab(\'ev\')">🎟️ Soirées<i>'+total+'</i></button>'+(C.length?'<button class="'+(tab==="cot"?"on":"")+'" onclick="opTab(\'cot\')">🤝 Cotisations<i>'+C.length+'</i></button>':'')+'</div>'+
    body+'</div>';
 }
@@ -6547,7 +6563,7 @@ showPage=function(p){const r=_sp.apply(this,arguments);const a=String(p||"").spl
 const _de=drawEvents;
 drawEvents=function(){const r=_de.apply(this,arguments);try{if(DBEV&&DBEV.length)SV("lrr_dbev_c",DBEV);if(!g("v-org").hidden&&curO)renderOrg(curO,true)}catch(e){}return r};
 const _pf=paintFollows;
-paintFollows=function(){const r=_pf.apply(this,arguments);try{document.querySelectorAll("[data-ofn]").forEach(x=>x.textContent=FLN[x.dataset.ofn]||0)}catch(e){}return r};
+paintFollows=function(){const r=_pf.apply(this,arguments);try{document.querySelectorAll("[data-ofn]").forEach(x=>x.textContent=(window.opFmt?opFmt(FLN[x.dataset.ofn]||0):(FLN[x.dataset.ofn]||0)))}catch(e){}return r};
 const _pv=window.paintVer;
 window.paintVer=function(){const r=_pv&&_pv.apply(this,arguments);try{document.querySelectorAll("[data-ovf]").forEach(x=>{if(x.dataset.ovf!=="official")x.hidden=!VER.has(x.dataset.ovf)})}catch(e){}return r};
 const _ra=renderAcc;
