@@ -6795,4 +6795,126 @@ html.dk #evbuy .evb-rc{border-color:#2d3f3b}
  const _io=window.inviteOn;window.inviteOn=function(e){const md=(e&&e.modes)||{};if(md.invite&&md.invite.on)return true;if(md.free!==undefined)return false;return _io?_io(e):false};
 })();
 </script>
+<style id="wzcss">
+#v-create .wzbar{display:flex;gap:6px;margin:12px 0 4px}#v-create .wzbar i{flex:1;height:6px;border-radius:3px;background:rgba(128,128,128,.28)}#v-create .wzbar i.on{background:var(--or)}
+#v-create .wzt{font-size:13px;color:var(--mut);margin:0 0 10px}
+#v-create .wzs{display:none}#v-create .wzs.on{display:block}
+#v-create .wzn{display:flex;gap:10px;margin-top:16px}#v-create .wzn .btn{flex:1;margin:0}
+#v-create .wzo{display:grid;gap:8px;margin:8px 0}
+#v-create .wzo button{text-align:left;border:1.5px solid rgba(128,128,128,.4);background:transparent;color:inherit;border-radius:14px;padding:12px 14px;font:inherit;cursor:pointer}
+#v-create .wzo button.sel{border-color:var(--or);background:rgba(255,107,26,.12)}
+#v-create .wzo small{display:block;opacity:.7}
+#v-create .wzerr{color:#c0392b;font-size:14px;min-height:1em;margin:10px 0 0}
+#v-create .wzpl{position:relative;border:1px solid rgba(128,128,128,.35);border-radius:14px;overflow:hidden;margin:6px 0}
+#v-create .wzpl img{display:block;width:100%;opacity:.4}#v-create .wzpl svg{display:block;width:100%}#v-create .wzpl img+svg{position:absolute;inset:0;height:100%}
+#v-create .wzlg{display:flex;flex-wrap:wrap;gap:10px;font-size:13px;margin:6px 0}#v-create .wzlg i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+</style>
+<script id="wzjs">
+(function(){
+const g=id=>document.getElementById(id),COL=["#ff6b1a","#0f9d8a","#5aa0e6","#e0728f","#a98be0"];
+const TIT=["Votre événement","Lieu et visuels","Entrée et paiement","Billets et envoi"];
+const val=id=>((g(id)||{}).value||"").trim();
+const isAdm=()=>{try{return role==="admin"}catch(e){return false}};
+const conc=()=>{try{return typeof hallKey==="function"&&!!hallKey(val("cl"))}catch(e){return false}};
+
+/* ---- PDF -> image (affiches, logo, billet, photo de salle acceptent images ET documents PDF) ---- */
+const PDFIDS=/^(clg|cp2|ctkd|cinvimg|hph)$/;
+function loadPdf(){return window.pdfjsLib?Promise.resolve(window.pdfjsLib):new Promise((ok,ko)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";s.onload=()=>{pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";ok(pdfjsLib)};s.onerror=ko;document.head.appendChild(s)})}
+async function pdf2img(f){const lib=await loadPdf(),doc=await lib.getDocument({data:await f.arrayBuffer()}).promise,pg=await doc.getPage(1),v0=pg.getViewport({scale:1}),sc=Math.min(3,1600/Math.max(v0.width,v0.height)),vp=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);await pg.render({canvasContext:x,viewport:vp}).promise;const bl=await new Promise(r=>c.toBlob(r,"image/jpeg",.9));return new File([bl],f.name.replace(/\.pdf$/i,"")+".jpg",{type:"image/jpeg"})}
+document.addEventListener("change",async function(e){const t=e.target;if(!t||t.type!=="file"||t._pd||!PDFIDS.test(t.id||""))return;const f=t.files&&t.files[0];if(!f||!(f.type==="application/pdf"||/\.pdf$/i.test(f.name)))return;
+ e.stopImmediatePropagation();
+ try{const im=await pdf2img(f),dt=new DataTransfer();dt.items.add(im);t.files=dt.files;t._pd=1;t.dispatchEvent(new Event("change",{bubbles:true}));t._pd=0}
+ catch(x){t.value="";alert("Ce document PDF n’a pas pu être converti en image. Envoyez plutôt une image (JPG ou PNG).")}},true);
+function allowPdf(root){(root||document).querySelectorAll("#v-create input[type=file]").forEach(i=>{if(PDFIDS.test(i.id))i.accept="image/*,application/pdf"})}
+
+/* ---- assistant en 4 étapes ---- */
+const _rcW=renderCreate;
+renderCreate=function(){const r=_rcW.apply(this,arguments);try{wz()}catch(e){console.error("wizard",e)}return r};
+
+function wz(){
+ const root=document.querySelector("#v-create .x2");
+ if(!root||root.dataset.wz||!g("ct")||!g("cbtn")||!g("cmfree")||!g("cm3")||!g("cmap")||!g("cp2")||!g("trs")||!g("cwel")||!g("cw"))return;
+ const K=[...root.children],at=n=>K.indexOf(n);
+ const rng=(a,b)=>{const i=at(a),j=at(b);return i<0||j<0||j<i?null:K.slice(i,j+1)};
+ const cmapLb=g("cmap").previousElementSibling,cdxP=g("cmap").previousElementSibling.previousElementSibling,
+  h3=n=>K.find(x=>x.tagName==="H3"&&n.test(x.textContent)),
+  hTk=h3(/Catégories de billets/),hMsg=h3(/Message automatique/),hMod=h3(/Modes de vente/),hNum=h3(/Numéros qui reçoivent/),
+  lbFree=g("cmfree").closest("label"),lbPO=g("cpo")&&g("cpo").previousElementSibling,
+  r1=rng(K[2],cdxP),r2=rng(cmapLb,g("cp2")),rMsg=rng(hMsg,g("cwel")),rDes=rng(g("ctkd").previousElementSibling,g("ctkd").nextElementSibling),
+  rTk=rng(hTk,hTk&&K.find(x=>x.tagName==="BUTTON"&&at(x)>at(g("trs")))),rMod=rng(hMod,lbFree),rPay=rng(hNum,g("cw").nextElementSibling&&g("cw")),
+  lrcom=g("lrcom"),p4=g("p4box");
+ if(!(r1&&r2&&rMsg&&rDes&&rTk&&rMod&&rPay&&hTk&&hMsg&&hMod&&hNum))return;
+ root.dataset.wz=1;
+ const hb=g("hallbox"),note=(g("cm3").closest("label").nextElementSibling||{}).classList&&g("cm3").closest("label").nextElementSibling.classList.contains("note")?g("cm3").closest("label").nextElementSibling:null,
+  inv=g("cminvd"),cpoGrp=lbPO?rng(lbPO,K.find(x=>x.tagName==="BUTTON"&&at(x)>at(g("cpo")))):[],
+  numGrp=rPay.filter(n=>!cpoGrp.includes(n)&&n!==g("cw")&&n!==g("cw").previousElementSibling);
+ const S=[1,2,3,4].map(n=>{const d=document.createElement("div");d.className="wzs";d.dataset.s=n;return d});
+ const add=(i,nodes)=>nodes.filter(Boolean).forEach(n=>S[i].appendChild(n));
+ /* étape 1 */ add(0,r1.filter(n=>n!==hb));
+ /* étape 2 */ add(1,[hb,...r2]);
+ /* étape 3 : choix payant / gratuit */
+ const ch=document.createElement("div");ch.innerHTML='<label>Catégorie de l’événement *</label><div class="wzo" data-g="cat"><button type="button" data-v="p">💰 Payant<small>Les billets sont vendus</small></button><button type="button" data-v="g">🎁 Gratuit<small>Entrée sans paiement</small></button></div><div id="wzp" hidden><label>Mode de paiement *</label><div class="wzo" data-g="pay"><button type="button" data-v="o">⚡ En ligne<small>Mobile Money / carte, billet QR tout de suite</small></button><button type="button" data-v="c">💵 En espèces<small>Le client paie à un vendeur ou à l’entrée</small></button><button type="button" data-v="b">🔀 Les deux à la fois<small>En ligne et en espèces</small></button></div><div id="wzpn"></div></div><div id="wzf" hidden><label>Accès à l’événement *</label><div class="wzo" data-g="free"><button type="button" data-v="r">🎟️ Entrée sur réservation<small>Le client réserve et reçoit son billet QR</small></button><button type="button" data-v="i">✉️ Entrée sur invitation<small>Le client reçoit son invitation personnelle</small></button></div><div id="wzfd"></div></div>';
+ S[2].appendChild(ch);if(note)ch.querySelector("#wzpn").appendChild(note);if(inv)ch.querySelector("#wzfd").appendChild(inv);
+ hMsg.textContent="💌 Votre message à transmettre";add(2,rMsg);
+ /* étape 4 */
+ const des=document.createElement("div");des.id="wzdes";rDes.forEach(n=>des.appendChild(n));
+ const pl=document.createElement("div");pl.innerHTML='<h4 style="margin:14px 0 4px">🗺️ Plan de salle automatique</h4><div id="wzplan"></div>';
+ const payW=document.createElement("div");payW.id="wzpay";numGrp.forEach(n=>payW.appendChild(n));
+ const cpoW=document.createElement("div");cpoW.id="wzcpo";(cpoGrp||[]).forEach(n=>cpoW.appendChild(n));
+ add(3,rTk);S[3].appendChild(pl);add(3,[p4,des,payW,cpoW,g("cw").previousElementSibling,g("cw"),lrcom]);
+ const nav4=document.createElement("div");nav4.className="wzn";nav4.innerHTML='<button type="button" class="btn dk" data-b>‹ Retour</button>';nav4.appendChild(g("cbtn"));S[3].appendChild(nav4);S[3].appendChild(g("cst"));
+ /* anciens « modes de vente » : cachés mais conservés (ils portent les valeurs envoyées) */
+ const hid=document.createElement("div");hid.hidden=true;hid.id="wzmodes";rMod.filter(n=>n!==inv&&n!==note).forEach(n=>hid.appendChild(n));
+ /* barre + titres + boutons */
+ const bar=document.createElement("div");bar.className="wzbar";bar.innerHTML="<i></i><i></i><i></i><i></i>";
+ const tt=document.createElement("p");tt.className="wzt";
+ S.forEach((d,i)=>{const e=document.createElement("p");e.className="wzerr";d.appendChild(e);
+  if(i<3){const n=document.createElement("div");n.className="wzn";n.innerHTML=(i?'<button type="button" class="btn dk" data-b>‹ Retour</button>':"")+'<button type="button" class="btn wa" data-n>'+(i===0?"Continuer la programmation":"Continuer")+'</button>';d.appendChild(n)}});
+ root.append(bar,tt,...S,hid);
+ allowPdf(root);
+ try{new MutationObserver(()=>allowPdf(root)).observe(root,{childList:true,subtree:true})}catch(e){}
+
+ let cur=0,cat="",pay="",fr="",filled=false;
+ const showS=(n,init)=>{cur=n;S.forEach((d,i)=>d.classList.toggle("on",i===n));bar.querySelectorAll("i").forEach((b,i)=>b.classList.toggle("on",i<=n));tt.textContent="Étape "+(n+1)+" sur 4 · "+TIT[n];
+  if(n===1){try{hallUpd()}catch(e){}}
+  if(n===3)enter4();
+  if(!init)root.scrollIntoView({behavior:"smooth",block:"start"})};
+ const err=(n,m)=>{const e=S[n].querySelector(".wzerr");e.textContent=m||"";if(m)e.scrollIntoView({behavior:"smooth",block:"center"});return !m};
+ const CK={0(){if(!val("ct"))return err(0,"Entrez le nom de l’événement.");if(!val("co"))return err(0,"Entrez le nom du producteur ou de l’organisation.");
+   let lg=!!(g("clg").files&&g("clg").files[0]);try{lg=lg||!!(window.orgLogoPath&&orgLogoPath(myId()))}catch(e){}
+   if(!lg)return err(0,"Ajoutez le logo (image ou document PDF).");if(!val("cv"))return err(0,"Entrez la ville.");if(!val("cl"))return err(0,"Entrez la salle.");if(!val("cd"))return err(0,"Choisissez la date et l’heure.");return err(0)},
+  1(){if(!conc()&&!window.HALLP)return err(1,window.HALLBUSY?"⏳ La photo de la salle est en cours d’envoi, patientez un instant.":"Envoyez la photo de la salle : le plan est dessiné automatiquement à partir de cette photo et de vos billets.");return err(1)},
+  2(){if(!cat)return err(2,"Choisissez payant ou gratuit.");if(cat==="p"&&!pay)return err(2,"Choisissez le mode de paiement.");if(cat==="g"&&!fr)return err(2,"Choisissez réservation ou invitation.");return err(2)}};
+ root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  if(b.hasAttribute("data-n")){if(CK[cur]())showS(cur+1);return}
+  if(b.hasAttribute("data-b")){showS(cur-1);return}
+  const grp=b.parentElement.dataset&&b.parentElement.dataset.g;if(!grp||!b.dataset.v)return;
+  if(grp==="cat")cat=b.dataset.v;if(grp==="pay")pay=b.dataset.v;if(grp==="free")fr=b.dataset.v;
+  b.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));sync()});
+ /* les choix pilotent les anciennes cases (mêmes champs, même envoi) */
+ const set=(id,v)=>{const e=g(id);if(e&&e.checked!==v){e.checked=v;e.dispatchEvent(new Event("change",{bubbles:true}))}};
+ function sync(){const adm=isAdm(),onl=cat==="p"&&(pay==="o"||pay==="b");
+  g("wzp").hidden=cat!=="p";g("wzf").hidden=cat!=="g";
+  set("cm3",adm&&onl);set("cm2",cat==="p"&&(pay==="c"||pay==="b"||(!adm&&onl)));set("cmfree",cat==="g"&&fr==="r");set("cminv",cat==="g"&&fr==="i");
+  if(note)note.hidden=!(onl&&!adm);
+  if(inv)inv.hidden=!(cat==="g"&&fr==="i")}
+ if(note)note.hidden=true;
+ function enter4(){const adm=isAdm(),onl=cat==="p"&&(pay==="o"||pay==="b");
+  g("wzpay").hidden=cat==="g";g("wzcpo").hidden=!(adm&&onl);g("wzdes").hidden=!(adm&&onl);
+  try{syncTR();if(cat==="g"){TR.forEach(t=>{if(t.price===""){t.price="0";filled=true}});drawTR()}else if(filled){TR.forEach(t=>{if(t.price==="0")t.price=""});filled=false;drawTR()}}catch(e){}
+  plan()}
+ /* plan de salle automatique (aperçu) */
+ function plan(){const b=g("wzplan");if(!b)return;let tk=[];try{syncTR();tk=TR.filter(t=>t.name&&t.name.trim()&&+t.stock>0)}catch(e){}
+  if(conc()){b.innerHTML='<p class="sm">🏛️ Salle Concordia : son plan officiel à places numérotées est utilisé.</p>';return}
+  if(!tk.length){b.innerHTML='<p class="sm">Ajoutez vos catégories de billets : le plan se dessine tout seul.</p>';return}
+  const per=14,W=300,sp=(W-24)/per;let y=40,s='<rect x="70" y="6" width="160" height="18" rx="6" fill="#888" fill-opacity=".4"/><text x="150" y="19" text-anchor="middle" font-size="10" fill="#fff">SCÈNE</text>',lg="";
+  tk.forEach((t,i)=>{const q=Math.min(+t.stock,400),c=COL[i%5],rows=Math.ceil(q/per);for(let k=0;k<q;k++){const r=Math.floor(k/per),cc=k%per,n=Math.min(per,q-r*per);s+='<circle cx="'+(W/2-(n-1)*sp/2+cc*sp).toFixed(1)+'" cy="'+(y+r*sp)+'" r="'+(sp*.36).toFixed(1)+'" fill="'+c+'"/>'}y+=rows*sp+10;lg+='<span><i style="background:'+c+'"></i>'+String(t.name).replace(/</g,"&lt;")+" : "+q+"</span>"});
+  const im=g("hphp"),bg=im&&!im.hidden&&im.src?im.src:"";
+  b.innerHTML='<div class="wzpl">'+(bg?'<img alt="Photo de la salle" src="'+bg+'">':"")+'<svg viewBox="0 0 '+W+" "+(y+2)+'" preserveAspectRatio="xMidYMin meet">'+s+"</svg></div><div class=\"wzlg\">"+lg+"</div>"}
+ root.addEventListener("input",e=>{if(g("trs").contains(e.target)&&cur===3)plan()});
+ root.addEventListener("click",e=>{if(cur===3&&e.target.closest("#trs,button"))setTimeout(plan,60)});
+ showS(0,1);
+}
+})();
+</script>
 </body></html>
