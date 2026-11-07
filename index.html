@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://translate.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net https://translate.googleapis.com https://translate-pa.googleapis.com; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(self), geolocation=(), microphone=(), payment=(self)">
 <title>Le Restau du Rire — Édition 1.5</title>
@@ -5737,23 +5737,24 @@ if(typeof odbDraw==="function"){const _od=odbDraw;odbDraw=function(){const r=_od
 const hallKey=v=>/concordia/i.test(String(v||""))?"concordia":"";
 const usd=t=>t.currency==="USD"?t.price:t.price/2800;
 function autoSeatmap(tk,cols0){const m={};tk.filter(t=>t.stock>=1&&t.stock<=400).sort((a,b)=>usd(b)-usd(a)).forEach(t=>{let cols=cols0||14,rows=Math.ceil(t.stock/cols);while(rows>26){cols++;rows=Math.ceil(t.stock/cols)}cols=Math.ceil(t.stock/rows);m[t.id]={rows,cols}});return m}
-window.HALLP="";window.HALLBUSY=false;
+window.HALLP="";window.HALLP2="";window.HALLBUSY=false;
 const shrinkJ=(f,m)=>new Promise(res=>{try{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||f)},"image/jpeg",.82)}catch(e){res(f)}};im.onerror=()=>res(f);im.src=u}catch(e){res(f)}});
 function hallUpd(){const b=document.getElementById("hallbox"),cl=document.getElementById("cl");if(!b||!cl)return;const v=cl.value.trim(),k=hallKey(v),mode=!v?"none":k?"c":"p";if(b.dataset.m===mode)return;b.dataset.m=mode;window.HALLU=false;
- if(mode==="none"){b.innerHTML="";window.HALLP="";return}
- if(mode==="c"){window.HALLP="";b.innerHTML='<div class="note" style="margin:8px 0">✅ <b>Salle Concordia reconnue</b> : son plan est dessiné automatiquement pour vos clients (places numérotées). Aucune photo à envoyer.</div>';return}
- b.innerHTML='<div class="note" style="margin:8px 0"><b>📷 Photo de la salle *</b><br><span class="sm">Envoyez une photo de votre salle : elle s\'affiche pour vos clients et le plan de salle est dessiné automatiquement à partir de vos catégories de billets.</span><input id="hph" type="file" accept="image/*" style="margin-top:8px"><div id="hphs" class="sm" style="margin-top:6px"></div><img id="hphp" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"></div>';
- document.getElementById("hph").onchange=async function(){const f=this.files[0],st=document.getElementById("hphs"),pv=document.getElementById("hphp");window.HALLP="";window.HALLU=!!f;if(!f)return;
+ if(mode==="none"){b.innerHTML="";window.HALLP="";window.HALLP2="";return}
+ if(mode==="c"){window.HALLP="";window.HALLP2="";b.innerHTML='<div class="note" style="margin:8px 0">✅ <b>Salle Concordia reconnue</b> : son plan est dessiné automatiquement pour vos clients (places numérotées). Aucune photo à envoyer.</div>';return}
+ b.innerHTML='<div class="note" style="margin:8px 0"><b>📷 Photos de la salle *</b><br><span class="sm">Envoyez <b>deux photos</b> : la scène et le public. Elles s\'affichent pour vos clients et le plan de salle est dessiné automatiquement à partir de vos catégories de billets.</span><div style="margin-top:12px"><b>🎭 Photo de la scène *</b><input id="hph" type="file" accept="image/*" style="margin-top:6px"><div id="hphs" class="sm" style="margin-top:6px"></div><img id="hphp" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"></div><div style="margin-top:12px"><b>👥 Photo du public *</b><input id="hph2" type="file" accept="image/*" style="margin-top:6px"><div id="hphs2" class="sm" style="margin-top:6px"></div><img id="hphp2" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"></div></div>';
+ const up=(id,sid,pid,key,tag)=>{document.getElementById(id).onchange=async function(){const f=this.files[0],st=document.getElementById(sid),pv=document.getElementById(pid);window[key]="";if(key==="HALLP")window.HALLU=!!f;if(!f)return;
   if(!(typeof myId==="function"&&myId())){st.textContent="⚠️ Connectez-vous d'abord.";return}
-  try{window.HALLBUSY=true;st.textContent="⏳ Envoi de la photo…";const bl=await shrinkJ(f,1280),p=myId()+"/hall-"+Date.now()+".jpg";const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":bl.type||"image/jpeg"},body:bl});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error(er.message||er.error||u.status)}
-   window.HALLP=p;st.textContent="✅ Photo envoyée";pv.src=URL.createObjectURL(bl);pv.hidden=false}catch(x){st.textContent="❌ Envoi impossible : "+(x.message||x)}finally{window.HALLBUSY=false}}}
-const _rcH=renderCreate;renderCreate=function(){const r=_rcH.apply(this,arguments);try{const cl=document.getElementById("cl");if(cl&&!document.getElementById("hallbox")){window.HALLP="";const row=cl.closest(".g");if(row)row.insertAdjacentHTML("afterend",'<div id="hallbox"></div>');const hu=()=>{hallUpd();hallKnown()};cl.addEventListener("input",hu);hu()}}catch(e){}return r};
+  try{window.HALLBUSY=true;st.textContent="⏳ Envoi de la photo…";const bl=await shrinkJ(f,1280),p=myId()+"/"+tag+"-"+Date.now()+".jpg";const u=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":bl.type||"image/jpeg"},body:bl});if(!u.ok){const er=await u.json().catch(()=>({}));throw new Error(er.message||er.error||u.status)}
+   window[key]=p;st.textContent="✅ Photo envoyée";pv.src=URL.createObjectURL(bl);pv.hidden=false}catch(x){st.textContent="❌ Envoi impossible : "+(x.message||x)}finally{window.HALLBUSY=false}}};
+ up("hph","hphs","hphp","HALLP","hall");up("hph2","hphs2","hphp2","HALLP2","hallpub")}
+const _rcH=renderCreate;renderCreate=function(){const r=_rcH.apply(this,arguments);try{const cl=document.getElementById("cl");if(cl&&!document.getElementById("hallbox")){window.HALLP="";window.HALLP2="";const row=cl.closest(".g");if(row)row.insertAdjacentHTML("afterend",'<div id="hallbox"></div>');const hu=()=>{hallUpd();hallKnown()};cl.addEventListener("input",hu);hu()}}catch(e){}return r};
 const _exH=window.evExtra;window.evExtra=function(){const r=_exH?_exH():{};try{const v=((document.getElementById("cl")||{}).value||"").trim(),k=hallKey(v);
- if(k)r.hall={kind:"concordia"};else if(v&&window.HALLP)r.hall={kind:"photo",photo:window.HALLP};
+ if(k)r.hall={kind:"concordia"};else if(v&&window.HALLP)r.hall={kind:"photo",photo:window.HALLP,photo2:window.HALLP2||""};
  if(r.hall&&!r.seatmap){syncTR();const tk=TR.filter(t=>t.name.trim()&&t.price!=="").map((t,i)=>({id:"t"+(i+1),price:+t.price,currency:t.currency,stock:t.stock?+t.stock:0}));const sm=autoSeatmap(tk,hallKey(v)?12:14);if(Object.keys(sm).length)r.seatmap=sm}}catch(x){}return r};
-if(typeof _createEvent==="function"){const _ceH=_createEvent;_createEvent=async function(){const v=((document.getElementById("cl")||{}).value||"").trim();if(v&&!hallKey(v)&&!window.HALLP){cmsg(window.HALLBUSY?"⏳ La photo de la salle est en cours d'envoi, patientez un instant.":"Envoyez la photo de votre salle : le plan de salle est dessiné automatiquement à partir de cette photo et de vos billets.");return}return _ceH.apply(this,arguments)}}
+if(typeof _createEvent==="function"){const _ceH=_createEvent;_createEvent=async function(){const v=((document.getElementById("cl")||{}).value||"").trim();if(v&&!hallKey(v)&&(!window.HALLP||!window.HALLP2)){cmsg(window.HALLBUSY?"⏳ Une photo est en cours d'envoi, patientez un instant.":"Envoyez les deux photos de la salle (scène et public) : le plan de salle est dessiné automatiquement à partir de ces photos et de vos billets.");return}return _ceH.apply(this,arguments)}}
 function hallShow(){try{const e=EV&&EV.e,h=e&&e.modes&&e.modes.hall,box=document.getElementById("evs");if(!h||!box||document.getElementById("hallph"))return;
- box.insertAdjacentHTML("beforebegin",h.kind==="concordia"?'<div id="hallph" class="note" style="margin:10px 0">🏛️ <b>Salle Concordia</b> — plan de salle dessiné automatiquement : choisissez vos places numérotées.</div>':(h.photo?'<div id="hallph" class="x2" style="margin:10px 0"><b>📍 La salle</b><img alt="Photo de la salle" src="'+SB+'/storage/v1/object/public/affiches/'+String(h.photo).replace(/"/g,"")+'" style="width:100%;border-radius:12px;margin-top:6px;display:block" onerror="this.parentNode.remove()"></div>':""))}catch(e){}}
+ box.insertAdjacentHTML("beforebegin",h.kind==="concordia"?'<div id="hallph" class="note" style="margin:10px 0">🏛️ <b>Salle Concordia</b> — plan de salle dessiné automatiquement : choisissez vos places numérotées.</div>':(h.photo?'<div id="hallph" class="x2" style="margin:10px 0"><b>📍 La salle</b>'+[[h.photo,"🎭 La scène"],[h.photo2,"👥 Le public"]].filter(x=>x[0]).map(x=>'<div class="sm" style="margin-top:8px">'+x[1]+'</div><img alt="'+x[1]+'" src="'+SB+'/storage/v1/object/public/affiches/'+String(x[0]).replace(/"/g,"")+'" style="width:100%;border-radius:12px;margin-top:4px;display:block" onerror="this.previousElementSibling.remove();this.remove()">').join("")+'</div>':""))}catch(e){}}
 const _oeH=openEvent;openEvent=async function(){const r=await _oeH.apply(this,arguments);hallShow();planShow();return r};
 const _p5H=window.p5Seats;if(typeof _p5H==="function")window.p5Seats=async function(){const r=await _p5H.apply(this,arguments);try{const h=EV.e.modes.hall,m=document.getElementById("mc");if(h&&m){const sc=[...m.querySelectorAll("div")].find(d=>d.textContent.trim()==="SCÈNE");if(sc){if(h.kind==="concordia")sc.textContent="SCÈNE · SALLE CONCORDIA";else if(h.photo&&!document.getElementById("hallsp"))sc.insertAdjacentHTML("beforebegin",'<img id="hallsp" alt="" src="'+SB+'/storage/v1/object/public/affiches/'+String(h.photo).replace(/"/g,"")+'" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-bottom:8px" onerror="this.remove()">')}}}catch(x){}return r};
 /* ===== CERTIFICATION : lien dans les deux dashboards (automatique) ===== */
@@ -6883,7 +6884,7 @@ function wz(){
  const CK={0(){if(!val("ct"))return err(0,"Entrez le nom de l’événement.");if(!val("co"))return err(0,"Entrez le nom du producteur ou de l’organisation.");
    let lg=!!(g("clg").files&&g("clg").files[0]);try{lg=lg||!!(window.orgLogoPath&&orgLogoPath(myId()))}catch(e){}
    if(!lg)return err(0,"Ajoutez le logo (image ou document PDF).");if(!val("cv"))return err(0,"Entrez la ville.");if(!val("cl"))return err(0,"Entrez la salle.");if(!val("cd"))return err(0,"Choisissez la date et l’heure.");return err(0)},
-  1(){if(!conc()&&!window.HALLP)return err(1,window.HALLBUSY?"⏳ La photo de la salle est en cours d’envoi, patientez un instant.":"Envoyez la photo de la salle : le plan est dessiné automatiquement à partir de cette photo et de vos billets.");return err(1)},
+  1(){if(!conc()&&(!window.HALLP||!window.HALLP2))return err(1,window.HALLBUSY?"⏳ Une photo est en cours d’envoi, patientez un instant.":"Envoyez les deux photos de la salle (scène et public) : le plan est dessiné automatiquement à partir de ces photos et de vos billets.");return err(1)},
   2(){if(!cat)return err(2,"Choisissez payant ou gratuit.");if(cat==="p"&&!pay)return err(2,"Choisissez le mode de paiement.");if(cat==="g"&&!fr)return err(2,"Choisissez réservation ou invitation.");return err(2)}};
  root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.hasAttribute("data-n")){if(CK[cur]())showS(cur+1);return}
@@ -6915,6 +6916,51 @@ function wz(){
  root.addEventListener("click",e=>{if(cur===3&&e.target.closest("#trs,button"))setTimeout(plan,60)});
  showS(0,1);
 }
+})();
+</script>
+<style>
+#ddl,#mlang{max-height:60vh;overflow-y:auto}
+#gt_el{position:absolute;left:-9999px;top:0;height:0;overflow:hidden}
+.goog-te-banner-frame,.skiptranslate>iframe,#goog-gt-tt,.goog-te-balloon-frame,.VIpgJd-ZVi9od-aZ2wEe-wOHMyf,.VIpgJd-ZVi9od-ORHb-OEVmcd{display:none!important}
+body{top:0!important}
+.goog-text-highlight{background:none!important;box-shadow:none!important}
+</style>
+<div id="gt_el" translate="no"></div>
+<script>
+/* ===== Traduction complète : toutes les langues, tout le site ===== */
+(function(){
+const L=[["fr","Français"],["en","English"],["ln","Lingála"],["sw","Kiswahili"],["ar","العربية"],["es","Español"],["pt","Português"],["de","Deutsch"],["it","Italiano"],["nl","Nederlands"],["ru","Русский"],["zh-CN","中文 (简体)"],["zh-TW","中文 (繁體)"],["hi","हिन्दी"],["bn","বাংলা"],["ur","اردو"],["tr","Türkçe"],["ja","日本語"],["ko","한국어"],["vi","Tiếng Việt"],["id","Bahasa Indonesia"],["ms","Bahasa Melayu"],["tl","Filipino"],["th","ไทย"],["fa","فارسی"],["iw","עברית"],["pl","Polski"],["uk","Українська"],["ro","Română"],["el","Ελληνικά"],["cs","Čeština"],["hu","Magyar"],["sv","Svenska"],["da","Dansk"],["no","Norsk"],["fi","Suomi"],["bg","Български"],["sr","Српски"],["hr","Hrvatski"],["sk","Slovenčina"],["ta","தமிழ்"],["te","తెలుగు"],["mr","मराठी"],["gu","ગુજરાતી"],["pa","ਪੰਜਾਬੀ"],["ne","नेपाली"],["af","Afrikaans"],["am","አማርኛ"],["ha","Hausa"],["yo","Yorùbá"],["ig","Igbo"],["zu","isiZulu"],["xh","isiXhosa"],["sn","chiShona"],["rw","Kinyarwanda"],["mg","Malagasy"],["so","Soomaali"],["ny","Chichewa"],["st","Sesotho"],["om","Afaan Oromoo"]];
+const OK=L.map(x=>x[0]);
+/* l'ancien dictionnaire partiel ln/sw est remplacé par la traduction complète */
+try{["ln","sw"].forEach(k=>{for(const x in LD[k])delete LD[k][x]})}catch(e){}
+/* menus de langue : toutes les langues, noms jamais traduits */
+const dd=document.getElementById("ddl"),ms=document.getElementById("mlang");
+if(dd){dd.setAttribute("translate","no");dd.innerHTML=L.map(x=>'<a onclick="setLang(\''+x[0]+'\')">'+x[0].split("-")[0].toUpperCase()+" · "+x[1]+"</a>").join("")}
+if(ms){ms.setAttribute("translate","no");ms.innerHTML=L.map(x=>'<option value="'+x[0]+'">'+x[1]+"</option>").join("")}
+const lc=document.getElementById("lcode");if(lc){lc.setAttribute("translate","no")}
+let ready=false,loading=false,q=[];
+function boot(cb){
+ if(ready)return cb();q.push(cb);if(loading)return;loading=true;
+ window.gtInit=function(){try{new google.translate.TranslateElement({pageLanguage:"fr",autoDisplay:false,includedLanguages:OK.join(",")},"gt_el")}catch(e){}ready=true;q.splice(0).forEach(f=>f())};
+ const s=document.createElement("script");s.async=true;s.src="https://translate.google.com/translate_a/element.js?cb=gtInit";
+ s.onerror=()=>{loading=false;q=[];alert("Traduction indisponible pour le moment. Vérifiez votre connexion et réessayez.")};
+ document.head.appendChild(s)}
+function combo(cb){let n=0;const iv=setInterval(()=>{const c=document.querySelector("select.goog-te-combo");if(c){clearInterval(iv);cb(c)}else if(++n>60)clearInterval(iv)},100)}
+function go(code){boot(()=>combo(c=>{c.value=code;c.dispatchEvent(new Event("change"))}))}
+function back(){
+ const c=document.querySelector("select.goog-te-combo");if(c){c.value="fr";c.dispatchEvent(new Event("change"))}
+ setTimeout(()=>{if(/translated-(ltr|rtl)/.test(document.documentElement.className)){document.cookie="googtrans=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT";location.reload()}},1500)}
+function sync(code){
+ const m=document.getElementById("mlang");if(m)m.value=code;
+ const l=document.getElementById("lcode");if(l)l.textContent=code.split("-")[0].toUpperCase();
+ document.documentElement.lang=code==="iw"?"he":code}
+const base=window.setLang;
+window.setLang=function(code){
+ if(OK.indexOf(code)<0)code="fr";
+ base(code);sync(code);
+ if(code==="fr")back();else go(code)};
+if(typeof openMenu==="function"){const om=openMenu;openMenu=function(){om.apply(this,arguments);const m=document.getElementById("mlang");if(m)m.value=OK.indexOf(lang)<0?"fr":lang}}
+if(OK.indexOf(lang)>0){sync(lang);go(lang)}
 })();
 </script>
 </body></html>
