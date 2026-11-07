@@ -6575,4 +6575,44 @@ if(location.hash.slice(1).split("/")[0]==="org"||location.hash.slice(1)==="orged
 })();
 </script>
 
+<style>
+#v-ev #evtabs{display:none!important}
+#v-ev #evdt[hidden]{display:block!important}
+#v-ev #evtail{margin-top:18px;display:grid;gap:12px}
+#v-ev #evtail>*{margin-top:0!important;margin-bottom:0!important}
+#v-ev #evtail .evth{font:900 20px Georgia,serif;margin:6px 2px 0!important}
+#v-ev #evtail .p4acts{margin:0}
+</style>
+<script>
+/* Page événement : les catégories de billets en premier ; description, détails et actions en bas */
+(function(){
+var busy=false,mo=null,timer=null;
+function evReorder(){
+ var ve=document.getElementById("v-ev");if(!ve)return;var tk=ve.querySelector("#evtk");if(!tk)return;
+ busy=true;if(mo)mo.disconnect();
+ try{
+  var tail=ve.querySelector("#evtail");
+  if(!tail){tail=document.createElement("div");tail.id="evtail"}
+  var anchor=Array.prototype.filter.call(ve.children,function(c){return c!==tail&&c.id!=="aiFab"}).pop();
+  if(anchor&&anchor.nextElementSibling!==tail)anchor.after(tail);
+  var dt=ve.querySelector("#evdt");if(dt)dt.hidden=false;
+  var info=ve.querySelector("#evtkinfo");
+  if(!info){var p=tk.querySelector(".x2 > h2 + p.sm");if(p){info=document.createElement("div");info.className="x2";info.id="evtkinfo";info.innerHTML='<h2 style="margin-top:0">🎟️ À propos des billets</h2>';info.appendChild(p)}}
+  var hd=ve.querySelector("#evdth");if(!hd){hd=document.createElement("h2");hd.id="evdth";hd.className="evth";hd.textContent="📄 Détails de l'événement"}
+  var sb=ve.querySelector("#p4sb");
+  var keepTop=sb&&(sb.classList.contains("closed")||/🕐/.test(sb.textContent||""));
+  var ics=ve.querySelector('button[onclick="icsEv()"]');
+  var list=[keepTop?null:sb,info,dt?hd:null,dt,ics&&ics.parentElement,ve.querySelector("#p4acts"),ve.querySelector("#aiBtn"),ve.querySelector("#plbtn"),ve.querySelector("#hallplan")].filter(Boolean);
+  var ok=list.length===tail.children.length&&list.every(function(n,i){return tail.children[i]===n});
+  if(!ok)list.forEach(function(n){tail.appendChild(n)});
+  if(keepTop&&sb&&sb.parentNode!==tk)tk.insertAdjacentElement("afterbegin",sb);
+ }catch(x){console.warn("evReorder",x)}
+ busy=false;watch();
+}
+function watch(){var ve=document.getElementById("v-ev");if(!ve)return;if(!mo)mo=new MutationObserver(function(){if(busy)return;clearTimeout(timer);timer=setTimeout(evReorder,60)});mo.observe(ve,{childList:true,subtree:true})}
+window.evTab=function(t){var x=document.getElementById(t==="dt"?"evdt":"evtk");if(x)x.scrollIntoView({behavior:"smooth",block:"start"})};
+var _o=openEvent;openEvent=async function(){var r=await _o.apply(this,arguments);try{evReorder()}catch(x){}return r};
+watch();
+})();
+</script>
 </body></html>
