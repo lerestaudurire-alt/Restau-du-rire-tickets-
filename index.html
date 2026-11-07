@@ -6304,6 +6304,7 @@ try{Object.assign(EN,{"🤝 Contribution à l’organisation":"🤝 Contribution
 #v-org .op-st b{display:block;font:900 26px Georgia,serif;color:var(--oa)}
 #v-org .op-st small{font:800 11px system-ui;letter-spacing:.06em;text-transform:uppercase;color:#6f6a7d}
 #v-org .op-act>*{flex:1 1 130px;text-align:center;justify-content:center}#v-org .op-act .op-ghost{color:var(--ink);background:#fff;border-color:#e6ddd2}#v-org .op-inf{background:#fff;color:var(--ink);border-radius:18px;padding:14px 16px;margin:0 0 16px;box-shadow:0 6px 18px rgba(28,27,46,.08)}#v-org .op-inf h3{font:900 16px Georgia,serif;margin:0 0 6px}#v-org .op-inf ul{list-style:none;margin:0;padding:0}#v-org .op-inf li{display:flex;gap:12px;align-items:center;padding:9px 0;font:700 14px system-ui;border-top:1px dashed #e6ddd2;min-width:0}#v-org .op-inf li:first-child{border-top:0}#v-org .op-inf li i{font-style:normal;width:34px;height:34px;flex:none;border-radius:50%;background:#fff3d6;display:flex;align-items:center;justify-content:center;font-size:16px}#v-org .op-inf li span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}#v-org .op-inf li a{color:inherit;text-decoration:none}#v-org .op-seal{width:104px;height:104px;margin-top:-52px}
+#v-org .op-fb{display:flex;gap:22px;margin:12px 0 4px;flex-wrap:nowrap}#v-org .op-fb div{text-align:left;min-width:0}#v-org .op-fb b{display:block;font:900 22px Georgia,serif;color:var(--oa);line-height:1.1}#v-org .op-fb small{font:800 11px system-ui;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}#v-org .op-ln{display:flex;flex-wrap:wrap;gap:6px 14px;margin:10px 0 2px;font:700 13px system-ui;color:var(--ink)}#v-org .op-ln span{display:inline-flex;align-items:center;gap:5px;min-width:0;max-width:100%}#v-org .op-ln i{font-style:normal}#v-org .op-ln a{color:inherit;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px;display:inline-block}
 #v-org .op-tabs{display:flex;gap:6px;border-bottom:2px solid rgba(128,128,128,.3);margin-bottom:12px}
 #v-org .op-tabs button{border:0;background:none;font:800 15px system-ui;color:inherit;opacity:.6;padding:10px 12px;cursor:pointer;border-bottom:4px solid transparent;margin-bottom:-2px}
 #v-org .op-tabs button.on{opacity:1;border-bottom-color:var(--oa)}
@@ -6441,8 +6442,10 @@ function build(o){
    if(R.email)rows.push(['✉️','<span>'+lk('mailto:'+R.email,R.email)+'</span>']);
    if(R.website&&/^https?:\/\//.test(String(R.website)))rows.push(['🌐','<span>'+lk(String(R.website),String(R.website).replace(/^https?:\/\//,'').replace(/\/$/,''))+'</span>']);
   }
-  rows.push(['🎟️','<span>'+total+(total>1?' soirées':' soirée')+(S.up.length?' · '+S.up.length+' à venir':'')+'</span>']);
-  const infoHtml='<div class="op-inf"><h3>Informations</h3><ul>'+rows.map(r=>'<li><i>'+r[0]+'</i>'+r[1]+'</li>').join('')+'</ul></div>';
+  const infoHtml=rows.length?'<div class="op-ln">'+rows.map(r=>'<span><i>'+r[0]+'</i>'+r[1].replace(/^<span>|<\/span>$/g,'')+'</span>').join('')+'</div>':'';
+  const stats=off
+    ?'<div class="op-fb"><div><b>'+total+'</b><small>Soirées</small></div><div><b>'+S.up.length+'</b><small>À venir</small></div></div>'
+    :'<div class="op-fb"><div><b data-ofn="'+esc(o)+'">'+opFmt(FLN[o]||0)+'</b><small>Abonnés</small></div><div><b>'+total+'</b><small>Soirées</small></div>'+(C.length?'<div><b>'+C.length+'</b><small>Cotisations</small></div>':'')+'</div>';
   const badge=off?'<span class="vf" title="Organisateur officiel">'+VSVG+'</span>':'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+((window.VER_&&window.VER_.has(o))?'':' hidden')+'>'+VSVG+'</span>';
   return '<div class="op" style="--oa:'+acc+'">'+
    (rec&&rec.is_public===false?'<div class="op-next" style="margin:0 0 10px" onclick="nav(\'orgedit\')"><span>🔒</span><div>Votre page est hors ligne<small>Touchez pour la mettre en ligne</small></div></div>':'')+
@@ -6451,8 +6454,8 @@ function build(o){
      '<button class="op-ib r" aria-label="Partager" onclick="opShare()">⤴</button></div>'+
    '<div class="op-seal"><span>'+esc(nm.trim().slice(0,2).toUpperCase())+'</span>'+(logo?'<img alt="" src="'+esc(logo)+'" onerror="this.remove()">':'')+'</div>'+
    '<div class="op-nm">'+esc(nm)+badge+'</div>'+
-   '<div class="op-meta"><span>Organisateur</span>'+(city?'<span>📍 '+esc(city)+'</span>':'')+'</div>'+
-   bio+soc+act+stubs+nextHtml+infoHtml+
+   '<div class="op-meta"><span>Organisateur</span>'+'</div>'+
+   stats+bio+infoHtml+soc+act+nextHtml+
    '<div class="op-tabs"><button class="'+(tab==="ev"?"on":"")+'" onclick="opTab(\'ev\')">🎟️ Soirées<i>'+total+'</i></button>'+(C.length?'<button class="'+(tab==="cot"?"on":"")+'" onclick="opTab(\'cot\')">🤝 Cotisations<i>'+C.length+'</i></button>':'')+'</div>'+
    body+'</div>';
 }
