@@ -6665,4 +6665,95 @@ window.P7T=Object.assign(window.P7T||{},{invo:async function(b){
  prev()}});
 })();
 </script>
+<style id="lrrTkStyle">
+/* ===== Billets compacts : toutes les catégories d'un coup d'œil ===== */
+#v-ev #evt .tkc{display:grid!important;grid-template-columns:1fr auto;grid-template-areas:"n d" "m s" "o s" "p s";column-gap:10px;row-gap:2px;align-items:center;padding:9px 12px;margin:0 0 7px;border-radius:16px;box-shadow:0 2px 8px rgba(14,47,43,.07)}
+#v-ev #evt .tkc>div:first-child{grid-area:n;display:flex!important;align-items:center!important;min-width:0}
+#v-ev #evt .tkc-n{font-size:15px;line-height:1.2;letter-spacing:.2px}
+#v-ev #evt .tkb{display:none!important}
+#v-ev #evt .tkrm{grid-area:m;align-self:start;margin:0!important;padding:0!important;background:none!important;border-radius:0;animation:none!important;text-align:left!important;font-size:12.5px!important;font-weight:800!important;letter-spacing:0!important;color:#1f9d62!important}
+#v-ev #evt .tkrm.lo{color:#e11d48!important}
+#v-ev #evt .tkrm.out{color:#8e8e93!important}
+#v-ev #evt .tkrm.own{grid-area:o;display:block;font-weight:600!important;font-size:11.5px!important;color:#8a8f98!important;font-style:italic}
+#v-ev #evt .tkc-r{display:contents}
+#v-ev #evt .tkc-p{grid-area:p;margin:0;font-size:20px;line-height:1.1}
+#v-ev #evt .tkso{grid-area:s;justify-self:end;font-size:13px}
+#v-ev #evt .stp{grid-area:s;justify-self:end;align-self:center;gap:4px;padding:3px}
+#v-ev #evt .stp button{width:36px;height:36px;font-size:20px}
+#v-ev #evt .stp span{min-width:28px;font-size:17px}
+#v-ev #evt .tkc-d{grid-area:d;justify-self:end;align-self:start;padding:0!important;font-size:12.5px!important;white-space:nowrap}
+#v-ev #evt .tkc-i{display:none!important}
+#v-ev #evt .tkc-dd{grid-column:1/-1;padding-top:8px;font-size:13px;line-height:1.5}
+#v-ev #evtk>.x2{padding-top:14px;padding-bottom:12px}
+#v-ev #evtk>.x2>h2{margin-bottom:8px}
+#v-ev #evs{margin-top:6px;padding:10px 12px}
+#v-ev #evs>p{padding:1px 0;font-size:15px}
+#v-ev #evs>button.btn{width:100%;margin-top:8px;padding:15px 10px;font-size:16px;font-weight:900;border-radius:14px;background:#f2b84b!important;color:#10201d!important;border:0}
+.evhint{margin:0;text-align:center;font-size:13px;opacity:.75;padding:8px 0 2px!important;display:block!important}
+.p4lock .evhint,.p5lock .evhint{display:none!important}
+
+/* ===== Étape 2 : mode d'achat ===== */
+#v-ev:not(.evs2) #evbuy{display:none}
+#v-ev.evs2 #evtk>*:not(#evbuy){display:none!important}
+#evbuy .evb-back{border:0;background:none;color:var(--or,#d46b08);font:800 15px system-ui;padding:6px 0;cursor:pointer}
+#evbuy .evb-rc{border:1px solid rgba(128,128,128,.28);border-radius:16px;padding:10px 14px;margin:6px 0 14px;font-size:15px}
+#evbuy .rc-r{display:flex;justify-content:space-between;gap:10px;padding:3px 0}
+#evbuy .rc-r.tot{border-top:1px dashed rgba(128,128,128,.4);margin-top:5px;padding-top:7px;font-size:17px;font-weight:900}
+#evbuy .evb-t{font-size:17px;margin:4px 0 10px}
+#evbuy .sgm{display:grid!important;grid-template-columns:1fr 1fr;gap:6px;border-radius:20px!important;padding:6px!important}
+#evbuy .sgm a{padding:14px 6px!important;font-size:15px!important;white-space:nowrap}
+#evbuy .sgm a:only-child{grid-column:1/-1}
+html.dk #evbuy .evb-rc{border-color:#2d3f3b}
+</style>
+<script>
+/* ===== Billets : étape 1 (choix compact) → étape 2 (mode d'achat) ; catégorie Apostolat / Sortie ===== */
+(function(){
+ try{Object.assign(EN,{"Continuer vers l'achat ›":"Continue to purchase ›","‹ Modifier mes billets":"‹ Edit my tickets","Comment voulez-vous acheter ?":"How would you like to buy?","Appuyez sur + pour choisir votre billet":"Tap + to choose your ticket","Apostolat · Sortie":"Apostolate · Outing","Détails":"Details","💵 Espèces":"💵 Cash","📲 En ligne":"📲 Online","🤝 Cotiser":"🤝 Pool money","🎁 Cadeau":"🎁 Gift"})}catch(x){}
+
+ /* --- Apostolats : leur billetterie pour les sorties --- */
+ try{
+  CATN.apostolat="Apostolat · Sortie";CATI.apostolat="⛪";
+  const _ca=catsAll;catsAll=function(){const r=_ca.apply(this,arguments);if(!r.some(c=>c[0]==="apostolat"))r.push(["apostolat",catLabel("apostolat"),"⛪"]);return r};
+  document.addEventListener("change",function(ev){const s=ev.target;if(!s||s.id!=="cg")return;const o=$("co"),l=o&&o.previousElementSibling,ap=s.value==="apostolat";
+   if(l&&l.tagName==="LABEL"){if(!l.dataset.o)l.dataset.o=l.textContent;l.textContent=ap?"Nom de l'apostolat * (affiché aux visiteurs)":l.dataset.o}
+   if(o){if(!o.dataset.o)o.dataset.o=o.placeholder;o.placeholder=ap?"Ex : Chorale Sainte-Cécile, Jeunes de la paroisse…":o.dataset.o}
+   const t=$("ct");if(t){if(!t.dataset.o)t.dataset.o=t.placeholder;t.placeholder=ap?"Ex : Sortie à la plage — apostolat des jeunes":t.dataset.o}
+  });
+ }catch(x){console.warn("apostolat",x)}
+
+ /* --- Étape 1 / 2 --- */
+ const recap=()=>{const r=$("evrecap");if(!r||!EV||!EV.e)return;const e=EV.e;
+  const L=(e.tickets||[]).filter(t=>(EV.qty[t.id]||0)>0).map(t=>`<div class="rc-r"><span>${EV.qty[t.id]} × ${esc(t.name)}</span><b>${t.price>0?nf(t.price*EV.qty[t.id])+" "+cur(t.currency):"Gratuit"}</b></div>`).join("");
+  r.innerHTML=L+`<div class="rc-r tot"><span>Total</span><b>${amtTxt(evTotals().amt)}</b></div>`};
+ window.evGo=function(){
+  if(!evTotals().n){alert("Choisissez d'abord votre catégorie (bouton +).");return}
+  recap();const v=$("v-ev");v.classList.add("evs2");
+  const t=$("evtabs")||$("evbuy");try{t.scrollIntoView({behavior:"smooth",block:"start"})}catch(x){}};
+ window.evBack=function(){$("v-ev").classList.remove("evs2");const t=$("evt");try{t.scrollIntoView({behavior:"smooth",block:"center"})}catch(x){}};
+
+ function build(){
+  const tk=$("evtk"),f=$("evform");if(!tk||!f||$("evbuy"))return;
+  const tabs=[...tk.children].find(c=>c.classList&&c.classList.contains("sgm"));if(!tabs)return;
+  const box=document.createElement("div");box.id="evbuy";tk.insertBefore(box,tabs);
+  let n=tabs;while(n){const nx=n.nextSibling;box.appendChild(n);if(n===f)break;n=nx}
+  box.insertAdjacentHTML("afterbegin",`<button type="button" class="evb-back" onclick="evBack()">‹ Modifier mes billets</button><div class="evb-rc" id="evrecap"></div><h3 class="evb-t">Comment voulez-vous acheter ?</h3>`);
+  const c=tabs.querySelector('[data-m="cash"]'),o=tabs.querySelector('[data-m="online"]');
+  if(c)c.textContent="💵 Espèces";if(o)o.textContent="📲 En ligne";
+  if(c||o){ /* autres façons d'acheter */
+   if(typeof window.p4Tribe==="function")tabs.insertAdjacentHTML("beforeend",'<a onclick="p4Tribe()">🤝 Cotiser</a>');
+   tabs.insertAdjacentHTML("beforeend",'<a onclick="nav(\'gift\')">🎁 Cadeau</a>');
+  }
+ }
+ function tidy(){
+  document.querySelectorAll("#evt .tkrm.lo").forEach(b=>{if(/Dernières/.test(b.textContent))b.textContent="🔥 Dernières places !"});
+  document.querySelectorAll("#evt .tkc-d").forEach(b=>{if(b.firstChild&&b.firstChild.nodeType===3)b.firstChild.nodeValue="Détails "});
+  const s=$("evs");if(!s)return;const b=s.querySelector(":scope>button.btn");
+  if(b){b.textContent="Continuer vers l'achat ›";b.setAttribute("onclick","evGo()")}
+  else if(!s.querySelector(".evhint"))s.insertAdjacentHTML("beforeend",'<p class="evhint">👆 Appuyez sur <b>+</b> pour choisir votre billet</p>');
+  const v=$("v-ev");if(v&&v.classList.contains("evs2")){if(!evTotals().n)v.classList.remove("evs2");else recap()}
+ }
+ const _d=drawTk;drawTk=function(){_d.apply(this,arguments);try{tidy()}catch(x){console.warn(x)}};
+ const _o=openEvent;openEvent=async function(){const r=await _o.apply(this,arguments);try{const v=$("v-ev");if(v)v.classList.remove("evs2");build();tidy()}catch(x){console.warn("evbuy",x)}return r};
+})();
+</script>
 </body></html>
