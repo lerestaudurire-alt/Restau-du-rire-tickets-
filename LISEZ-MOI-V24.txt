@@ -1,0 +1,28 @@
+V24 : envoi automatique du billet / de l'invitation (e-mail + WhatsApp)
+
+ÉTAPE 1 : base de données
+  Supabase > SQL Editor : coller et lancer  supabase/sql/28-invitations.sql
+
+ÉTAPE 2 : fonctions (Supabase > Edge Functions)
+  a) simplypaye       : remplacer le code par supabase/functions/simplypaye/index.ts  (puis Deploy)
+  b) send-invitation  : Deploy a new function, nom exact : send-invitation,
+                        coller supabase/functions/send-invitation/index.ts
+                        (désactiver « Verify JWT » comme pour simplypaye)
+
+ÉTAPE 3 : clés (Edge Functions > Secrets). Les mêmes que notify-confirmation, donc peut-être déjà faites :
+  RESEND_KEY   MAIL_FROM        -> e-mails
+  WA_TOKEN     WA_PHONE_ID      -> WhatsApp
+  WA_TEMPLATE                   -> modèle WhatsApp (3 variables : nom, événement, code)
+  WA_INV_TEMPLATE (facultatif)  -> modèle WhatsApp avec IMAGE en en-tête (2 variables : nom, événement),
+                                   nécessaire pour envoyer l'invitation en image dès le premier contact
+  SITE_URL
+
+ÉTAPE 4 : site
+  Remplacer index.html sur GitHub, ouvrir le site en navigation privée.
+
+CE QUI SE PASSE
+  - Achat en ligne payé (SimplyPaye) : au moment où le paiement passe à « confirmé », le client reçoit
+    par e-mail le design de CHAQUE catégorie achetée (celui que l'organisateur a ajouté) + son QR code + son code.
+    Un message WhatsApp de confirmation part aussi si WA_TEMPLATE est configuré.
+  - Réservation par invitation : le client remplit son nom, WhatsApp, e-mail, adresse ; son invitation (avec son nom)
+    s'affiche tout de suite et part par e-mail et WhatsApp. Le destinataire est relu dans la commande (pas dans la requête).

@@ -150,6 +150,45 @@ async function cleanupDuplicates(kind: string, row: Row) {
   } catch (_) { /* sans gravité */ }
 }
 
+// ---------- Envoi automatique du billet acheté en ligne (e-mail Resend + WhatsApp Cloud API) ----------
+// Secrets (les mêmes que notify-confirmation) : RESEND_KEY, MAIL_FROM, WA_TOKEN, WA_PHONE_ID, WA_TEMPLATE, WA_LANG. Chaque canal est facultatif.
+const RESEND = Deno.env.get("RESEND_KEY"), MAIL_FROM = Deno.env.get("MAIL_FROM") || "billets@resend.dev";
+const WA_TOKEN = Deno.env.get("WA_TOKEN"), WA_PHONE = Deno.env.get("WA_PHONE_ID"), WA_TPL = Deno.env.get("WA_TEMPLATE"), WA_LANG = Deno.env.get("WA_LANG") || "fr";
+const htmlEsc = (t: unknown) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+const decOf = async (b: unknown) => { if (!b) return ""; const { data } = await db.rpc("dec", { b }); return String(data ?? ""); };
+async function notifyPaid(kind: string, row0: Row) {
+  if (kind !== "event") return;
+  const { data: row } = await db.from("orders").select("*").eq("id", row0.id).maybeSingle();
+  if (!row) return;
+  const email = (await decOf(row.email_enc)) || row.email || "";
+  const digits = (await decOf(row.phone_enc) || row.phone || "").replace(/\D/g, "");
+  const { data: ev } = await db.from("events").select("title,venue,city,modes").eq("id", row.event_id).maybeSingle();
+  const title = ev?.title || "votre événement", code = codeOf("event", row.id), md = ev?.modes || {};
+  const pub = (path: string) => (/^https?:/.test(path) ? path : `${SB_URL}/storage/v1/object/public/affiches/${path}`);
+  const items: Row[] = row.items || [];
+  const cats = items.map((i) => ({ name: i.name, qty: i.qty, design: (md.tkds && md.tkds[i.id]) || md.tkd || "" }));
+  const qr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(row.id)}`;
+  const sent: string[] = [];
+  if (RESEND && email) {
+    const html = `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto">
+      <h2>Bonjour ${htmlEsc(row.name)},</h2>
+      <p>Merci pour votre achat ! Votre billet pour <b>${htmlEsc(title)}</b>${ev?.venue ? " — " + htmlEsc(ev.venue) : ""} est <b>confirmé</b>.</p>
+      ${cats.map((c) => `<p style="margin:14px 0 4px">🎟️ <b>${htmlEsc(c.name)}</b> × ${htmlEsc(c.qty)}</p>${c.design ? `<img src="${htmlEsc(pub(c.design))}" alt="${htmlEsc(c.name)}" style="max-width:100%;border-radius:10px">` : ""}`).join("")}
+      <p style="text-align:center;margin-top:18px"><img src="${qr}" alt="QR code" width="220" height="220"><br><b style="font-size:20px;letter-spacing:2px">${htmlEsc(code)}</b></p>
+      <p style="color:#666;font-size:13px">Présentez ce QR code à l'entrée. Retrouvez aussi votre billet dans « Mes places » sur ${htmlEsc(SITE)}.</p></div>`;
+    const x = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${RESEND}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ from: MAIL_FROM, to: [email], subject: `Votre billet ${cats.map((c) => c.name).join(", ")} — ${title}`, html }) });
+    x.ok ? sent.push("e-mail") : console.log("notifyPaid e-mail", x.status, (await x.text()).slice(0, 200));
+  }
+  if (WA_TOKEN && WA_PHONE && WA_TPL && digits.length >= 9) {
+    const x = await fetch(`https://graph.facebook.com/v20.0/${WA_PHONE}/messages`, { method: "POST", headers: { Authorization: `Bearer ${WA_TOKEN}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ messaging_product: "whatsapp", to: digits, type: "template", template: { name: WA_TPL, language: { code: WA_LANG }, components: [{ type: "body", parameters: [row.name, title, code].map((t) => ({ type: "text", text: String(t) })) }] } }) });
+    x.ok ? sent.push("WhatsApp") : console.log("notifyPaid WhatsApp", x.status);
+  }
+  console.log("notifyPaid", code, sent.join("+") || "aucun canal configuré");
+}
+
+
 async function verify(kind: string, row: Row, hint = "") {
   if (row.status === "confirmed") return { status: "success", ticket: ticketOf(kind, row) };
   if (row.status === "cancelled") return { status: "cancelled" };
@@ -170,8 +209,10 @@ async function verify(kind: string, row: Row, hint = "") {
   const states = statesOf(s);
   // 1) Payé : prioritaire sur tout le reste
   if (states.some((st) => PAID.includes(st))) {
-    await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed");
+    const { data: changed } = await db.from(tableOf(kind)).update({ status: "confirmed", hold: false }).eq("id", row.id).neq("status", "confirmed").select("id");
     await cleanupDuplicates(kind, row);
+    // Une seule fois, au passage « confirmé » : envoi automatique du billet (design de la catégorie) par e-mail et WhatsApp.
+    if (changed && changed.length) { try { await notifyPaid(kind, row); } catch (e) { console.log("notifyPaid", String(e)); } }
     return { status: "success", ticket: ticketOf(kind, row) };
   }
   // 2) Échec / annulation : seulement après le délai de grâce

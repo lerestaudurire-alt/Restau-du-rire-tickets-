@@ -2694,14 +2694,14 @@ async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc
  if(e)id=e.id;
  if(!e){el.innerHTML='<div class="x2"><p>Événement introuvable.</p><button class="btn dk" onclick="nav(\'home\')">Retour</button></div>';return}
  let sold={};try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id})});if(r.ok)sold=await r.json()}catch(x){}
- EV={e,sold,qty:{},mode:e.modes&&e.modes.reservation===false?"cash":"res"};
+ EV={e,sold,qty:{},mode:inviteOn(e)?"inv":((e.modes&&e.modes.cash===false)?"online":"cash")};
  const img=evPoster(e);
  el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="nav('home')">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareEv()">${SHI}</button></div></div>
  <div class="c2i${img?' pf':''}" style="border-radius:24px;overflow:hidden;margin-bottom:14px"><img class="lgo" alt="" src="${$("mainLogo").src}">${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.parentNode.classList.remove('pf');this.remove()">`:""}<span class="tg3">${esc((catLabel(e.category)).toUpperCase())}</span><div class="pov">${e.owner_id?fpov(e.owner_id):""}${heartBig(e.id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(e.title)}</h2>${orgRow(e)}${chipsRow(e)}<div style="margin-bottom:12px"><button class="btn dk" style="margin:0" onclick="icsEv()">📅 Ajouter au calendrier</button> <button class="btn dk" style="margin:0 0 0 6px" onclick="inviteFriends()">👥 Inviter des amis</button> <button class="btn dk" style="margin:6px 0 0" onclick="shareAffiche()">🖼️ Affiche à partager</button></div>
  <div class="sgm" id="evtabs"><a data-t="tk" class="on" onclick="evTab('tk')">Billets</a><a data-t="dt" onclick="evTab('dt')">Détails</a></div><div id="evdt" hidden><div class="x2"><p class="evp">${ic("cal")}${esc(fmtRange(e))}</p><p class="evp">${ic("pin")}${esc([e.venue,e.city].filter(Boolean).join(", "))}</p>${e.description?`<p class="sm dsc" style="margin-top:8px;white-space:pre-line">${esc(e.description)}</p>${e.description.length>220?`<button class="more" onclick="const p=this.previousElementSibling;p.classList.toggle('open');this.textContent=p.classList.contains('open')?'Réduire':'Lire la suite'">Lire la suite</button>`:""}`:""}</div></div>
- <div id="evtk">${lastMinBlock(e)}${dateBlock(e)}<div class="x2"><h2>🎟️ Billets</h2>${e.ticket_info?`<p class="sm" style="white-space:pre-line;margin:6px 0 10px">${esc(e.ticket_info)}</p>`:""}<div id="evt"></div><div class="sum" id="evs"></div></div>
- <div class="sgm" style="margin:0 0 12px"><a data-m="res" onclick="setMode('res')">Réservation</a><a data-m="cash" onclick="setMode('cash')">Espèces</a><a data-m="online" onclick="setMode('online')">En ligne</a>${(e.modes||{}).hold?`<a data-m="hold" onclick="setMode('hold')">Sans paiement</a>`:""}</div>${secBadges()}<div id="evform"></div></div>${accessBlock(e)}${sponsorsBlock(e)}`;
+ <div id="evtk">${lastMinBlock(e)}${dateBlock(e)}<div class="x2"><h2${e.ticket_info?' style="cursor:pointer" onclick="var p=document.getElementById(\'tkinfo\');p.hidden=!p.hidden;this.querySelector(\'i\').textContent=p.hidden?\'▾\':\'▴\'"':''}>🎟️ Billets${e.ticket_info?' <i style="font-style:normal;float:right;opacity:.7">▾</i>':''}</h2>${e.ticket_info?`<p id="tkinfo" hidden class="sm" style="white-space:pre-line;margin:6px 0 10px">${esc(e.ticket_info)}</p>`:""}<div id="evt"></div><div class="sum" id="evs"></div></div>
+ <div class="sgm" style="margin:0 0 12px">${inviteOn(e)?`<a data-m="inv" onclick="setMode('inv')">✉️ Réservation par invitation</a>`:`<a data-m="cash" onclick="setMode('cash')">Espèces</a><a data-m="online" onclick="setMode('online')">En ligne</a>`}</div>${secBadges()}<div id="evform"></div></div>${accessBlock(e)}${sponsorsBlock(e)}`;
  drawTk();setMode(EV.mode);if(EV.dl)pickDate(0)}
 function left(t){return t.stock?Math.max(t.stock-(EV.sold[t.id]||0)-(EV.qty[t.id]||0),0):null}
 const cur=c=>c==="USD"?"$":"FC";
@@ -3765,7 +3765,7 @@ window.p5Copy=copy;
 const _myobs=new MutationObserver(()=>{const m=$("myev");if(!m||$("p5gp"))return;const b=m.querySelector('button[onclick="odbOpen()"]');if(b&&0)b.insertAdjacentHTML("afterend","")});
 const _mv=$("myev");if(_mv)_myobs.observe(_mv,{childList:true,subtree:true});
 let CUR="",TAB="door";
-const TABS=[["tix","🎟️ Billets & stock"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["chal","🎯 Défi pour spectateurs"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🧑‍💼 Vendeurs"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
+const TABS=[["tix","🎟️ Billets & stock"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["invo","✉️ Invitation"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","🔔 Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["chal","🎯 Défi pour spectateurs"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["final","📄 Rapport final"],["paper","🧑‍💼 Vendeurs"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["exp","📥 Export"],["sec","🛡️ Sécurité"],["ann","📢 Annulation"]];
 window.p5Manage=async function(tab,eid){if(typeof tab==="string"&&TABS.some(t=>t[0]===tab))TAB=tab;if(typeof eid==="string"&&eid)CUR=eid;let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.zIndex=window.ODB?"10000":"";ov.style.display="block";document.body.style.overflow="hidden";
  if(!MYEV||!MYEV.length){try{await loadMine()}catch(x){}}
  const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");
@@ -6575,44 +6575,94 @@ if(location.hash.slice(1).split("/")[0]==="org"||location.hash.slice(1)==="orged
 })();
 </script>
 
-<style>
-#v-ev #evtabs{display:none!important}
-#v-ev #evdt[hidden]{display:block!important}
-#v-ev #evtail{margin-top:18px;display:grid;gap:12px}
-#v-ev #evtail>*{margin-top:0!important;margin-bottom:0!important}
-#v-ev #evtail .evth{font:900 20px Georgia,serif;margin:6px 2px 0!important}
-#v-ev #evtail .p4acts{margin:0}
-</style>
 <script>
-/* Page événement : les catégories de billets en premier ; description, détails et actions en bas */
+/* ===== Réservation par invitation (événements gratuits ou sur invitation) ===== */
 (function(){
-var busy=false,mo=null,timer=null;
-function evReorder(){
- var ve=document.getElementById("v-ev");if(!ve)return;var tk=ve.querySelector("#evtk");if(!tk)return;
- busy=true;if(mo)mo.disconnect();
+var $=function(i){return document.getElementById(i)};
+var DEF="Nous avons le plaisir de vous inviter à {EVENT}.\n\n📅 {DATE}\n📍 {LIEU}\n\nPrésentez cette invitation (QR code) à l'entrée. Elle est strictement personnelle.";
+window.inviteOn=function(e){var md=(e&&e.modes)||{};if(md.invite&&md.invite.on)return true;var T=(e&&e.tickets)||[];return !!T.length&&T.every(function(t){return !(t.price>0)})};
+function loadI(u){return new Promise(function(ok,ko){var i=new Image();i.onload=function(){ok(i)};i.onerror=function(){ko(new Error("img"))};i.src=u})}
+function fileImg(f){return new Promise(function(ok,ko){var r=new FileReader();r.onload=function(){loadI(r.result).then(function(im){var k=Math.min(1,1080/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.82))},ko)};r.onerror=function(){ko(new Error("Lecture impossible"))};r.readAsDataURL(f)})}
+function wrap(x,t,mw){var out=[];String(t).split("\n").forEach(function(par){if(!par.trim()){out.push("");return}var l="";par.split(" ").forEach(function(w){var n=l?l+" "+w:w;if(x.measureText(n).width>mw&&l){out.push(l);l=w}else l=n});out.push(l)});return out}
+window.invRender=async function(e,name,qrText,code){
+ var md=((e.modes||{}).invite)||{},W=1080,H=1500,c=document.createElement("canvas");c.width=W;c.height=H;var x=c.getContext("2d");
+ var FF="Georgia,'Times New Roman',serif",SS="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+ var g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0e2f2b");g.addColorStop(1,"#071a18");x.fillStyle=g;x.fillRect(0,0,W,H);
+ if(md.img){try{var im=await loadI(md.img),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);x.fillStyle="rgba(5,20,18,.58)";x.fillRect(0,0,W,H)}catch(z){}}
+ x.strokeStyle="#f0b429";x.lineWidth=6;x.strokeRect(36,36,W-72,H-72);x.lineWidth=2;x.strokeRect(56,56,W-112,H-112);
+ x.textAlign="center";
+ x.fillStyle="#f0b429";x.font="800 40px "+SS;try{x.letterSpacing="12px"}catch(z){}x.fillText("INVITATION",W/2+6,150);try{x.letterSpacing="0px"}catch(z){}
+ x.fillStyle="#fff";x.font="700 58px "+FF;var tl=wrap(x,e.title||"",880).slice(0,2),y=235;tl.forEach(function(l){x.fillText(l,W/2,y);y+=70});
+ x.fillStyle="rgba(255,255,255,.7)";x.font="700 26px "+SS;try{x.letterSpacing="6px"}catch(z){}x.fillText("INVITÉ(E)",W/2+3,y+40);try{x.letterSpacing="0px"}catch(z){}
+ var nm=String(name||"Nom de l'invité").trim(),fs=96;while(fs>34){x.font="700 "+fs+"px "+FF;if(x.measureText(nm).width<=880)break;fs-=4}
+ x.fillStyle="#f0b429";x.fillText(nm,W/2,y+40+fs+14);
+ var by=y+40+fs+54;x.strokeStyle="rgba(240,180,41,.6)";x.lineWidth=2;x.beginPath();x.moveTo(W/2-120,by);x.lineTo(W/2+120,by);x.stroke();
+ var when="";try{when=fmtRange(e)}catch(z){}var lieu=[e.venue,e.city].filter(Boolean).join(", ");
+ var txt=String(md.text||DEF).replace(/\{NOM\}/g,nm).replace(/\{EVENT\}/g,"« "+(e.title||"")+" »").replace(/\{DATE\}/g,when).replace(/\{LIEU\}/g,lieu);
+ var ts=36,ln;for(;;){x.font="600 "+ts+"px "+SS;ln=wrap(x,txt,860);if(ln.length*(ts+16)<=1000-(by+30)||ts<=22)break;ts-=2}
+ x.fillStyle="#fff";var ty=by+30+ts;ln.forEach(function(l){x.fillText(l,W/2,ty);ty+=ts+16});
+ try{var d=document.createElement("div");new QRCode(d,{text:String(qrText||"APERCU"),width:300,height:300});var q=d.querySelector("canvas")||d.querySelector("img");
+  x.fillStyle="#fff";var qx=W/2-170,qy=1030;x.beginPath();if(x.roundRect)x.roundRect(qx,qy,340,340,24);else x.rect(qx,qy,340,340);x.fill();x.drawImage(q,qx+20,qy+20,300,300)}catch(z){}
+ x.fillStyle="#fff";x.font="800 34px "+SS;try{x.letterSpacing="4px"}catch(z){}x.fillText(String(code||"APERÇU"),W/2+2,1424);try{x.letterSpacing="0px"}catch(z){}
+ return c};
+
+/* --- Mode « Invitation » côté public --- */
+var __sm=setMode;
+setMode=function(m){
+ if(m==="res"||m==="hold")m=window.inviteOn(EV.e)?"inv":"cash";
+ if(m!=="inv")return __sm(m);
+ EV.mode="inv";document.querySelectorAll(".sgm a[data-m]").forEach(function(a){a.classList.toggle("on",a.dataset.m==="inv")});
+ var f=$("evform");if(!f)return;
+ f.innerHTML='<div class="x2"><h2>✉️ Réservation par invitation</h2><p class="sm">Choisissez votre catégorie ci-dessus (bouton +), puis remplissez vos informations. Votre invitation personnelle, avec votre nom, vous est envoyée par e-mail et par WhatsApp.</p>'+
+ '<label>Nom complet *</label><input id="on" placeholder="Votre nom complet" autocomplete="name"><div class="g"><div><label>Numéro WhatsApp *</label><input id="op" type="tel" placeholder="+243..."></div><div><label>E-mail *</label><input id="oe" type="email" placeholder="vous@exemple.com"></div></div>'+
+ addrHTML("o")+'<button class="btn wa" id="invbtn" onclick="evInvite()">🎟️ RECEVOIR MON INVITATION</button></div>'};
+window.evInvite=async function(){
+ var e=EV.e,T=e.tickets||[];
+ if(!Object.keys(EV.qty).some(function(k){return EV.qty[k]>0})){if(T.length===1){EV.qty={};EV.qty[T[0].id]=1;drawTk()}else{alert("Choisissez d'abord votre catégorie (bouton +).");return}}
+ if(!$("oe").value.trim()||!/^\S+@\S+\.\S+$/.test($("oe").value.trim())){alert("Une adresse e-mail valide est obligatoire pour recevoir votre invitation.");return}
+ var f=evForm();if(!f)return;var b=$("invbtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Création de votre invitation…";
  try{
-  var tail=ve.querySelector("#evtail");
-  if(!tail){tail=document.createElement("div");tail.id="evtail"}
-  var anchor=Array.prototype.filter.call(ve.children,function(c){return c!==tail&&c.id!=="aiFab"}).pop();
-  if(anchor&&anchor.nextElementSibling!==tail)anchor.after(tail);
-  var dt=ve.querySelector("#evdt");if(dt)dt.hidden=false;
-  var info=ve.querySelector("#evtkinfo");
-  if(!info){var p=tk.querySelector(".x2 > h2 + p.sm");if(p){info=document.createElement("div");info.className="x2";info.id="evtkinfo";info.innerHTML='<h2 style="margin-top:0">🎟️ À propos des billets</h2>';info.appendChild(p)}}
-  var hd=ve.querySelector("#evdth");if(!hd){hd=document.createElement("h2");hd.id="evdth";hd.className="evth";hd.textContent="📄 Détails de l'événement"}
-  var sb=ve.querySelector("#p4sb");
-  var keepTop=sb&&(sb.classList.contains("closed")||/🕐/.test(sb.textContent||""));
-  var ics=ve.querySelector('button[onclick="icsEv()"]');
-  var list=[keepTop?null:sb,info,dt?hd:null,dt,ics&&ics.parentElement,ve.querySelector("#p4acts"),ve.querySelector("#aiBtn"),ve.querySelector("#plbtn"),ve.querySelector("#hallplan")].filter(Boolean);
-  var ok=list.length===tail.children.length&&list.every(function(n,i){return tail.children[i]===n});
-  if(!ok)list.forEach(function(n){tail.appendChild(n)});
-  if(keepTop&&sb&&sb.parentNode!==tk)tk.insertAdjacentElement("afterbegin",sb);
- }catch(x){console.warn("evReorder",x)}
- busy=false;watch();
-}
-function watch(){var ve=document.getElementById("v-ev");if(!ve)return;if(!mo)mo=new MutationObserver(function(){if(busy)return;clearTimeout(timer);timer=setTimeout(evReorder,60)});mo.observe(ve,{childList:true,subtree:true})}
-window.evTab=function(t){var x=document.getElementById(t==="dt"?"evdt":"evtk");if(x)x.scrollIntoView({behavior:"smooth",block:"start"})};
-var _o=openEvent;openEvent=async function(){var r=await _o.apply(this,arguments);try{evReorder()}catch(x){}return r};
-watch();
+  var d=await fnCall({action:"free",kind:"event",...f}),k=d.ticket;EV.qty={};drawTk();
+  var cv=await invRender(e,f.customer.name,k.id,k.code),url=cv.toDataURL("image/jpeg",.88);
+  invShow(e,f.customer,k,url);
+ }catch(x){alert("❌ "+((x&&x.message)||x))}
+ b.disabled=false;b.textContent=old};
+function invShow(e,c,k,url){
+ var M=typeof mo!=="undefined"?mo:$("mo");M.classList.add("on");
+ var ph=String(c.phone||"").replace(/\D/g,"");
+ var msg="Bonjour "+c.name+", voici votre invitation pour « "+(e.title||"")+" ». Code : "+k.code;
+ $("mc").innerHTML='<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:360px;margin:auto;text-align:center"><div style="font-size:34px">✅</div><h2 style="color:#000;font-size:18px;margin:4px 0 8px">Invitation prête !</h2><img alt="Invitation" src="'+url+'" style="width:100%;border-radius:10px"><p id="invst" style="font-size:12.5px;color:#555;margin:8px 0">📨 Envoi automatique par e-mail et WhatsApp…</p>'+
+ '<a class="ab" download="invitation-'+esc(k.code)+'.jpg" href="'+url+'" style="display:block;text-decoration:none;margin:6px 0">⬇️ Télécharger mon invitation</a>'+
+ '<button class="ab" id="invwa" style="display:block;width:100%;margin:6px 0">💬 L\'envoyer sur mon WhatsApp</button>'+
+ '<button class="ab" onclick="closeMo()" style="display:block;width:100%;margin:6px 0">Fermer</button></div>';
+ $("invwa").onclick=async function(){try{var bl=await (await fetch(url)).blob(),fl=new File([bl],"invitation.jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],text:msg});return}}catch(z){}window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(msg),"_blank")};
+ var st=$("invst");
+ fetch(SB+"/functions/v1/send-invitation",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({ticket_id:k.id,image:url.split(",")[1]})})
+ .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("erreur "+r.status));return j})})
+ .then(function(j){if(st)st.textContent=(j.sent&&j.sent.length)?"✅ Invitation envoyée : "+j.sent.join(" + "):"ℹ️ L'envoi automatique n'est pas encore activé : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})
+ .catch(function(){if(st)st.textContent="ℹ️ L'envoi automatique n'est pas disponible pour le moment : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})}
+
+/* --- Onglet organisateur « Invitation » --- */
+window.P7T=Object.assign(window.P7T||{},{invo:async function(b){
+ var e=window.p5Ev(),md=(e.modes||{}),inv=md.invite||{};
+ b.innerHTML='<div class="p5cd"><b>✉️ Réservation par invitation</b><small>L\'entrée se fait sur invitation : le public remplit son nom, son WhatsApp, son e-mail et son adresse, puis reçoit automatiquement son invitation personnelle (son nom y apparaît). Les événements dont toutes les catégories sont gratuites passent automatiquement en mode invitation.</small>'+
+ '<label style="display:flex;gap:8px;align-items:center;margin:10px 0"><input type="checkbox" id="iv_on" '+(inv.on?"checked":"")+'> Entrée sur invitation pour cet événement</label>'+
+ '<button class="ab" id="iv_add" type="button">✍️ Ajouter mon invitation (texte déjà écrit)</button>'+
+ '<textarea id="iv_tx" rows="8" style="width:100%;margin-top:8px" placeholder="Texte de l\'invitation">'+esc(inv.text||DEF)+'</textarea>'+
+ '<small>Mots automatiques : {NOM} (nom de l\'invité), {EVENT}, {DATE}, {LIEU}. Le nom de l\'invité s\'affiche toujours en grand sur l\'invitation.</small>'+
+ '<label style="margin-top:8px">Votre propre design (facultatif, image verticale)</label><input type="file" id="iv_im" accept="image/*">'+
+ (inv.img?'<small>✅ Design enregistré · <a href="#" id="iv_rm">retirer</a></small>':'')+
+ '<div style="margin:10px 0"><canvas id="iv_pv" style="width:100%;max-width:320px;border-radius:12px;background:#0e2f2b"></canvas></div>'+
+ '<button class="btn dk" id="iv_sv" type="button">💾 Enregistrer</button> <button class="ab" id="iv_pr" type="button">👁️ Aperçu</button><div id="iv_st" class="sm"></div></div>';
+ var img=inv.img||null;
+ async function prev(){var t=$("iv_tx").value,ee=Object.assign({},e,{modes:Object.assign({},md,{invite:{on:true,text:t,img:img}})}),cv=await invRender(ee,"Nom de l'invité","APERCU","APERÇU"),pv=$("iv_pv");pv.width=cv.width/2;pv.height=cv.height/2;pv.getContext("2d").drawImage(cv,0,0,pv.width,pv.height)}
+ $("iv_add").onclick=function(){$("iv_tx").value=DEF;prev()};
+ $("iv_pr").onclick=prev;
+ $("iv_im").onchange=async function(){var f=this.files[0];if(!f)return;try{img=await fileImg(f);prev()}catch(x){alert("❌ "+x.message)}};
+ var rm=$("iv_rm");if(rm)rm.onclick=function(ev){ev.preventDefault();img=null;prev();rm.parentNode.textContent="Design retiré (pensez à enregistrer)"};
+ $("iv_sv").onclick=async function(){var st=$("iv_st");try{st.textContent="⏳ Enregistrement…";var m2=Object.assign({},e.modes||{});m2.invite={on:$("iv_on").checked,text:$("iv_tx").value.slice(0,1200),img:img};
+  await api("events?id=eq."+window.p5Cur(),{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({modes:m2})});e.modes=m2;var d=(typeof DBEV!=="undefined"?DBEV:[]).find(function(x){return x.id===e.id});if(d)d.modes=m2;st.textContent="✅ Enregistré"}catch(x){st.textContent="❌ "+((x&&x.message)||"échec")}};
+ prev()}});
 })();
 </script>
 </body></html>
