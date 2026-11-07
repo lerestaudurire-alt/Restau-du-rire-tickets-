@@ -3282,7 +3282,7 @@ const _cr=chipsRow;
 chipsRow=function(e){const M=e.modes||{},a=M.audience||"Tout public",t=Array.isArray(M.tags)?M.tags:[];const x=[`<span class="ch aud">${esc(a)}</span>`,...t.map(k=>`<span class="ch tg">#${esc(k)}</span>`)].join("");let b=_cr(e);return b?b.replace('</div>',x+'</div>'):`<div class="chs">${x}</div>`};
 
 /* 4. Organisateurs : vérifiés + page publique + abonnés */
-const VER=new Set();window.VER_=VER;
+const VER=window.VER_||(window.VER_=new Set());window.VER=VER;
 async function loadVer(){try{const r=await fetch(SB+"/rest/v1/rpc/verified_owner_ids",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:"{}"});if(!r.ok)return;(await r.json()).forEach(x=>VER.add(typeof x==="string"?x:(x.owner||x.verified_owner_ids)));paintVer()}catch(e){}}
 function paintVer(){document.querySelectorAll(".orgr").forEach(r=>{const b=r.querySelector("[data-fl]");if(!b)return;const o=b.dataset.fl,n=r.querySelector(".ot b");if(n&&VER.has(o)&&!n.querySelector(".vf"))n.insertAdjacentHTML("beforeend",`<span class="vf" title="Organisateur vérifié">${VSVG}</span>`)})}
 window.orgSheet=function(o){let m=$("osh");if(!m){m=document.createElement("div");m.id="osh";m.onclick=e=>{if(e.target===m)m.hidden=true};document.body.appendChild(m)}
@@ -6427,7 +6427,7 @@ function build(o){
   const stubs=off
     ?'<div class="op-stubs" style="grid-template-columns:repeat(2,1fr)"><div class="op-st"><b>'+total+'</b><small>Soirées</small></div><div class="op-st"><b>'+S.up.length+'</b><small>À venir</small></div></div>'
     :'<div class="op-stubs"><div class="op-st"><b>'+total+'</b><small>Soirées</small></div><div class="op-st"><b>'+C.length+'</b><small>Cotisations</small></div><div class="op-st"><b data-ofn="'+esc(o)+'">'+(FLN[o]||0)+'</b><small>Abonnés</small></div></div>';
-  const badge=off?'<span class="vf" title="Organisateur officiel">'+VSVG+'</span>':'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+(VER.has(o)?'':' hidden')+'>'+VSVG+'</span>';
+  const badge=off?'<span class="vf" title="Organisateur officiel">'+VSVG+'</span>':'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+((window.VER_&&window.VER_.has(o))?'':' hidden')+'>'+VSVG+'</span>';
   return '<div class="op" style="--oa:'+acc+'">'+
    (rec&&rec.is_public===false?'<div class="op-next" style="margin:0 0 10px" onclick="nav(\'orgedit\')"><span>🔒</span><div>Votre page est hors ligne<small>Touchez pour la mettre en ligne</small></div></div>':'')+
    '<div class="op-ban">'+(ban?'<img alt="" src="'+esc(ban)+'" onerror="this.remove()">':'')+
