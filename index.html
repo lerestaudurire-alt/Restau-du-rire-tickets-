@@ -2643,12 +2643,16 @@ function renderCreate(){const el=$("v-create");
  <label>Date et heure *</label><input id="cd" type="datetime-local"><input id="cdp" placeholder="Lieu de cette date (facultatif, sinon le lieu ci-dessus)" style="margin-top:6px"><div id="cdx"></div><button type="button" class="btn dk" onclick="addDT()">➕ Ajouter une autre date</button><p class="sm" style="margin:6px 0 8px">Festival ou spectacle sur plusieurs jours ? Ajoutez chaque date (ex : 1, 2, 3 et 4) : même salle ou salles différentes. Le dernier jour est le jour J. Les dates ci-dessus sont celles de la salle principale.</p><label>🧭 Plan d'accès (facultatif)</label><input id="cmap" placeholder="Lien Google Maps (facultatif)"><textarea id="cacc" rows="2" placeholder="Conseils : repère, parking, transport…"></textarea><label>Description de l'événement</label><textarea id="cx"></textarea><label>Description de la billetterie</label><textarea id="ctd" placeholder="Ex : comment acheter, conditions d'entrée, remboursement, places numérotées…"></textarea>
  <label>Affiche (image, 50 Mo maximum)</label><input id="cp2" type="file" accept="image/*">
  <label>🎫 Design du billet en ligne (image)</label><input id="ctkd" type="file" accept="image/*"><p class="sm">C'est le billet que vos clients téléchargeront (image + PDF) après un achat en ligne. Le QR code, le nom et le code du client sont ajoutés automatiquement sous votre design. Obligatoire si l'achat en ligne est activé.</p>
- <h3>🎟️ Catégories de billets *</h3><p class="sm">Prix à <b>0</b> = billet gratuit : le client réserve et reçoit son billet tout de suite, sans paiement.</p><div class="note" style="margin:8px 0">🔢 Pour chaque catégorie, indiquez le <b>nombre total de billets</b> : il comprend les ventes <b>en ligne ET en espèces</b>. Quand il est atteint, la catégorie affiche <b>Sold out</b> sur la billetterie.</div><div id="trs"></div><button class="btn dk" onclick="addTR()">➕ Ajouter une catégorie</button>
+ <h3>🎟️ Catégories de billets *</h3><p class="sm">Prix à <b>0</b> = billet gratuit : le client remplit ses informations et reçoit son invitation tout de suite, sans paiement.</p><div class="note" style="margin:8px 0">🔢 Pour chaque catégorie, indiquez le <b>nombre total de billets</b> : il comprend les ventes <b>en ligne ET en espèces</b>. Quand il est atteint, la catégorie affiche <b>Sold out</b> sur la billetterie.</div><div id="trs"></div><button class="btn dk" onclick="addTR()">➕ Ajouter une catégorie</button>
+ <h3>💌 Message automatique (événement gratuit ou sur invitation)</h3><p class="sm">Ce message est envoyé tout seul au client avec son invitation, dès qu'il a rempli son nom, son WhatsApp, son e-mail et son adresse. Son nom s'écrit automatiquement sur l'invitation.</p><textarea id="cwel" rows="3" maxlength="600" placeholder="Ex : Merci d'avoir réservé ! Présentez ce QR code à l'entrée. Soyez là 30 min avant le début."></textarea>
  <h3>💳 Modes de vente</h3>
- <label class="ck"><input type="checkbox" id="cm1" checked><span>Réservation (paiement mobile money + capture)</span></label>
+ <input type="checkbox" id="cm1" hidden>
  <label class="ck"><input type="checkbox" id="cm2" checked><span>Achat en espèces (enregistrement)</span></label>
  <label class="ck"><input type="checkbox" id="cm3" ${role==="admin"?"":"disabled"}><span>Achat automatique en ligne (Mobile Money / Carte)</span></label>${role==="admin"?"":'<div class="note" style="margin:6px 0 10px">🔒 Ce champ est géré par le propriétaire du site. Pour activer l’achat en ligne sur votre événement, <a href="https://wa.me/243902704475?text=Bonjour%2C%20je%20souhaite%20activer%20l%27achat%20en%20ligne%20pour%20mon%20%C3%A9v%C3%A9nement." target="_blank" rel="noopener"><b>contactez-le sur WhatsApp</b></a>.</div>'}
-  <label class="ck"><input type="checkbox" id="cm4"><span>Réservation sans paiement immédiat (le client paie plus tard)</span></label><input id="chh" type="number" min="1" max="168" value="48" placeholder="Durée de garde en heures (48 par défaut)">
+  <input type="checkbox" id="cm4" hidden><input id="chh" type="hidden" value="48">
+  <label class="ck"><input type="checkbox" id="cminv"><span>✉️ Invitation : le client remplit son nom, WhatsApp, e-mail et adresse ; son invitation personnelle lui est envoyée par e-mail</span></label>
+  <div id="cminvd" hidden><label>🖼️ Design de l'invitation (image)</label><input id="cinvimg" type="file" accept="image/*"><label>✉️ Texte de l'invitation</label><textarea id="cinvtx" rows="4" maxlength="1200">Nous avons le plaisir de vous inviter à {EVENT}.\n\n📅 {DATE}\n📍 {LIEU}\n\nPrésentez cette invitation (QR code) à l'entrée. Elle est strictement personnelle.</textarea><p class="sm">Le nom du client s'écrit tout seul sur l'invitation. Prix des billets d'invitation : 0.</p></div>
+  <label class="ck"><input type="checkbox" id="cmfree"><span>🎁 Gratuit sur réservation : le client réserve et reçoit son billet QR sans payer</span></label>
  <h3>📱 Numéros qui reçoivent les paiements</h3><div id="pns"></div><button class="btn dk" onclick="addPN()">➕ Ajouter un numéro</button><label>💰 Numéro qui reçoit l'argent des paiements en ligne</label><select id="cpo" onfocus="fillPO()"></select><button class="btn dk" onclick="addPN4()">📱 Ajouter les 4 opérateurs (M-Pesa, Airtel, Orange, Africell)</button>
  <label>Votre WhatsApp (pour recevoir les commandes) *</label><input id="cw" type="tel" placeholder="+243...">
  <button class="btn wa" id="cbtn" onclick="submitEvent()">📤 ENVOYER POUR VALIDATION</button><p id="cst" class="sm" style="margin-top:8px"></p></div>`;drawTR();drawPN()}
@@ -2664,9 +2668,9 @@ async function _createEvent(){syncTR();syncPN();const v=i=>$(i).value.trim();
  for(const b of document.querySelectorAll("#cls .sbk")){const nm=b.querySelector(".sli").value.trim(),ds=[...b.querySelectorAll(".dxi")].map(x=>x.value.trim()).filter(Boolean);if(nm&&!ds.length){cmsg("Ajoutez au moins une date pour chaque salle.");return}ds.forEach(d=>RW.push([d,nm]))}
  const dates=[...new Set(RW.map(x=>x[0]).filter(Boolean).map(x=>new Date(x).toISOString()))].sort();const DP={};RW.forEach(([d,pl])=>{if(d&&pl){const k=new Date(d).toISOString();DP[k]=DP[k]&&DP[k]!==pl?DP[k]+" • "+pl:pl}});
  if(role!=="admin")$("cm3").checked=false;
- const allFree=tk.every(x=>x.price===0);if(allFree)$("cm1").checked=true;
- if($("cm1").checked&&!allFree&&!pn.length){cmsg("Ajoutez au moins un numéro de paiement pour la réservation.");return}
- if(!$("cm1").checked&&!$("cm2").checked&&!$("cm3").checked&&!$("cm4").checked){cmsg("Choisissez au moins un mode de vente.");return}
+ const allFree=tk.every(x=>x.price===0);$("cm1").checked=!!$("cmfree").checked;
+ if(($("cminv").checked||$("cmfree").checked)&&!tk.some(t=>t.price===0)){cmsg("Pour l'invitation ou le gratuit, ajoutez au moins une catégorie à prix 0.");return}
+ if(!$("cm1").checked&&!$("cm2").checked&&!$("cm3").checked&&!$("cminv").checked){cmsg("Choisissez au moins un mode de vente.");return}
  {const pf=$("cp2").files[0];if(pf&&pf.size>52428800){cmsg("L’affiche pèse "+(pf.size/1048576).toFixed(1)+" Mo : le maximum est de 50 Mo.");return}}
  const b=$("cbtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Envoi...";
  try{let poster=null;const f=$("cp2").files[0];
@@ -6241,8 +6245,8 @@ document.addEventListener("visibilitychange",()=>document.hidden?stop():play());
 play();
 /* ===== Événements gratuits sur réservation ===== */
 const allFree=e=>{const L=(e&&e.tickets)||[];return L.length>0&&L.every(x=>+x.price===0)};
-try{const _ec=evCard;evCard=function(e){let h=_ec.apply(this,arguments);try{if(allFree(e))h=h.replace('<span class="ch">Gratuit</span>','<span class="ch lrfr">🎟 Gratuit · sur réservation</span>')}catch(x){}return h}}catch(x){}
-try{const _oe=openEvent;openEvent=async function(){const r=await _oe.apply(this,arguments);try{const e=EV&&EV.e;if(e&&allFree(e)&&!document.getElementById("lrfree")){const h='<div class="lrfree" id="lrfree"><b>🎟 Entrée gratuite sur réservation</b>Aucun paiement : réservez votre place pour recevoir votre billet QR. Il sera scanné à l’entrée.</div>',v=document.getElementById("vwbig"),h2=document.getElementById("v-ev");if(v)v.insertAdjacentHTML("afterend",h);else if(h2)h2.insertAdjacentHTML("afterbegin",h)}}catch(x){}return r}}catch(x){}
+try{const _ec=evCard;evCard=function(e){let h=_ec.apply(this,arguments);try{if(allFree(e))h=h.replace('<span class="ch">Gratuit</span>','<span class="ch lrfr">'+(window.inviteOn&&inviteOn(e)?'✉️ Gratuit · sur invitation':'🎟 Gratuit · sur réservation')+'</span>')}catch(x){}return h}}catch(x){}
+try{const _oe=openEvent;openEvent=async function(){const r=await _oe.apply(this,arguments);try{const e=EV&&EV.e;if(e&&allFree(e)&&!document.getElementById("lrfree")){const inv=window.inviteOn&&inviteOn(e),h='<div class="lrfree" id="lrfree"><b>'+(inv?'✉️ Entrée gratuite sur invitation':'🎟 Entrée gratuite sur réservation')+'</b>'+(inv?'Aucun paiement : remplissez vos informations pour recevoir votre invitation personnelle par e-mail.':'Aucun paiement : réservez votre place pour recevoir votre billet QR. Il sera scanné à l’entrée.')+'</div>',v=document.getElementById("vwbig"),h2=document.getElementById("v-ev");if(v)v.insertAdjacentHTML("afterend",h);else if(h2)h2.insertAdjacentHTML("afterbegin",h)}}catch(x){}return r}}catch(x){}
 try{Object.assign(EN,{"Choisissez, riez":"Choose, laugh","et célébrez.":"and celebrate.","Votre billetterie à Bukavu et partout en RDC.":"Your ticketing in Bukavu and across the DRC.","Choisissez":"Choose","votre soirée":"your night","Payez par":"Pay with","Mobile Money":"Mobile Money","Gratuit ?":"Free?","Réservez !":"Book it!","Recevez votre":"Get your","billet QR":"QR ticket","Scannez,":"Scan,","entrez, riez !":"enter, laugh!","Concerts, spectacles, festivals.":"Concerts, shows, festivals.","Payez par Mobile Money":"Pay with Mobile Money","Gratuit ? Réservez !":"Free? Book it!","Pas de paiement, mais l’entrée se fait sur réservation.":"No payment, but entry is by reservation only.","Recevez votre billet QR":"Get your QR ticket","Il vous attend dans « Mes places ».":"It is waiting in “My tickets”.","Scannez, entrez, riez !":"Scan, enter, laugh!","Présentez votre QR code à l’entrée.":"Show your QR code at the door.","🎟 Gratuit · sur réservation":"🎟 Free · by reservation","🎟 Entrée gratuite sur réservation":"🎟 Free entry by reservation","🎁 Entrée gratuite sur réservation : aucun paiement à faire. Votre billet avec QR code est confirmé tout de suite et sera scanné à l’entrée.":"🎁 Free entry by reservation: no payment needed. Your QR ticket is confirmed right away and will be scanned at the door."})}catch(x){}
 })();</script>
 <script>(function(){
@@ -6609,7 +6613,7 @@ window.invRender=async function(e,name,qrText,code){
 /* --- Mode « Invitation » côté public --- */
 var __sm=setMode;
 setMode=function(m){
- if(m==="res"||m==="hold")m=window.inviteOn(EV.e)?"inv":"cash";
+ if(m==="hold"||(m==="res"&&!(EV.e&&EV.e.modes&&EV.e.modes.free===true)))m=window.inviteOn(EV.e)?"inv":"cash";
  if(m!=="inv")return __sm(m);
  EV.mode="inv";document.querySelectorAll(".sgm a[data-m]").forEach(function(a){a.classList.toggle("on",a.dataset.m==="inv")});
  var f=$("evform");if(!f)return;
@@ -6622,7 +6626,7 @@ window.evInvite=async function(){
  if(!$("oe").value.trim()||!/^\S+@\S+\.\S+$/.test($("oe").value.trim())){alert("Une adresse e-mail valide est obligatoire pour recevoir votre invitation.");return}
  var f=evForm();if(!f)return;var b=$("invbtn"),old=b.textContent;b.disabled=true;b.textContent="⏳ Création de votre invitation…";
  try{
-  var d=await fnCall({action:"free",kind:"event",...f}),k=d.ticket;EV.qty={};drawTk();
+  var d=await fnCall({action:"free",kind:"event",invite:true,...f}),k=d.ticket;EV.qty={};drawTk();
   var cv=await invRender(e,f.customer.name,k.id,k.code),url=cv.toDataURL("image/jpeg",.88);
   invShow(e,f.customer,k,url);
  }catch(x){alert("❌ "+((x&&x.message)||x))}
@@ -6631,13 +6635,13 @@ function invShow(e,c,k,url){
  var M=typeof mo!=="undefined"?mo:$("mo");M.classList.add("on");
  var ph=String(c.phone||"").replace(/\D/g,"");
  var msg="Bonjour "+c.name+", voici votre invitation pour « "+(e.title||"")+" ». Code : "+k.code;
- $("mc").innerHTML='<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:360px;margin:auto;text-align:center"><div style="font-size:34px">✅</div><h2 style="color:#000;font-size:18px;margin:4px 0 8px">Invitation prête !</h2><img alt="Invitation" src="'+url+'" style="width:100%;border-radius:10px"><p id="invst" style="font-size:12.5px;color:#555;margin:8px 0">📨 Envoi automatique par e-mail et WhatsApp…</p>'+
+ $("mc").innerHTML='<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:360px;margin:auto;text-align:center"><div style="font-size:34px">✅</div><h2 style="color:#000;font-size:18px;margin:4px 0 8px">Invitation prête !</h2><img alt="Invitation" src="'+url+'" style="width:100%;border-radius:10px">'+(((e.modes||{}).welcome)?'<p style="font-size:14px;color:#222;background:#f3f7f5;border-radius:10px;padding:10px;margin:8px 0;white-space:pre-line">'+esc(String(e.modes.welcome))+'</p>':'')+'<p id="invst" style="font-size:12.5px;color:#555;margin:8px 0">📨 Envoi automatique par e-mail et WhatsApp…</p>'+
  '<a class="ab" download="invitation-'+esc(k.code)+'.jpg" href="'+url+'" style="display:block;text-decoration:none;margin:6px 0">⬇️ Télécharger mon invitation</a>'+
  '<button class="ab" id="invwa" style="display:block;width:100%;margin:6px 0">💬 L\'envoyer sur mon WhatsApp</button>'+
  '<button class="ab" onclick="closeMo()" style="display:block;width:100%;margin:6px 0">Fermer</button></div>';
  $("invwa").onclick=async function(){try{var bl=await (await fetch(url)).blob(),fl=new File([bl],"invitation.jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],text:msg});return}}catch(z){}window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(msg),"_blank")};
  var st=$("invst");
- fetch(SB+"/functions/v1/send-invitation",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({ticket_id:k.id,image:url.split(",")[1]})})
+ fetch(SB+"/functions/v1/send-invitation",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({ticket_id:k.id,image:url.split(",")[1],message:String(((e.modes||{}).welcome)||"")})})
  .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("erreur "+r.status));return j})})
  .then(function(j){if(st)st.textContent=(j.sent&&j.sent.length)?"✅ Invitation envoyée : "+j.sent.join(" + "):"ℹ️ L'envoi automatique n'est pas encore activé : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})
  .catch(function(){if(st)st.textContent="ℹ️ L'envoi automatique n'est pas disponible pour le moment : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})}
@@ -6725,7 +6729,7 @@ html.dk #evbuy .evb-rc{border-color:#2d3f3b}
  const recap=()=>{const r=$("evrecap");if(!r||!EV||!EV.e)return;const e=EV.e;
   const L=(e.tickets||[]).filter(t=>(EV.qty[t.id]||0)>0).map(t=>`<div class="rc-r"><span>${EV.qty[t.id]} × ${esc(t.name)}</span><b>${t.price>0?nf(t.price*EV.qty[t.id])+" "+cur(t.currency):"Gratuit"}</b></div>`).join("");
   r.innerHTML=L+`<div class="rc-r tot"><span>Total</span><b>${amtTxt(evTotals().amt)}</b></div>`};
- window.evGo=function(){
+ window.evNext=function(){
   if(!evTotals().n){alert("Choisissez d'abord votre catégorie (bouton +).");return}
   recap();const v=$("v-ev");v.classList.add("evs2");
   const t=$("evtabs")||$("evbuy");try{t.scrollIntoView({behavior:"smooth",block:"start"})}catch(x){}};
@@ -6737,23 +6741,58 @@ html.dk #evbuy .evb-rc{border-color:#2d3f3b}
   const box=document.createElement("div");box.id="evbuy";tk.insertBefore(box,tabs);
   let n=tabs;while(n){const nx=n.nextSibling;box.appendChild(n);if(n===f)break;n=nx}
   box.insertAdjacentHTML("afterbegin",`<button type="button" class="evb-back" onclick="evBack()">‹ Modifier mes billets</button><div class="evb-rc" id="evrecap"></div><h3 class="evb-t">Comment voulez-vous acheter ?</h3>`);
-  const c=tabs.querySelector('[data-m="cash"]'),o=tabs.querySelector('[data-m="online"]');
-  if(c)c.textContent="💵 Espèces";if(o)o.textContent="📲 En ligne";
-  if(c||o){ /* autres façons d'acheter */
+  /* modes programmés par l'organisateur : En ligne, Espèces, Invitation, Gratuit */
+  const e=EV.e,md=e.modes||{},paid=(e.tickets||[]).some(t=>+t.price>0),legacy=md.free===undefined,L=[];
+  if(paid){if(legacy?md.cash!==false:!!md.cash)L.push(["cash","💵 Espèces"]);if(legacy||md.online)L.push(["online","📲 En ligne"])}
+  if(window.inviteOn(e))L.push(["inv","✉️ Invitation"]);
+  if(md.free===true)L.push(["res","🎁 Gratuit"]);
+  if(!L.length)L.push(window.inviteOn(e)?["inv","✉️ Invitation"]:["cash","💵 Espèces"]);
+  tabs.innerHTML=L.map(x=>`<a data-m="${x[0]}" onclick="setMode('${x[0]}')">${x[1]}</a>`).join("");
+  if(paid){
    if(typeof window.p4Tribe==="function")tabs.insertAdjacentHTML("beforeend",'<a onclick="p4Tribe()">🤝 Cotiser</a>');
    tabs.insertAdjacentHTML("beforeend",'<a onclick="nav(\'gift\')">🎁 Cadeau</a>');
   }
+  if(!L.some(x=>x[0]===EV.mode))setMode(L[0][0]);else setMode(EV.mode);
  }
  function tidy(){
   document.querySelectorAll("#evt .tkrm.lo").forEach(b=>{if(/Dernières/.test(b.textContent))b.textContent="🔥 Dernières places !"});
   document.querySelectorAll("#evt .tkc-d").forEach(b=>{if(b.firstChild&&b.firstChild.nodeType===3)b.firstChild.nodeValue="Détails "});
   const s=$("evs");if(!s)return;const b=s.querySelector(":scope>button.btn");
-  if(b){b.textContent="Continuer vers l'achat ›";b.setAttribute("onclick","evGo()")}
+  if(b){b.textContent="Continuer vers l'achat ›";b.setAttribute("onclick","evNext()")}
   else if(!s.querySelector(".evhint"))s.insertAdjacentHTML("beforeend",'<p class="evhint">👆 Appuyez sur <b>+</b> pour choisir votre billet</p>');
   const v=$("v-ev");if(v&&v.classList.contains("evs2")){if(!evTotals().n)v.classList.remove("evs2");else recap()}
  }
  const _d=drawTk;drawTk=function(){_d.apply(this,arguments);try{tidy()}catch(x){console.warn(x)}};
  const _o=openEvent;openEvent=async function(){const r=await _o.apply(this,arguments);try{const v=$("v-ev");if(v)v.classList.remove("evs2");build();tidy()}catch(x){console.warn("evbuy",x)}return r};
+})();
+</script>
+<style id="lrrBadge">
+#v-org .op-nm .vf{display:inline-flex!important;position:static!important;width:26px;height:26px;margin-left:7px;vertical-align:-4px;background:none!important;padding:0!important}
+#v-org .op-nm .vf[hidden]{display:none!important}
+#v-org .op-nm .vf svg{width:26px;height:26px}
+</style>
+<script>
+(function(){
+ const og=window.evExtra;window.evExtra=function(){const r=og?og():{};try{const w=(($("cwel")||{}).value||"").trim();if(w)r.welcome=w.slice(0,600)}catch(x){}return r};
+ const SEAL='<svg viewBox="0 0 24 24"><path d="M12 1.5l2.6 1.9 3.2-.2 1.1 3 2.8 1.6-.9 3.1.9 3.1-2.8 1.6-1.1 3-3.2-.2L12 22.5l-2.6-1.9-3.2.2-1.1-3-2.8-1.6.9-3.1-.9-3.1 2.8-1.6 1.1-3 3.2.2z" fill="#1d9bf0"/><path d="M7.6 12.3l3 3 5.8-6" fill="none" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+ function paint(){document.querySelectorAll("#v-org .op-nm .vf[data-ovf]").forEach(b=>{const o=b.dataset.ovf;let ok=false;try{ok=(window.VER_&&VER_.has(o))||(DBEV||[]).some(e=>e.owner_id===o)}catch(x){}
+  if(ok){b.hidden=false;if(!b.dataset.s){b.dataset.s=1;b.innerHTML=SEAL;b.title="Organisateur certifié"}}})}
+ const v=document.getElementById("v-org");if(v){new MutationObserver(()=>setTimeout(paint,30)).observe(v,{childList:true,subtree:true});paint()}
+})();
+</script>
+<style id="lrrModes">#v-create .ck input:checked+span{text-decoration:none!important;color:inherit!important}#v-create .ck{align-items:flex-start}</style>
+<script>
+(function(){
+ const og=window.evExtra;window.evExtra=function(){const r=og?og():{};try{
+  r.free=!!($("cmfree")&&$("cmfree").checked);
+  if($("cminv")&&$("cminv").checked)r.invite={on:true,text:(($("cinvtx")||{}).value||"").slice(0,1200),img:window.__invImg||null};
+ }catch(x){}return r};
+ document.addEventListener("change",function(ev){const t=ev.target;if(!t)return;
+  if(t.id==="cminv"){const d=$("cminvd");if(d)d.hidden=!t.checked}
+  if(t.id==="cinvimg"&&t.files[0]){const f=t.files[0],rd=new FileReader();rd.onload=function(){const im=new Image();im.onload=function(){const k=Math.min(1,1080/im.width),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);window.__invImg=c.toDataURL("image/jpeg",.82)};im.src=rd.result};rd.readAsDataURL(f)}
+ });
+ /* les invitations ne sont plus « automatiques » quand l'organisateur a choisi ses modes */
+ const _io=window.inviteOn;window.inviteOn=function(e){const md=(e&&e.modes)||{};if(md.invite&&md.invite.on)return true;if(md.free!==undefined)return false;return _io?_io(e):false};
 })();
 </script>
 </body></html>
