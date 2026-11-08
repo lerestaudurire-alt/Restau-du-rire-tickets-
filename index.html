@@ -6989,4 +6989,48 @@ window.drawTR=function(){o.apply(this,arguments);try{const f=!!window.WZFREE;doc
  const t=document.getElementById("trs");let w=document.getElementById("wzper");if(f&&t&&!w){t.insertAdjacentHTML("afterend",'<div id="wzper"><label>Personnes à accueillir (par invitation)</label><input id="wzperv" type="number" min="1" placeholder="Ex : 2"></div>');w=document.getElementById("wzper")}if(w)w.hidden=!f}catch(e){}};
 const e0=window.evExtra;window.evExtra=function(){const r=e0?e0():{};try{if(window.WZFREE){const v=+((document.getElementById("wzperv")||{}).value);if(v>0)r.per=v}}catch(x){}return r}})();
 </script>
+<style id="ev4-css">
+/* Cartes événement : affiche plein cadre sur fond flouté, étiquette dorée, bouton plein largeur */
+.ev3{border-radius:28px!important;box-shadow:0 10px 28px rgba(0,0,0,.28)}
+.ev3-p.hp{position:relative;aspect-ratio:4/5!important;padding:0!important;display:block!important;background:#0b1f1c!important;overflow:hidden}
+.ev3-p.hp .bgb{position:absolute;left:-14px;top:-14px;width:calc(100% + 28px);height:calc(100% + 28px);object-fit:cover;filter:blur(20px) brightness(.55);transform:scale(1.08)}
+.ev3-p.hp .pic{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;border-radius:0!important;box-shadow:none!important;display:block!important;z-index:1}
+.ev3-d,.ev3-v,.ev4-tag{z-index:2}
+.ev4-tag{position:absolute;right:14px;bottom:14px;background:linear-gradient(135deg,#f6c445,#e8a317);color:#16211f;font:800 12px/1 system-ui,-apple-system,sans-serif;letter-spacing:.3px;padding:8px 12px;border-radius:999px;box-shadow:0 4px 12px rgba(0,0,0,.35)}
+.ev3-p:not(.hp) .ev4-tag{bottom:14px}
+.ev3-c{display:none!important}
+.ev3-f{flex-wrap:wrap;gap:12px!important}
+.ev3-f .sm{order:1;width:100%;color:#43c97f!important;font-weight:800;font-size:15px!important}
+.ev3-f .sm::before{content:"🎟️ "}
+.ev3-go{order:2;width:100%;text-align:center;background:linear-gradient(135deg,#f6c445,#e8a317)!important;color:#16211f!important;border-radius:16px!important;padding:14px 18px!important;font-size:16px!important;font-weight:900!important;box-shadow:0 6px 16px rgba(232,163,23,.3)}
+.ev3 .orgr,.ev3 .p4by{border-top:1px solid #2d3f3b;margin-top:12px;padding-top:12px}
+.op-past .ev3{opacity:.72;filter:grayscale(.35)}
+</style>
+<script>
+(function(){const _e6=evCard;evCard=function(e){let h=_e6(e);try{
+ h=h.replace('<div class="ev3-d">','<span class="ev4-tag">🏷️ '+esc(catLabel(e.cat))+'</span><div class="ev3-d">');
+ if(e&&e.img)h=h.replace(/(<div class="ev3-p[^"]*">)/,'$1<img class="bgb" alt="" src="'+esc(e.img)+'" onerror="this.remove()">');
+ h=h.replace('<span class="ev3-go">Réserver</span>','<span class="ev3-go">Réserver ma place</span>')}catch(x){}return h}})();
+</script>
+<style id="evrow-css">
+/* Accueil : les événements défilent côte à côte (le premier | le suivant), « Voir tout » les remet en liste */
+#evwrap{position:relative}
+#evl:not(.all){display:flex!important;flex-direction:row;overflow-x:auto;scroll-snap-type:x mandatory;gap:14px;padding:4px 2px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+#evl:not(.all)::-webkit-scrollbar{display:none}
+#evl:not(.all)>.ev3{flex:0 0 80%;max-width:340px;scroll-snap-align:start;margin-bottom:0!important}
+#evl:not(.all)>:not(.ev3){flex:0 0 100%}
+.evnav{position:absolute;top:30%;width:42px;height:42px;border-radius:50%;border:0;background:#fff;color:#16211f;font:700 26px/1 system-ui;box-shadow:0 4px 14px rgba(0,0,0,.35);z-index:5;display:flex;align-items:center;justify-content:center;padding:0}
+.evnav.l{left:-6px}.evnav.r{right:-6px}
+#evl.all~.evnav{display:none}
+.evall{margin-left:auto;background:linear-gradient(135deg,#f6c445,#e8a317);color:#16211f;border:0;border-radius:999px;padding:9px 16px;font-weight:900;font-size:14px;cursor:pointer}
+</style>
+<script>
+(function(){function init(){const l=document.getElementById("evl");if(!l||document.getElementById("evwrap"))return;
+const w=document.createElement("div");w.id="evwrap";l.parentNode.insertBefore(w,l);w.appendChild(l);
+const mk=(c,t,d)=>{const b=document.createElement("button");b.className="evnav "+c;b.type="button";b.setAttribute("aria-label",d>0?"Suivant":"Précédent");b.textContent=t;b.onclick=function(ev){ev.stopPropagation();const c0=l.querySelector(".ev3");l.scrollBy({left:d*((c0?c0.offsetWidth:280)+14),behavior:"smooth"})};w.appendChild(b)};
+mk("l","‹",-1);mk("r","›",1);
+const ec=document.getElementById("evcount"),h=ec&&ec.parentNode;
+if(h){h.style.display="flex";h.style.alignItems="center";h.style.gap="10px";const a=document.createElement("button");a.type="button";a.className="evall";a.textContent="Voir tout →";a.onclick=function(){const on=l.classList.toggle("all");a.textContent=on?"Réduire ←":"Voir tout →"};h.appendChild(a)}}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
+</script>
 </body></html>
