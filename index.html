@@ -2281,7 +2281,7 @@ async function scan(){
 }
 const off=()=>{try{return JSON.parse(localStorage.getItem("lrr_off")||"[]")}catch(e){return[]}};
 const tdesc=o=>T.filter(t=>o[t[0]]).map(t=>t[1]+" × "+o[t[0]]).join(", ");
-const ph=p=>{let d=String(p||"").replace(/\D/g,"");if(d[0]==="0")d="243"+d.slice(1);return d};
+const ph=p=>{let d=String(p||"").replace(/\D/g,"");if(d.slice(0,2)==="00")d=d.slice(2);else if(d[0]==="0")d="243"+d.slice(1);else if(d.length===9)d="243"+d;return d};
 let role="";
 async function rpcA(n,a={}){const r=await af(SB+"/rest/v1/rpc/"+n,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(a)});if(r.status===401){logout();throw 0}if(!r.ok)throw new Error("rpc");return r.json()}
 async function initRole(){if(!tok){role="";updateUI();return}try{role=await rpcA("my_role")}catch(e){return}
@@ -3459,7 +3459,7 @@ new MutationObserver(()=>{if(tok&&!$("mfa")&&$("v-acc")&&!$("v-acc").hidden&&$("
 <script>/* ===== v4 : organisateur obligatoire, À LA UNE, en-tête défilant, options pro, nouveautés ===== */
 (function(){
 const sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},ld=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
-const wnum=n=>String(n||"").replace(/\D/g,""),okUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||""),SUP="243902704475";
+const wnum=n=>{let d=String(n||"").replace(/\D/g,"");if(d.slice(0,2)==="00")d=d.slice(2);else if(d[0]==="0")d="243"+d.slice(1);else if(d.length===9)d="243"+d;return d},okUrl=u=>/^https:\/\/[^\s"'<>]+$/i.test(u||""),SUP="243902704475";
 const LOC=()=>LOCN(),dshort=d=>d.toLocaleDateString(LOC(),{day:"numeric",month:"short"}),fdt=d=>new Date(d).toLocaleString(LOC(),{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
 const ini=n=>String(n||"").trim().slice(0,2).toUpperCase(),db=id=>(DBEV||[]).find(e=>e.id===id),MD=e=>(e&&e.modes)||{};
 const posterUrl=e=>evPoster(e);
@@ -5741,7 +5741,7 @@ window.HALLP="";window.HALLP2="";window.HALLBUSY=false;
 const shrinkJ=(f,m)=>new Promise(res=>{try{const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{try{const k=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext("2d").drawImage(im,0,0,c.width,c.height);c.toBlob(b=>{URL.revokeObjectURL(u);res(b||f)},"image/jpeg",.82)}catch(e){res(f)}};im.onerror=()=>res(f);im.src=u}catch(e){res(f)}});
 function hallUpd(){let b=document.getElementById("hallbox");const cl=document.getElementById("cl");if(!cl)return;if(!b){const af0=document.getElementById("cp2");if(!af0)return;b=document.createElement("div");b.id="hallbox";af0.insertAdjacentElement("afterend",b);if(!cl._hl){cl._hl=1;cl.addEventListener("input",()=>{hallUpd();try{hallKnown()}catch(e){}})}}const v=cl.value.trim(),k=hallKey(v),mode=!v?"none":k?"c":"p";if(b.dataset.m===mode)return;b.dataset.m=mode;window.HALLU=false;
  const fresh=!b.querySelector("#hph");
- if(fresh)b.innerHTML='<div id="hallnote"></div><div id="hallfields"><label>🎭 Photo de la scène (image, 50 Mo maximum) *</label><input id="hph" type="file" accept="image/*"><div id="hphs" class="sm" style="margin-top:6px"></div><img id="hphp" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"><label>👥 Photo du public (image, 50 Mo maximum) *</label><input id="hph2" type="file" accept="image/*"><div id="hphs2" class="sm" style="margin-top:6px"></div><img id="hphp2" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"></div>';
+ if(fresh)b.innerHTML='<div id="hallnote"></div><div id="hallfields"><p class="sm" style="margin:10px 0 0">📐 Facultatif : ces photos servent uniquement à dessiner le plan de la salle. Elles ne sont jamais montrées au public.</p><label>🎭 Photo de la scène (facultatif)</label><input id="hph" type="file" accept="image/*"><div id="hphs" class="sm" style="margin-top:6px"></div><img id="hphp" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"><label>👥 Photo du public (facultatif)</label><input id="hph2" type="file" accept="image/*"><div id="hphs2" class="sm" style="margin-top:6px"></div><img id="hphp2" alt="" hidden style="width:100%;max-height:200px;object-fit:cover;border-radius:12px;margin-top:6px"></div>';
  const nt=document.getElementById("hallnote"),fl=document.getElementById("hallfields");
  if(mode==="c"){window.HALLP="";window.HALLP2="";["hph","hph2"].forEach(i=>{const x=document.getElementById(i);if(x)x.value=""});["hphp","hphp2"].forEach(i=>{const x=document.getElementById(i);if(x)x.hidden=true});["hphs","hphs2"].forEach(i=>{const x=document.getElementById(i);if(x)x.textContent=""});nt.innerHTML='<div class="note" style="margin:8px 0">✅ <b>Salle Concordia reconnue</b> : son plan est dessiné automatiquement pour vos clients (places numérotées). Aucune photo à envoyer.</div>';fl.hidden=true}
  else{nt.innerHTML="";fl.hidden=false}
@@ -5752,11 +5752,11 @@ function hallUpd(){let b=document.getElementById("hallbox");const cl=document.ge
  up("hph","hphs","hphp","HALLP","hall");up("hph2","hphs2","hphp2","HALLP2","hallpub")}}
 window.hallUpd=hallUpd;window.hallKey=hallKey;const _rcH=renderCreate;renderCreate=function(){const r=_rcH.apply(this,arguments);try{const cl=document.getElementById("cl");if(cl&&!document.getElementById("hallbox")){window.HALLP="";window.HALLP2="";const row=cl.closest(".g");if(row)row.insertAdjacentHTML("afterend",'<div id="hallbox"></div>');const hu=()=>{hallUpd();hallKnown()};cl.addEventListener("input",hu);hu()}}catch(e){}return r};
 const _exH=window.evExtra;window.evExtra=function(){const r=_exH?_exH():{};try{const v=((document.getElementById("cl")||{}).value||"").trim(),k=hallKey(v);
- if(k)r.hall={kind:"concordia"};else if(v&&window.HALLP)r.hall={kind:"photo",photo:window.HALLP,photo2:window.HALLP2||""};
+ if(k)r.hall={kind:"concordia"};else if(v&&(window.HALLP||window.HALLP2))r.hall={kind:"photo",photo:window.HALLP||window.HALLP2,photo2:(window.HALLP&&window.HALLP2)?window.HALLP2:""};
  if(r.hall&&!r.seatmap){syncTR();const tk=TR.filter(t=>t.name.trim()&&t.price!=="").map((t,i)=>({id:"t"+(i+1),price:+t.price,currency:t.currency,stock:t.stock?+t.stock:0}));const sm=autoSeatmap(tk,hallKey(v)?12:14);if(Object.keys(sm).length)r.seatmap=sm}}catch(x){}return r};
-if(typeof _createEvent==="function"){const _ceH=_createEvent;_createEvent=async function(){const v=((document.getElementById("cl")||{}).value||"").trim();if(v&&!hallKey(v)&&(!window.HALLP||!window.HALLP2)){cmsg(window.HALLBUSY?"⏳ Une photo est en cours d'envoi, patientez un instant.":"Envoyez les deux photos de la salle (scène et public) : le plan de salle est dessiné automatiquement à partir de ces photos et de vos billets.");return}return _ceH.apply(this,arguments)}}
+if(typeof _createEvent==="function"){const _ceH=_createEvent;_createEvent=async function(){const v=((document.getElementById("cl")||{}).value||"").trim();if(v&&!hallKey(v)&&window.HALLBUSY){cmsg("⏳ Une photo est en cours d'envoi, patientez un instant.");return}return _ceH.apply(this,arguments)}}
 function hallShow(){try{const e=EV&&EV.e,h=e&&e.modes&&e.modes.hall,box=document.getElementById("evs");if(!h||!box||document.getElementById("hallph"))return;
- box.insertAdjacentHTML("beforebegin",h.kind==="concordia"?'<div id="hallph" class="note" style="margin:10px 0">🏛️ <b>Salle Concordia</b> — plan de salle dessiné automatiquement : choisissez vos places numérotées.</div>':(h.photo?'<div id="hallph" class="x2" style="margin:10px 0"><b>📍 La salle</b>'+[[h.photo,"🎭 La scène"],[h.photo2,"👥 Le public"]].filter(x=>x[0]).map(x=>'<div class="sm" style="margin-top:8px">'+x[1]+'</div><img alt="'+x[1]+'" src="'+SB+'/storage/v1/object/public/affiches/'+String(x[0]).replace(/"/g,"")+'" style="width:100%;border-radius:12px;margin-top:4px;display:block" onerror="this.previousElementSibling.remove();this.remove()">').join("")+'</div>':""))}catch(e){}}
+ box.insertAdjacentHTML("beforebegin",h.kind==="concordia"?'<div id="hallph" class="note" style="margin:10px 0">🏛️ <b>Salle Concordia</b> — plan de salle dessiné automatiquement : choisissez vos places numérotées.</div>':"")}catch(e){}}
 const _oeH=openEvent;openEvent=async function(){const r=await _oeH.apply(this,arguments);hallShow();planShow();return r};
 const _p5H=window.p5Seats;if(typeof _p5H==="function")window.p5Seats=async function(){const r=await _p5H.apply(this,arguments);try{const h=EV.e.modes.hall,m=document.getElementById("mc");if(h&&m){const sc=[...m.querySelectorAll("div")].find(d=>d.textContent.trim()==="SCÈNE");if(sc){if(h.kind==="concordia")sc.textContent="SCÈNE · SALLE CONCORDIA";else if(h.photo&&!document.getElementById("hallsp"))sc.insertAdjacentHTML("beforebegin",'<img id="hallsp" alt="" src="'+SB+'/storage/v1/object/public/affiches/'+String(h.photo).replace(/"/g,"")+'" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;margin-bottom:8px" onerror="this.remove()">')}}}catch(x){}return r};
 /* ===== CERTIFICATION : lien dans les deux dashboards (automatique) ===== */
@@ -6636,18 +6636,20 @@ window.evInvite=async function(){
  b.disabled=false;b.textContent=old};
 function invShow(e,c,k,url){
  var M=typeof mo!=="undefined"?mo:$("mo");M.classList.add("on");
- var ph=String(c.phone||"").replace(/\D/g,"");
+ var ph=String(c.phone||"").replace(/\D/g,"");if(ph.slice(0,2)==="00")ph=ph.slice(2);else if(ph[0]==="0")ph="243"+ph.slice(1);else if(ph.length===9)ph="243"+ph;
  var msg="Bonjour "+c.name+", voici votre invitation pour « "+(e.title||"")+" ». Code : "+k.code;
  $("mc").innerHTML='<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:360px;margin:auto;text-align:center"><div style="font-size:34px">✅</div><h2 style="color:#000;font-size:18px;margin:4px 0 8px">Invitation prête !</h2><img alt="Invitation" src="'+url+'" style="width:100%;border-radius:10px">'+(((e.modes||{}).welcome)?'<p style="font-size:14px;color:#222;background:#f3f7f5;border-radius:10px;padding:10px;margin:8px 0;white-space:pre-line">'+esc(String(e.modes.welcome))+'</p>':'')+'<p id="invst" style="font-size:12.5px;color:#555;margin:8px 0">📨 Envoi automatique par e-mail et WhatsApp…</p>'+
- '<a class="ab" download="invitation-'+esc(k.code)+'.jpg" href="'+url+'" style="display:block;text-decoration:none;margin:6px 0">⬇️ Télécharger mon invitation</a>'+
+ '<button class="ab" id="invdl" style="display:block;width:100%;margin:6px 0">⬇️ Télécharger mon invitation</button><button class="ab" id="invml" style="display:block;width:100%;margin:6px 0">📧 Me l\'envoyer par e-mail</button>'+
  '<button class="ab" id="invwa" style="display:block;width:100%;margin:6px 0">💬 L\'envoyer sur mon WhatsApp</button>'+
  '<button class="ab" onclick="closeMo()" style="display:block;width:100%;margin:6px 0">Fermer</button></div>';
  $("invwa").onclick=async function(){try{var bl=await (await fetch(url)).blob(),fl=new File([bl],"invitation.jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],text:msg});return}}catch(z){}window.open("https://wa.me/"+ph+"?text="+encodeURIComponent(msg),"_blank")};
  var st=$("invst");
- fetch(SB+"/functions/v1/send-invitation",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({ticket_id:k.id,image:url.split(",")[1],message:String(((e.modes||{}).welcome)||"")})})
+ $("invdl").onclick=async function(){try{var bl=await (await fetch(url)).blob(),fl=new File([bl],"invitation-"+k.code+".jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl]});return}var u=URL.createObjectURL(bl),a=document.createElement("a");a.href=u;a.download=fl.name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000)}catch(z){if(z&&z.name==="AbortError")return;var w=window.open("");if(w)w.document.write('<img src="'+url+'" style="width:100%">')}};
+ var doSend=function(){return fetch(SB+"/functions/v1/send-invitation",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({ticket_id:k.id,image:url.split(",")[1],message:String(((e.modes||{}).welcome)||"")})})
  .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("erreur "+r.status));return j})})
  .then(function(j){if(st)st.textContent=(j.sent&&j.sent.length)?"✅ Invitation envoyée : "+j.sent.join(" + "):"ℹ️ L'envoi automatique n'est pas encore activé : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})
- .catch(function(){if(st)st.textContent="ℹ️ L'envoi automatique n'est pas disponible pour le moment : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})}
+ .catch(function(){if(st)st.textContent="ℹ️ L'envoi automatique n'est pas disponible pour le moment : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})};
+ doSend();$("invml").onclick=function(){if(st)st.textContent="⏳ Envoi par e-mail…";doSend()}}
 
 /* --- Onglet organisateur « Invitation » --- */
 window.P7T=Object.assign(window.P7T||{},{invo:async function(b){
@@ -6886,7 +6888,7 @@ function wz(){
  const CK={0(){if(!val("ct"))return err(0,"Entrez le nom de l’événement.");if(!val("co"))return err(0,"Entrez le nom du producteur ou de l’organisation.");
    let lg=!!(g("clg").files&&g("clg").files[0]);try{lg=lg||!!(window.orgLogoPath&&orgLogoPath(myId()))}catch(e){}
    if(!lg)return err(0,"Ajoutez le logo (image ou document PDF).");if(!val("cv"))return err(0,"Entrez la ville.");if(!val("cl"))return err(0,"Entrez la salle.");if(!val("cd"))return err(0,"Choisissez la date et l’heure.");return err(0)},
-  1(){try{hallUpd()}catch(e){}if(!conc()&&(!window.HALLP||!window.HALLP2))return err(1,window.HALLBUSY?"⏳ Une photo est en cours d’envoi, patientez un instant.":"Envoyez les deux photos de la salle (scène et public) : le plan est dessiné automatiquement à partir de ces photos et de vos billets.");return err(1)},
+  1(){try{hallUpd()}catch(e){}if(window.HALLBUSY)return err(1,"⏳ Une photo est en cours d’envoi, patientez un instant.");return err(1)},
   2(){if(!cat)return err(2,"Choisissez payant ou gratuit.");if(cat==="p"&&!pay)return err(2,"Choisissez le mode de paiement.");if(cat==="g"&&!fr)return err(2,"Choisissez réservation ou invitation.");return err(2)}};
  root.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   if(b.hasAttribute("data-n")){if(CK[cur]())showS(cur+1);return}
@@ -6896,7 +6898,7 @@ function wz(){
   b.parentElement.querySelectorAll("button").forEach(x=>x.classList.toggle("sel",x===b));sync()});
  /* les choix pilotent les anciennes cases (mêmes champs, même envoi) */
  const set=(id,v)=>{const e=g(id);if(e&&e.checked!==v){e.checked=v;e.dispatchEvent(new Event("change",{bubbles:true}))}};
- function sync(){const adm=isAdm(),onl=cat==="p"&&(pay==="o"||pay==="b");
+ function sync(){window.WZFREE=cat==="g";const adm=isAdm(),onl=cat==="p"&&(pay==="o"||pay==="b");
   g("wzp").hidden=cat!=="p";g("wzf").hidden=cat!=="g";
   set("cm3",adm&&onl);set("cm2",cat==="p"&&(pay==="c"||pay==="b"||(!adm&&onl)));set("cmfree",cat==="g"&&fr==="r");set("cminv",cat==="g"&&fr==="i");
   if(note)note.hidden=!(onl&&!adm);
@@ -6964,5 +6966,12 @@ window.setLang=function(code){
 if(typeof openMenu==="function"){const om=openMenu;openMenu=function(){om.apply(this,arguments);const m=document.getElementById("mlang");if(m)m.value=OK.indexOf(lang)<0?"fr":lang}}
 if(OK.indexOf(lang)>0){sync(lang);go(lang)}
 })();
+</script>
+<script>
+/* événement gratuit : seulement le nombre de places et les personnes à accueillir */
+(function(){const o=window.drawTR;if(typeof o!=="function")return;
+window.drawTR=function(){o.apply(this,arguments);try{const f=!!window.WZFREE;document.querySelectorAll("#trs .trr").forEach(r=>{const b=r.querySelector(".b"),c=r.querySelector(".c"),d=r.querySelector(".d"),g=r.querySelector(".g3");if(b)b.style.display=f?"none":"";if(c)c.style.display=f?"none":"";if(g)g.style.gridTemplateColumns=f?"1fr":"";if(d)d.placeholder=f?"Nombre de places *":"Nombre total de billets *"});
+ const t=document.getElementById("trs");let w=document.getElementById("wzper");if(f&&t&&!w){t.insertAdjacentHTML("afterend",'<div id="wzper"><label>Personnes à accueillir (par invitation)</label><input id="wzperv" type="number" min="1" placeholder="Ex : 2"></div>');w=document.getElementById("wzper")}if(w)w.hidden=!f}catch(e){}};
+const e0=window.evExtra;window.evExtra=function(){const r=e0?e0():{};try{if(window.WZFREE){const v=+((document.getElementById("wzperv")||{}).value);if(v>0)r.per=v}}catch(x){}return r}})();
 </script>
 </body></html>
