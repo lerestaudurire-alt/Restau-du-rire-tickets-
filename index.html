@@ -3463,7 +3463,7 @@ const wnum=n=>{let d=String(n||"").replace(/\D/g,"");if(d.slice(0,2)==="00")d=d.
 const LOC=()=>LOCN(),dshort=d=>d.toLocaleDateString(LOC(),{day:"numeric",month:"short"}),fdt=d=>new Date(d).toLocaleString(LOC(),{day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"});
 const ini=n=>String(n||"").trim().slice(0,2).toUpperCase(),db=id=>(DBEV||[]).find(e=>e.id===id),MD=e=>(e&&e.modes)||{};
 const posterUrl=e=>evPoster(e);
-function orgName(e){if(!e)return"";let n=e.organizer_name||"";try{const s=(DBEV||[]).filter(x=>x.owner_id&&x.owner_id===e.owner_id&&x.organizer_name).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));if(s.length)n=s[0].organizer_name}catch(x){}return String(n||"").trim()}
+function orgName(e){if(!e)return"";let n=e.organizer_name||"";try{if(String(n).trim())return String(n).trim();const s=(DBEV||[]).filter(x=>x.owner_id&&x.owner_id===e.owner_id&&x.organizer_name).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")));if(s.length)n=s[0].organizer_name}catch(x){}return String(n||"").trim()}
 window.p4org=orgName;
 
 /* 1. En-tête défilant : logo + « par [organisateur] » (comme Billet Réduc) */
@@ -6594,6 +6594,12 @@ function wrap(x,t,mw){var out=[];String(t).split("\n").forEach(function(par){if(
 window.invRender=async function(e,name,qrText,code){
  var md=((e.modes||{}).invite)||{},W=1080,H=1500,c=document.createElement("canvas");c.width=W;c.height=H;var x=c.getContext("2d");
  var FF="Georgia,'Times New Roman',serif",SS="system-ui,-apple-system,'Segoe UI',Roboto,sans-serif";
+ if(md.img){try{var im=await loadI(md.img),dh=Math.round(W*im.height/im.width),F=420;c.height=dh+F;x.fillStyle="#fff";x.fillRect(0,0,W,dh+F);x.drawImage(im,0,0,W,dh);
+  var nm0=String(name||"Nom de l'invité").trim(),fs0=50;x.textAlign="left";while(fs0>24){x.font="700 italic "+fs0+"px "+FF;if(x.measureText(nm0).width<=W*(md.nw||.58))break;fs0-=2}
+  x.fillStyle="#111";x.fillText(nm0,W*(md.nx||.335),dh*(md.ny||.289));
+  try{var d0=document.createElement("div");new QRCode(d0,{text:String(qrText||"APERCU"),width:300,height:300});var q0=d0.querySelector("canvas")||d0.querySelector("img");x.drawImage(q0,W/2-150,dh+30,300,300)}catch(z){}
+  x.textAlign="center";x.fillStyle="#111";x.font="800 34px "+SS;try{x.letterSpacing="4px"}catch(z){}x.fillText(String(code||"APERÇU"),W/2+2,dh+380);try{x.letterSpacing="0px"}catch(z){}
+  return c}catch(z){}}
  var g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,"#0e2f2b");g.addColorStop(1,"#071a18");x.fillStyle=g;x.fillRect(0,0,W,H);
  if(md.img){try{var im=await loadI(md.img),k=Math.max(W/im.width,H/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,(W-w)/2,(H-h)/2,w,h);x.fillStyle="rgba(5,20,18,.58)";x.fillRect(0,0,W,H)}catch(z){}}
  x.strokeStyle="#f0b429";x.lineWidth=6;x.strokeRect(36,36,W-72,H-72);x.lineWidth=2;x.strokeRect(56,56,W-112,H-112);
@@ -6649,7 +6655,7 @@ function invShow(e,c,k,url){
  .then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok)throw new Error(j.error||("erreur "+r.status));return j})})
  .then(function(j){if(st)st.textContent=(j.sent&&j.sent.length)?"✅ Invitation envoyée : "+j.sent.join(" + "):"ℹ️ L'envoi automatique n'est pas encore activé : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})
  .catch(function(){if(st)st.textContent="ℹ️ L'envoi automatique n'est pas disponible pour le moment : téléchargez votre invitation ou envoyez-la avec le bouton ci-dessous."})};
- doSend();$("invml").onclick=function(){if(st)st.textContent="⏳ Envoi par e-mail…";doSend()}}
+ doSend();$("invml").onclick=async function(){try{var bl=await (await fetch(url)).blob(),fl=new File([bl],"invitation-"+k.code+".jpg",{type:"image/jpeg"});if(navigator.canShare&&navigator.canShare({files:[fl]})){await navigator.share({files:[fl],title:"Invitation — "+(e.title||""),text:msg});return}}catch(z){if(z&&z.name==="AbortError")return}if(st)st.textContent="⏳ Envoi par e-mail…";doSend()}}
 
 /* --- Onglet organisateur « Invitation » --- */
 window.P7T=Object.assign(window.P7T||{},{invo:async function(b){
