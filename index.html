@@ -2529,6 +2529,7 @@ const CATN={spectacle:"Spectacle",gala:"Gala d'humour",theatre:"Théâtre",conce
 const CATI={spectacle:"🎭",gala:"😂",theatre:"🎬",concert:"🎵",festival:"🎪",conference:"🎤",formation:"🎓",sport:"⚽",autre:"✨"};
 const catLabel=k=>CATN[k]||String(k||"").replace(/[-_]+/g," ").replace(/^./,c=>c.toUpperCase());
 let cat="all",qs="",DBEV=[];
+function flagOf(c){try{const r=(COUNTRIES||[]).find(v=>v[0]===String(c||"").toUpperCase());return r?r[2]:""}catch(x){return ""}}
 function phLogo(x){const mk=$("mainLogo").src;try{const d=(DBEV||[]).find(v=>x&&v.id===x.id)||x||{},nm=String(d.organizer_name||"").trim();let u="";try{if(d.owner_id&&window.orgLogoUrl)u=orgLogoUrl(d.owner_id)||""}catch(_){}
 return '<img class="lgo" alt="" src="'+esc(u||mk)+'" onerror="this.onerror=null;this.src=\''+mk+'\'">'+(nm?'<b class="phn">'+esc(nm)+'</b>':"")}catch(_){return '<img class="lgo" alt="" src="'+mk+'">'}}
 function splitOrgs(a){try{const sl=n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,""),first={};
@@ -2708,7 +2709,7 @@ async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc
  el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="nav('home')">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareEv()">${SHI}</button></div></div>
  <div class="c2i${img?' pf':''}" style="border-radius:24px;overflow:hidden;margin-bottom:14px">${phLogo(e)}${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.parentNode.classList.remove('pf');this.remove()">`:""}<span class="tg3">${esc((catLabel(e.category)).toUpperCase())}</span><div class="pov">${e.owner_id?fpov(e.owner_id):""}${heartBig(e.id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(e.title)}</h2>${orgRow(e)}${chipsRow(e)}<div style="margin-bottom:12px"><button class="btn dk" style="margin:0" onclick="icsEv()">📅 Ajouter au calendrier</button> <button class="btn dk" style="margin:0 0 0 6px" onclick="inviteFriends()">👥 Inviter des amis</button> <button class="btn dk" style="margin:6px 0 0" onclick="shareAffiche()">🖼️ Affiche à partager</button></div>
- <div class="sgm" id="evtabs"><a data-t="tk" class="on" onclick="evTab('tk')">Billets</a><a data-t="dt" onclick="evTab('dt')">Détails</a></div><div id="evdt" hidden><div class="x2"><p class="evp">${ic("cal")}${esc(fmtRange(e))}</p><p class="evp">${ic("pin")}${esc([e.venue,e.city].filter(Boolean).join(", "))}</p>${e.description?`<p class="sm dsc" style="margin-top:8px;white-space:pre-line">${esc(e.description)}</p>${e.description.length>220?`<button class="more" onclick="const p=this.previousElementSibling;p.classList.toggle('open');this.textContent=p.classList.contains('open')?'Réduire':'Lire la suite'">Lire la suite</button>`:""}`:""}</div></div>
+ <div class="sgm" id="evtabs"><a data-t="tk" class="on" onclick="evTab('tk')">Billets</a><a data-t="dt" onclick="evTab('dt')">Détails</a></div><div id="evdt" hidden><div class="x2"><p class="evp">${ic("cal")}${esc(fmtRange(e))}</p><p class="evp">${ic("pin")}${flagOf(e.country)} ${esc([e.venue,e.city].filter(Boolean).join(", "))}</p>${e.description?`<p class="sm dsc" style="margin-top:8px;white-space:pre-line">${esc(e.description)}</p>${e.description.length>220?`<button class="more" onclick="const p=this.previousElementSibling;p.classList.toggle('open');this.textContent=p.classList.contains('open')?'Réduire':'Lire la suite'">Lire la suite</button>`:""}`:""}</div></div>
  <div id="evtk">${lastMinBlock(e)}${dateBlock(e)}<div class="x2"><h2${e.ticket_info?' style="cursor:pointer" onclick="var p=document.getElementById(\'tkinfo\');p.hidden=!p.hidden;this.querySelector(\'i\').textContent=p.hidden?\'▾\':\'▴\'"':''}>🎟️ Billets${e.ticket_info?' <i style="font-style:normal;float:right;opacity:.7">▾</i>':''}</h2>${e.ticket_info?`<p id="tkinfo" hidden class="sm" style="white-space:pre-line;margin:6px 0 10px">${esc(e.ticket_info)}</p>`:""}<div id="evt"></div><div class="sum" id="evs"></div></div>
  <div class="sgm" style="margin:0 0 12px">${inviteOn(e)?`<a data-m="inv" onclick="setMode('inv')">✉️ Réservation par invitation</a>`:`<a data-m="cash" onclick="setMode('cash')">Espèces</a><a data-m="online" onclick="setMode('online')">En ligne</a>`}</div>${secBadges()}<div id="evform"></div></div>${accessBlock(e)}${sponsorsBlock(e)}`;
  drawTk();setMode(EV.mode);if(EV.dl)pickDate(0)}
@@ -7010,7 +7011,8 @@ const e0=window.evExtra;window.evExtra=function(){const r=e0?e0():{};try{if(wind
 (function(){const _e6=evCard;evCard=function(e){let h=_e6(e);try{
  h=h.replace('<div class="ev3-d">','<span class="ev4-tag">🏷️ '+esc(catLabel(e.cat))+'</span><div class="ev3-d">');
  if(e&&e.img)h=h.replace(/(<div class="ev3-p[^"]*">)/,'$1<img class="bgb" alt="" src="'+esc(e.img)+'" onerror="this.remove()">');
- h=h.replace('<span class="ev3-go">Réserver</span>','<span class="ev3-go">Réserver ma place</span>')}catch(x){}return h}})();
+ h=h.replace('<span class="ev3-go">Réserver</span>','<span class="ev3-go">Réserver ma place</span>');
+ const fl=flagOf(e&&e.country);if(fl&&e.place)h=h.replace(esc(e.place),'<span class="fg">'+fl+'</span> '+esc(e.place))}catch(x){}return h}})();
 </script>
 <style id="evrow-css">
 /* Accueil : les événements défilent côte à côte (le premier | le suivant), « Voir tout » les remet en liste */
@@ -7033,4 +7035,27 @@ const ec=document.getElementById("evcount"),h=ec&&ec.parentNode;
 if(h){h.style.display="flex";h.style.alignItems="center";h.style.gap="10px";const a=document.createElement("button");a.type="button";a.className="evall";a.textContent="Voir tout →";a.onclick=function(){const on=l.classList.toggle("all");a.textContent=on?"Réduire ←":"Voir tout →"};h.appendChild(a)}}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init()})();
 </script>
+<style id="evrow-compact">
+/* Défilement de l'accueil : cartes compactes */
+#evl:not(.all){gap:12px}
+#evl:not(.all)>.ev3{flex:0 0 62%!important;max-width:250px!important;border-radius:20px!important;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+#evl:not(.all) .ev3-p.hp{aspect-ratio:1/1!important}
+#evl:not(.all) .ev3-p:not(.hp){aspect-ratio:1/1;min-height:0}
+#evl:not(.all) .ev3-d{left:8px!important;top:8px!important;padding:3px 8px!important;border-radius:10px!important}
+#evl:not(.all) .ev3-d b{font-size:17px!important}
+#evl:not(.all) .ev3-d span{font-size:9px!important}
+#evl:not(.all) .ev4-tag{right:8px;bottom:8px;font-size:10px;padding:5px 9px}
+#evl:not(.all) .ev3-b{padding:10px 12px 12px!important;gap:3px!important}
+#evl:not(.all) .ev3-b h3{font-size:14px!important;line-height:1.25!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#evl:not(.all) .ev3-b p{font-size:12px!important;gap:5px}
+#evl:not(.all) .ev3-b p .i{width:13px;height:13px}
+#evl:not(.all) .ev3-t .hb,#evl:not(.all) .ev3-t button{transform:scale(.8);transform-origin:top right}
+#evl:not(.all) .bl,#evl:not(.all) .ev3-map,#evl:not(.all) .vwr{display:none!important}
+#evl:not(.all) .ev3-f{margin-top:6px!important;padding-top:8px!important;gap:8px!important}
+#evl:not(.all) .ev3-f .sm{font-size:12px!important}
+#evl:not(.all) .ev3-f b{font-size:13px!important}
+#evl:not(.all) .ev3-go{padding:9px 12px!important;font-size:13px!important;border-radius:12px!important}
+#evl:not(.all) .ev3 .orgr,#evl:not(.all) .ev3 .p4by{margin-top:8px;padding-top:8px;font-size:11px}
+.evnav{width:34px;height:34px;font-size:22px;top:22%}
+</style>
 </body></html>
