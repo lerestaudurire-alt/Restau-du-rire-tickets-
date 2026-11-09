@@ -7051,7 +7051,9 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 /* Défilement de l'accueil : cartes compactes */
 #evl:not(.all){gap:12px}
 #evl:not(.all)>.ev3{flex:0 0 62%!important;max-width:250px!important;border-radius:20px!important;box-shadow:0 6px 16px rgba(0,0,0,.25)}
-#evl:not(.all) .ev3-p.hp{aspect-ratio:1/1!important}
+#evl:not(.all) .ev3-p.hp{aspect-ratio:4/5!important;min-height:0!important}
+/* Affiche TOUJOURS entière : image en "contain" dans le cadre, fond flouté sur les côtés (jamais rognée) */
+#pub #evl:not(.all) .ev3-p.hp .pic,#evl:not(.all) .ev3-p.hp .pic{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;object-fit:contain!important;object-position:center!important;display:block!important;z-index:1}
 #evl:not(.all) .ev3-p:not(.hp){aspect-ratio:1/1;min-height:0}
 #evl:not(.all) .ev3-d{left:8px!important;top:8px!important;padding:3px 8px!important;border-radius:10px!important}
 #evl:not(.all) .ev3-d b{font-size:17px!important}
