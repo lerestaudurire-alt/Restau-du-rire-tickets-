@@ -1978,6 +1978,7 @@ html.dk #pub .dp #secb .sec-b span{background:#17211f!important;border-color:#2d
 <label>Nom complet *</label><input id="cn" placeholder="Votre nom complet">
 <div class="g"><div><label>Numéro WhatsApp *</label><input id="cp" type="tel" placeholder="+243..."></div><div><label>Catégorie *</label><select id="cc"></select></div></div>
 <div class="g"><div><label>Nombre de billets *</label><input id="cq" type="number" min="1" max="10" value="1"></div><div><label>Nom du vendeur (auprès de qui vous avez acheté votre ticket) *</label><input id="cs" placeholder="Ex : Mutombo" autocomplete="off" maxlength="60"></div></div>
+<div id="cqs"></div>
 <h3>📍 Votre adresse complète *</h3>
 <div class="g"><div><label>Pays *</label><input id="cpays" value="RD Congo"></div><div><label>Province *</label><input id="cprov" list="provl" placeholder="Province / région"></div></div>
 <div class="g"><div><label>Ville *</label><input id="cville" placeholder="Votre ville"></div><div><label>Commune *</label><input id="ccom" placeholder="Ex : Ibanda"></div></div>
@@ -2203,7 +2204,7 @@ function draw(){
  <td>${nf(r.fc||0)} FC<br>${nf(r.usd||0)} $</td>
  <td>${r.type==="cash"?`💵 Espèces<br>Vendeur : ${esc(r.seller)}`:`De : ${esc(r.payer)}<br>Vers : ${esc(r.rec)}<br>Vendeur : ${esc(r.seller||"—")}<br><button class="ab" onclick="proof('${r.id}')">📸 Voir la capture</button>`}</td>
  <td><span class="${k[0]}">${k[1]}</span>${r.used?'<br><span class="s2">✔ ENTRÉ</span>':''}</td>
- <td>${r.status!=="confirmed"?`<button class="ab" onclick="st('${r.id}','confirmed')">✓ Confirmer</button>`:`<button class="ab" onclick="wa('${r.id}')">💬 Envoyer confirmation</button><button class="ab" onclick="tkt('${r.id}')">🎫 Billet</button>`}${r.status!=="cancelled"?`<button class="ab" onclick="st('${r.id}','cancelled')">✕ Annuler</button>`:""}<button class="ab" onclick="del('${r.id}')">Supprimer</button></td></tr>`}).join("")
+ <td>${r.status!=="confirmed"?`<button class="ab" onclick="st('${r.id}','confirmed')">✓ Confirmer</button>`:`<button class="ab" onclick="wa('${r.id}')">💬 Envoyer confirmation</button><button class="ab" onclick="tkt('${r.id}')">🎫 Billet</button>`}${r.status!=="cancelled"?`<button class="ab" onclick="st('${r.id}','cancelled')">✕ Annuler</button>`:""}<button class="ab" onclick="editRes('${r.id}')">✏️ Modifier</button><button class="ab" onclick="del('${r.id}')">Supprimer</button></td></tr>`}).join("")
  :`<tr><td colspan="8" style="text-align:center;padding:30px;color:#777">Aucune réservation trouvée.</td></tr>`;
 }
 async function st(id,s){try{await api("reservations?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({status:s})});load()}catch(e){if(e)alert("Échec de la mise à jour")}}
@@ -2305,6 +2306,22 @@ async function flush(){const q=JSON.parse(localStorage.getItem("lrr_q")||"[]"),k
 addEventListener("online",()=>{if(tok)flush()});
 async function prepOffline(){try{const l=await rpcA("staff_list");localStorage.setItem("lrr_off",JSON.stringify(l));alert("✅ "+l.length+" billets confirmés chargés pour le scan hors ligne.")}catch(e){alert("Une connexion est nécessaire pour préparer le scan hors ligne.")}}
 $("cc").innerHTML=T.map(t=>`<option value="${t[0]}">${t[1]}</option>`).join("");
+function cashSplit(reset){
+ const n=Math.min(Math.max(parseInt($("cq").value)||1,1),10),el=$("cqs"),base=$("cc").value,old=[...el.querySelectorAll("select")].map(x=>x.value);
+ if(n<2){el.innerHTML="";return}
+ const opts=v=>T.map(t=>`<option value="${t[0]}"${t[0]===v?" selected":""}>${t[1]} — ${nf(t[2])} ${t[3]}</option>`).join("");
+ el.innerHTML='<label>Montant de chaque billet *</label>'+Array.from({length:n},(_,i)=>`<div style="display:flex;gap:8px;align-items:center;margin:4px 0"><span class="sm" style="min-width:64px">Billet ${i+1}</span><select>${opts(!reset&&old[i]?old[i]:base)}</select></div>`).join("")}
+$("cq").addEventListener("input",()=>cashSplit());
+$("cc").addEventListener("change",()=>cashSplit(true));
+function editCalc(){const q={};document.querySelectorAll(".erq").forEach(i=>q[i.dataset.k]=Math.max(parseInt(i.value)||0,0));const m=moneyRaw(q);$("erfc").value=m.fc;$("erusd").value=m.usd}
+function editRes(id){const r=rows.find(x=>x.id===id);if(!r)return;
+ $("mc").innerHTML=`<h2 style="color:#000">✏️ Modifier ${esc(num(r))}</h2><p class="sm">${esc(r.name)}</p>`+T.map(t=>`<label>${t[1]} (${nf(t[2])} ${t[3]}) — nombre</label><input type="number" min="0" max="50" class="erq" data-k="${t[0]}" value="${+r[t[0]]||0}" oninput="editCalc()">`).join("")+`<div class="g"><div><label>Montant total FC</label><input id="erfc" type="number" min="0" value="${+r.fc||0}"></div><div><label>Montant total $</label><input id="erusd" type="number" min="0" value="${+r.usd||0}"></div></div><p class="sm">Les montants se recalculent avec les billets ; vous pouvez aussi les corriger à la main.</p><div style="margin-top:10px"><button class="ab" onclick="editSave('${r.id}')">💾 Enregistrer</button><button class="ab" onclick="closeMo()">Annuler</button></div>`;
+ mo.classList.add("on")}
+async function editSave(id){
+ const b={};let tot=0;document.querySelectorAll(".erq").forEach(i=>{const v=Math.max(parseInt(i.value)||0,0);b[i.dataset.k]=v;tot+=v});
+ if(!tot){alert("Mettez au moins un billet.");return}
+ b.total=tot;b.fc=Math.max(+$("erfc").value||0,0);b.usd=Math.max(+$("erusd").value||0,0);
+ try{await api("reservations?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify(b)});closeMo();load()}catch(e){if(e)alert("Échec de la modification")}}
 async function regCash(){
  const name=val("cn"),phone=val("cp"),seller=val("cs").replace(/\s+/g," ").slice(0,60),k=$("cc").value,n=Math.min(Math.max(parseInt($("cq").value)||1,1),10);
  const A={pays:val("cpays"),province:val("cprov"),ville:val("cville"),commune:val("ccom"),quartier:val("cquart"),avenue:val("cave"),loc:val("cloc")};
@@ -2312,15 +2329,16 @@ async function regCash(){
  const b=$("cashBtn"),old=b.textContent; b.disabled=true; b.textContent="⏳ Enregistrement...";
  const w=window.open("","_blank");
  try{
-  const q={standard:0,vip:0,vvip:0,sponsor:0,grand_sponsor:0}; q[k]=1; const m=moneyRaw(q);
+  const ks=n>1?[...document.querySelectorAll("#cqs select")].map(x=>x.value):[k]; while(ks.length<n)ks.push(k);
   const uid=()=>crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c=="x"?r:(r&3|8)).toString(16)});
-  const list=Array.from({length:n},()=>{const id=uid();return{id,type:"cash",ticket_code:"LRR-"+id.slice(0,8).toUpperCase(),seller,name,phone,...A,...q,total:1,fc:m.fc,usd:m.usd,status:"pending"}});
+  const list=ks.slice(0,n).map(kk=>{const id=uid(),q={standard:0,vip:0,vvip:0,sponsor:0,grand_sponsor:0}; q[kk]=1; const m=moneyRaw(q);return{id,type:"cash",ticket_code:"LRR-"+id.slice(0,8).toUpperCase(),seller,name,phone,...A,...q,total:1,fc:m.fc,usd:m.usd,status:"pending"}});
   const r=await fetch(SB+"/rest/v1/reservations",{method:"POST",headers:H("",{"Content-Type":"application/json",Prefer:"return=minimal"}),body:JSON.stringify(list)});
   if(!r.ok)throw new Error("Enregistrement impossible");
-  const cat=T.find(t=>t[0]===k)[1];
-  const msg=`💵 *BILLET PAYÉ EN ESPÈCES*\n🎭 Le Restau du Rire — Édition 1.5\n\n👤 ${name}\n📞 ${phone}\n\n📍 ${A.pays}, ${A.province}, ${A.ville}\nCommune : ${A.commune} • Quartier : ${A.quartier} • Avenue : ${A.avenue}\nRepère : ${A.loc}\n\n🎫 ${n} × ${cat}\n🧾 Vendeur : ${seller}\n🔑 Codes : ${list.map(x=>x.ticket_code).join(", ")}\n\nMerci de m'ajouter au groupe.`;
+  const cnt={}; ks.slice(0,n).forEach(x=>cnt[x]=(cnt[x]||0)+1);
+  const cat=T.filter(t=>cnt[t[0]]).map(t=>cnt[t[0]]+" × "+t[1]+" ("+nf(t[2])+" "+t[3]+")").join(" + ");
+  const msg=`💵 *BILLET PAYÉ EN ESPÈCES*\n🎭 Le Restau du Rire — Édition 1.5\n\n👤 ${name}\n📞 ${phone}\n\n📍 ${A.pays}, ${A.province}, ${A.ville}\nCommune : ${A.commune} • Quartier : ${A.quartier} • Avenue : ${A.avenue}\nRepère : ${A.loc}\n\n🎫 ${cat}\n🧾 Vendeur : ${seller}\n🔑 Codes : ${list.map(x=>x.ticket_code).join(", ")}\n\nMerci de m'ajouter au groupe.`;
   const url="https://wa.me/243902704475?text="+encodeURIComponent(msg); if(w)w.location=url; else location.href=url;
-  ["cn","cp","cs","ccom","cquart","cave","cloc"].forEach(i=>$(i).value=""); $("cq").value=1; $("cashOk").style.display="block"; loadTaken();
+  ["cn","cp","cs","ccom","cquart","cave","cloc"].forEach(i=>$(i).value=""); $("cq").value=1; cashSplit(); $("cashOk").style.display="block"; loadTaken();
  }catch(e){if(w)w.close();alert("❌ "+e.message)}
  b.disabled=false; b.textContent=old;
 }
