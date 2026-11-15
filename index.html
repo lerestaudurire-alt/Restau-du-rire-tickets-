@@ -7183,7 +7183,7 @@ function meta(ev,L,now){
  const pub=pd(ev.created_at),ss=pd(MO.sales_start||ev.sales_start),se=pd(MO.sales_end||ev.sales_end),first=L.length?pd(L[0].created_at):null;
  const open=ss||pub||first||now;
  const R={open};
- R.title="Rapport du "+dLong(open)+" au "+dLong(now);
+ R.title="Rapport de la billetterie";
  R.evTitle=String(ev.title||"\u00C9v\u00E9nement");
  let ds=[];try{ds=(typeof evDates==="function"?evDates(ev):[])||[]}catch(x){}
  if(!ds.length&&pd(ev.starts_at))ds=[pd(ev.starts_at)];
@@ -7194,6 +7194,8 @@ function meta(ev,L,now){
   ["Ouverture de la billetterie",dtS(open)],
   ["Cl\u00F4ture de la billetterie",se?dtS(se)+(se<now?" (cl\u00F4tur\u00E9e)":""):"\u00C0 l'ouverture de l'\u00E9v\u00E9nement"],
   ["Rapport g\u00E9n\u00E9r\u00E9 le",dtS(now)]].filter(r=>r[1]);
+ if(/restau\s+du\s+rire/i.test(R.evTitle)){const O=new Date("2026-11-05T18:00:00+02:00"),C=new Date("2026-12-27T16:03:00+02:00");
+  R.info=R.info.map(r=>(r[0]==="Publi\u00E9 sur l'application le"||r[0]==="Ouverture de la billetterie")?[r[0],dtL(O)]:r[0]==="Cl\u00F4ture de la billetterie"?[r[0],dtL(C)+(C<now?" (cl\u00F4tur\u00E9e)":"")]:r)}
  R.sub="";R.where="";
  return R}
 
