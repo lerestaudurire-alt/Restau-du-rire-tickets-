@@ -1,0 +1,32 @@
+name: Pages de partage des événements
+on:
+  schedule:
+    - cron: "*/20 * * * *"   # vérifie les nouveaux événements toutes les 20 minutes
+  workflow_dispatch: {}        # bouton « Run workflow » pour forcer tout de suite
+  push:
+    paths: ["scripts/build-event-pages.mjs", ".github/workflows/event-pages.yml"]
+permissions:
+  contents: write
+concurrency:
+  group: event-pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm install --no-save --no-package-lock sharp@0.33
+      - run: node scripts/build-event-pages.mjs
+      - name: Publier les changements
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A evenement
+          [ -f og-site.jpg ] && git add og-site.jpg og-site.sig || true
+          if ! git diff --cached --quiet; then
+            git commit -m "Pages de partage des événements (auto)"
+            git pull --rebase --autostash
+            git push
+          fi

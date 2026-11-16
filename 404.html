@@ -1,8 +1,8 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Le Restau du Rire Tickets</title><meta name="theme-color" content="#0e2f2b">
+<!DOCTYPE html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Le Restau du Rire</title>
+<meta name="robots" content="noindex">
 <script>
-/* Lien d'événement créé il y a moins de 10 min (page d'aperçu pas encore générée) : on ouvre quand même l'événement */
-var m=location.pathname.match(/^(.*\/)evenement\/([^\/]+)\/?$/);
-location.replace(m?m[1]+location.search+"#event/"+m[2]:location.pathname.replace(/[^\/]*$/,""));
-</script></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:40px;background:#0e2f2b;color:#fff">
-<p>Ouverture…</p><p><a style="color:#ffc83d" href="./">Retour à l’accueil</a></p></body></html>
+/* Lien /evenement/<nom>/ pas encore généré (événement tout neuf) : on ouvre quand même l'app sur le bon événement */
+(function(){var p=location.pathname,i=p.indexOf("/evenement/");
+ if(i>-1){var base=p.slice(0,i+1),s=p.slice(i+11).split("/")[0];location.replace(base+(s?"#event/"+s:""));return}
+ var m=p.match(/^(\/[^\/]+\/)/);location.replace(m&&location.hostname.endsWith("github.io")?m[1]:"/")})();
+</script></head><body style="font-family:Arial;background:#0e2f2b;color:#fff;text-align:center;padding:40px"><p>Redirection…</p><p><a style="color:#ffc83d" href="./">Retour à l'accueil</a></p></body></html>
