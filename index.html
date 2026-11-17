@@ -7240,22 +7240,22 @@ async function pdfNew(M){
  const contHead=()=>{doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(110);T(M.title+" - "+M.evTitle+(M.kindLabel?" - "+M.kindLabel:""),ML,10);doc.setDrawColor(200);doc.setLineWidth(.2);doc.line(ML,12.5,PW-MR,12.5);X.y=19;doc.setTextColor(0)};
  const newPage=()=>{doc.addPage();contHead()};X.newPage=newPage;
  X.need=h=>{if(X.y+h>BOT)newPage()};
- try{doc.addImage(IMG.logo,"JPEG",ML,9,64,22)}catch(e){}
- doc.setTextColor(0);doc.setFont("times","normal");doc.setFontSize(9);T(HEAD.addr,ML,36);T(HEAD.org,ML,40.5);
- doc.setFont("times","bold");doc.setFontSize(17);T(HEAD.name,PW-MR,19,{align:"right"});
- doc.setFont("times","italic");doc.setFontSize(10);T(HEAD.quote,PW-MR,26,{align:"right"});
- doc.setDrawColor(60);doc.setLineWidth(.35);doc.line(ML,45,PW-MR,45);
- doc.setFont("helvetica","bold");doc.setFontSize(14);
- let ty=55;doc.splitTextToSize(cl(M.full||M.title).toUpperCase(),CW).forEach(l=>{T(l,PW/2,ty,{align:"center"});ty+=6.5});
- if(M.kindLabel){doc.setFontSize(12);doc.setTextColor(150,100,0);T(M.kindLabel.toUpperCase(),PW/2,ty,{align:"center"});ty+=6;doc.setTextColor(20)}
-  if(M.evWhen){doc.setFontSize(11.5);doc.setTextColor(150,70,0);doc.splitTextToSize(cl(M.evWhen),CW).forEach(l=>{T(l,PW/2,ty,{align:"center"});ty+=5.6})}
- ty+=1.5;
- doc.setFont("helvetica","bold");doc.setFontSize(8.5);
- const rows=(M.info||[]).map(r=>({k:r[0],v:doc.splitTextToSize(cl(r[1]),CW-64)})),lh=4.5;
- const bh=rows.reduce((a,r)=>a+r.v.length*lh,0)+5;
- doc.setFillColor(250,248,240);doc.setDrawColor(215,200,140);doc.setLineWidth(.25);doc.roundedRect(ML,ty,CW,bh,1.5,1.5,"FD");
- let iy=ty+5;rows.forEach(r=>{doc.setFont("helvetica","normal");doc.setTextColor(100);T(r.k,ML+3,iy);doc.setFont("helvetica","bold");doc.setTextColor(0);r.v.forEach((l,j)=>T(l,ML+61,iy+j*lh));iy+=r.v.length*lh});
- doc.setTextColor(0);X.y=ty+bh+6;
+   try{doc.addImage(IMG.logo,"JPEG",ML,9,64,22)}catch(e){}
+  const pill=(y,h,ic)=>{const w=24,x=PW-MR-w;doc.setFillColor(22,22,22);doc.roundedRect(x,y,w,h,h/2,h/2,"F");doc.setFillColor(255,205,40);doc.setDrawColor(255,205,40);const cx=x+8,cy=y+h/2;
+   if(ic==="tel"){doc.setLineWidth(.4);doc.roundedRect(cx-1.4,cy-2.2,2.8,4.4,.6,.6,"S");doc.circle(cx,cy+1.3,.25,"F")}
+   else{doc.circle(cx,cy-.7,1.8,"F");doc.triangle(cx-1.45,cy+.2,cx+1.45,cy+.2,cx,cy+2.6,"F");doc.setFillColor(22,22,22);doc.circle(cx,cy-.7,.65,"F")}};
+  doc.setTextColor(0);doc.setFont("times","normal");doc.setFontSize(8.5);
+  const tx=PW-MR-27;
+  pill(11,7.5,"tel");T("WhatsApp : "+HEAD.tel,tx,13.7,{align:"right"});T(HEAD.mail,tx,17.1,{align:"right"});
+  pill(22,7.5,"loc");doc.splitTextToSize(cl(HEAD.addr),64).concat([cl(HEAD.org)]).slice(0,4).forEach((l,i)=>T(l,tx,24+i*3.4,{align:"right"}));
+  doc.setFont("times","bold");doc.setFontSize(14);doc.setTextColor(0);
+  let ty=48;doc.splitTextToSize(cl(M.full||M.title).toUpperCase(),CW).forEach(l=>{T(l,PW/2,ty,{align:"center"});const w=doc.getTextWidth(cl(l));doc.setDrawColor(0);doc.setLineWidth(.35);doc.line(PW/2-w/2,ty+1.3,PW/2+w/2,ty+1.3);ty+=7.2});
+  ty+=.5;
+  if(M.kindLabel){doc.setFont("times","bold");doc.setFontSize(12);doc.setTextColor(0);T(M.kindLabel.toUpperCase(),PW/2,ty,{align:"center"});ty+=6}
+  if(M.evWhen){doc.setFont("times","bold");doc.setFontSize(11.5);doc.setTextColor(0);doc.splitTextToSize(cl(M.evWhen),CW).forEach(l=>{T(l,PW/2,ty,{align:"center"});ty+=5.6})}
+  ty+=5;doc.setFontSize(10.5);const ilh=5.4;
+  (M.info||[]).forEach(r=>{const lab=cl(r[0])+" : ";doc.setFont("times","bold");const w=doc.getTextWidth(lab);doc.setFont("times","normal");const ls=doc.splitTextToSize(cl(r[1]),CW-w);doc.setFont("times","bold");T(lab,ML,ty);doc.setFont("times","normal");ls.forEach((l,j)=>T(l,j?ML:ML+w,ty+j*ilh));ty+=ls.length*ilh+.8});
+  doc.setTextColor(0);X.y=ty+5;
  X.text=(s,o)=>{o=o||{};doc.setFont("helvetica",o.b?"bold":"italic");doc.setFontSize(8.5);doc.setTextColor(100);const ls=doc.splitTextToSize(cl(s),CW);X.need(ls.length*4+3);ls.forEach(l=>{T(l,ML,X.y+3);X.y+=4});X.y+=4;doc.setTextColor(0)};
  X.boxes=boxes=>{const bw=(CW-3*(boxes.length-1))/boxes.length;
   boxes.forEach((b,i)=>{const x=ML+i*(bw+3),y=X.y;doc.setFillColor(247,244,232);doc.setDrawColor(215,200,140);doc.setLineWidth(.25);doc.roundedRect(x,y,bw,19,1.5,1.5,"FD");
@@ -7264,8 +7264,8 @@ async function pdfNew(M){
    ls.slice(0,2).forEach((l,j)=>T(l,x+bw/2,y+12+j*4,{align:"center"}))});
   X.y+=26;doc.setTextColor(0)};
  X.table=(title,cols,rows,o)=>{o=o||{};const fs=o.fs||8.5,lh=fs*0.43,pd=1.6;
-  X.need(o.note?24:16);doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(0);
-  doc.splitTextToSize(cl(title),CW).forEach(l=>{T(l,ML,X.y);X.y+=4.6});X.y-=1.6;
+  X.need(o.note?24:16);doc.setFont("times","normal");doc.setFontSize(11.5);doc.setTextColor(0);
+  doc.splitTextToSize(cl(title),CW).forEach(l=>{T(l,ML,X.y);const w=doc.getTextWidth(cl(l));doc.setDrawColor(0);doc.setLineWidth(.2);doc.line(ML,X.y+.9,ML+w,X.y+.9);X.y+=4.8});X.y-=1.6;
   if(o.note){doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(90);doc.splitTextToSize(cl(o.note),CW).forEach(l=>{X.y+=3.8;T(l,ML,X.y)});doc.setTextColor(0)}
   X.y+=3;
   const head=()=>{doc.setFillColor(22,22,22);doc.rect(ML,X.y,CW,6.4,"F");doc.setFont("helvetica","bold");doc.setFontSize(fs);doc.setTextColor(255,205,40);let x=ML;
@@ -7333,21 +7333,19 @@ async function xlNew(M,W){
  const px=W.map(w=>Math.round(w*7+5)),total=px.reduce((a,b)=>a+b,0);
  const colAt=x=>{let a=0;for(let i=0;i<NC;i++){if(x<a+px[i])return i+(x-a)/px[i];a+=px[i]}return NC-.01};
  const thin={style:"thin",color:{argb:"FFDDDDDD"}},X={wb,ws,NC,r:1,thin};
- for(let i=1;i<=4;i++)ws.getRow(i).height=21;
+ for(let i=1;i<=4;i++)ws.getRow(i).height=i===3?28:21;
  ws.addImage(iLogo,{tl:{col:0.1,row:0.3},ext:{width:233,height:80}});X.r=5;
  X.line=(txt,font,h,al)=>{ws.mergeCells(X.r,1,X.r,NC);const c=ws.getCell(X.r,1);c.value=txt;c.font=font;c.alignment={horizontal:al||"center",vertical:"middle",wrapText:true};ws.getRow(X.r).height=h;X.r++};
- X.line(HEAD.addr,{name:"Times New Roman",size:10},16,"left");
- X.line(HEAD.org,{name:"Times New Roman",size:10},16,"left");
- X.line(HEAD.name,{name:"Times New Roman",size:18,bold:true},26);
- X.line(HEAD.quote,{name:"Times New Roman",size:11,italic:true},18);
- for(let c=1;c<=NC;c++)ws.getCell(X.r-1,c).border={bottom:{style:"medium",color:{argb:"FF444444"}}};
+   {const c0=Math.max(3,NC-3),c1=NC-1,ft={name:"Times New Roman",size:9},put=(r,t)=>{ws.mergeCells(r,c0,r,c1);const c=ws.getCell(r,c0);c.value=t;c.font=ft;c.alignment={horizontal:"right",vertical:"middle",wrapText:true}},
+   ic=(r1,r2,t)=>{ws.mergeCells(r1,NC,r2,NC);const c=ws.getCell(r1,NC);c.value=t;c.font={name:"Segoe UI Symbol",size:13,color:{argb:"FFFFCD28"}};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF161616"}};c.alignment={horizontal:"center",vertical:"middle"}};
+   put(1,"WhatsApp : "+HEAD.tel);put(2,HEAD.mail);put(3,HEAD.addr);put(4,HEAD.org);ic(1,2,"☎");ic(3,4,"📍")}
  X.r++;
- X.line((M.full||M.title).toUpperCase(),{name:"Calibri",size:15,bold:true},(M.full||M.title).length>60?42:26);
- if(M.kindLabel)X.line(M.kindLabel.toUpperCase(),{name:"Calibri",size:12,bold:true,color:{argb:"FF966400"}},20);
-  if(M.evWhen)X.line(M.evWhen,{name:"Calibri",size:12,bold:true,color:{argb:"FF964600"}},20);
- (M.info||[]).forEach(r=>{ws.mergeCells(X.r,1,X.r,2);ws.mergeCells(X.r,3,X.r,NC);const a=ws.getCell(X.r,1),b=ws.getCell(X.r,3);a.value=r[0];a.font={name:"Calibri",size:10,color:{argb:"FF666666"}};b.value=r[1];b.font={name:"Calibri",size:10,bold:true};b.alignment={wrapText:true,vertical:"middle"};for(let c=1;c<=NC;c++)ws.getCell(X.r,c).fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFFAF8F0"}};ws.getRow(X.r).height=16;X.r++});
+ X.line((M.full||M.title).toUpperCase(),{name:"Times New Roman",size:15,bold:true,underline:true},(M.full||M.title).length>60?42:26);
+ if(M.kindLabel)X.line(M.kindLabel.toUpperCase(),{name:"Times New Roman",size:12,bold:true},20);
+  if(M.evWhen)X.line(M.evWhen,{name:"Times New Roman",size:12,bold:true},20);
+  (M.info||[]).forEach(r=>{ws.mergeCells(X.r,1,X.r,NC);const a=ws.getCell(X.r,1),v=String(r[1]);a.value={richText:[{text:r[0]+" : ",font:{name:"Times New Roman",size:11,bold:true}},{text:v,font:{name:"Times New Roman",size:11}}]};a.alignment={wrapText:true,vertical:"middle"};ws.getRow(X.r).height=v.length>90?32:17;X.r++});
  X.r++;
- X.sec=t=>{ws.mergeCells(X.r,1,X.r,NC);const c=ws.getCell(X.r,1);c.value=t;c.font={name:"Calibri",size:12,bold:true};c.alignment={wrapText:true,vertical:"middle"};ws.getRow(X.r).height=t.length>90?34:20;X.r++};
+ X.sec=t=>{ws.mergeCells(X.r,1,X.r,NC);const c=ws.getCell(X.r,1);c.value=t;c.font={name:"Times New Roman",size:12,underline:true};c.alignment={wrapText:true,vertical:"middle"};ws.getRow(X.r).height=t.length>90?34:20;X.r++};
  X.note=t=>{ws.mergeCells(X.r,1,X.r,NC);const c=ws.getCell(X.r,1);c.value=t;c.font={name:"Calibri",size:10,color:{argb:"FF666666"}};c.alignment={wrapText:true,vertical:"middle"};ws.getRow(X.r).height=t.length>110?30:16;X.r++};
  X.th=arr=>{arr.forEach((v,i)=>{const c=ws.getCell(X.r,i+1);c.value=v;c.font={bold:true,color:{argb:"FFFFCD28"},name:"Calibri",size:10};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FF161616"}};c.alignment={horizontal:i===0?"left":"center",vertical:"middle",wrapText:true}});ws.getRow(X.r).height=20;X.r++};
  X.tr=(arr,tot)=>{arr.forEach((v,i)=>{const c=ws.getCell(X.r,i+1);c.value=v;c.font={name:"Calibri",size:10,bold:!!tot};c.border={bottom:thin};c.alignment={horizontal:typeof v==="number"?"right":"left",vertical:"middle",wrapText:true};if(typeof v==="number")c.numFmt="#,##0";if(tot)c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFFFEC96"}}});X.r++};
@@ -7429,6 +7427,39 @@ async function sellerModel(){
 const sellerNote=s=>s.given===0&&s.orphan?"Aucun billet donn\u00E9 enregistr\u00E9 pour ce vendeur dans l'application.":s.cats.length?"Par cat\u00E9gorie : "+s.cats.map(c=>c.name+" - donn\u00E9s "+c.g+", vendus "+c.v+", restants "+Math.max(c.g-c.v,0)).join(" | "):"Aucun billet donn\u00E9 enregistr\u00E9 pour ce vendeur.";
 const sellerTitle=(i,s)=>(i+1)+". "+s.name+" - "+s.given+" donn\u00E9"+(s.given>1?"s":"")+" \u00B7 "+s.sold+" vendu"+(s.sold>1?"s":"")+" \u00B7 "+s.rest+" restant"+(s.rest>1?"s":"")+" \u00B7 \u00E0 d\u00E9poser : "+amtStr(s.due,"0 FC");
 
+function offSellerModel(M0){
+ const nk=v=>String(v||"").trim().toLowerCase().replace(/\s+/g," ")||"direct",cn=c=>c==="CDF"?"FC":(c||"FC");
+ const qty=o=>+o._n||+o.total_qty||(o.items||[]).reduce((a,i)=>a+(+i.qty||0),0)||1;
+ const line=o=>{const d=new Date(o.created_at);return{name:o.name||"",phone:o.phone||"",d:dShort(d),h:hm(d),cat:(o.items||[]).map(i=>i.name+" x "+i.qty).join(" + "),n:qty(o),amt:amtStr(o.amounts,"-"),amts:o.amounts||{},st:STAT[o.status]||o.status||"",code:code(o)}};
+ const M=Object.assign({},M0,{noAlloc:1}),G={};
+ M0.L.filter(o=>o.status!=="cancelled").forEach(o=>{const k=nk(o.seller),s=G[k]=G[k]||{name:String(o.seller||"").trim()||"Direct (site)",sold:0,pend:0,due:{},orders:[]};
+  const n=qty(o);if(o.status==="confirmed"){s.sold+=n;Object.entries(o.amounts||{}).forEach(([c,v])=>{c=cn(c);s.due[c]=(s.due[c]||0)+(+v||0)})}else s.pend+=n;s.orders.push(line(o))});
+ M.sellers=Object.values(G).sort((a,b)=>b.sold-a.sold);
+ M.G={sold:0,pend:0,due:{}};M.sellers.forEach(s=>{M.G.sold+=s.sold;M.G.pend+=s.pend;Object.entries(s.due).forEach(([c,v])=>M.G.due[c]=(M.G.due[c]||0)+v)});
+ return M}
+const offTitle=(i,s)=>(i+1)+". "+s.name+" - "+s.sold+" vendu"+(s.sold>1?"s":"")+(s.pend?" · "+s.pend+" en attente":"")+" · montant confirmé : "+amtStr(s.due,"0 FC");
+async function makeOffSellersPdf(M){
+ const X=await pdfNew(M),CW=X.CW;
+ X.boxes([["Vendeurs",fN(M.sellers.length)],["Billets confirmés",fN(M.G.sold)],["En attente",fN(M.G.pend)],["Montant confirmé",amtStr(M.G.due,"0 FC")]]);
+ X.table("Récapitulatif par vendeur",[{h:"N°",w:8},{h:"Vendeur",w:56},{h:"Confirmés",w:26,a:"r"},{h:"En attente",w:26,a:"r"},{h:"Montant confirmé",w:CW-116,a:"r"}],
+  M.sellers.map((s,i)=>({c:[i+1,s.name,s.sold,s.pend,amtStr(s.due,"0 FC")]})).concat([{t:1,c:["","TOTAL",M.G.sold,M.G.pend,amtStr(M.G.due,"0 FC")]}]));
+ const cols=[{h:"N°",w:8},{h:"Client",w:34},{h:"Téléphone",w:26},{h:"Date",w:28},{h:"Catégorie",w:30},{h:"Billets",w:11,a:"r"},{h:"Statut",w:19},{h:"Montant",w:CW-156,a:"r"}];
+ M.sellers.forEach((s,i)=>X.table(offTitle(i,s),cols,s.orders.map((o,j)=>({c:[j+1,o.name,o.phone,o.d+" "+o.h,o.cat,o.n,o.st,o.amt]})),{fs:7.5}));
+ return X.finish()}
+async function makeOffSellersXlsx(M){
+ const X=await xlNew(M,[6,28,16,16,28,9,13,16]),wb=X.wb;
+ X.sec("Récapitulatif par vendeur");X.th(["N°","Vendeur","Confirmés","En attente","Montant confirmé"]);
+ M.sellers.forEach((s,i)=>X.tr([i+1,s.name,s.sold,s.pend,amtStr(s.due,"0 FC")]));
+ X.tr(["","TOTAL",M.G.sold,M.G.pend,amtStr(M.G.due,"0 FC")],1);X.r++;
+ const H=["N°","Client","Téléphone","Date","Catégorie","Billets","Statut","Montant"];
+ M.sellers.forEach((s,i)=>{X.sec(offTitle(i,s));X.th(H);s.orders.forEach((o,j)=>X.tr([j+1,o.name,o.phone,o.d+" "+o.h,o.cat,o.n,o.st,o.amt]));X.r++});
+ await X.finish();
+ const wd=wb.addWorksheet("Detail",{views:[{state:"frozen",ySplit:1}]});
+ wd.columns=["Vendeur","Client","Téléphone","Date","Heure","Catégorie","Billets","Montant FC","Montant USD","Statut","Code"].map((h,i)=>({header:h,width:[26,28,16,12,9,30,9,14,14,13,14][i]}));
+ hdrDark(wd.getRow(1));wd.getRow(1).height=22;
+ M.sellers.forEach(s=>s.orders.forEach(o=>{const r=wd.addRow([s.name,o.name,o.phone,o.d,o.h,o.cat,o.n,+(o.amts.FC||o.amts.CDF)||0,+o.amts.USD||0,o.st,o.code]);r.getCell(8).numFmt="#,##0";r.getCell(9).numFmt="#,##0"}));
+ wd.autoFilter={from:{row:1,column:1},to:{row:1,column:11}};
+ return blobX(wb)}
 async function makeSellersPdf(M){
  const X=await pdfNew(M),CW=X.CW;
  X.boxes([["Vendeurs",fN(M.sellers.filter(s=>!s.none).length)],["Billets donn\u00E9s",fN(M.G.given)],["Billets vendus",fN(M.G.sold)],["\u00C0 d\u00E9poser (total)",amtStr(M.G.due,"0 FC")]]);
@@ -7496,8 +7527,10 @@ window.rptOfficial=function(kind){
  window.__offEv=OFF_EV;
  ORD.official=RW.map(r=>({id:r.id,created_at:r.created_at,name:r.name,phone:r.phone,status:r.status,used:r.used,kind:r.type||"reservation",seller:r.seller,total_qty:+r.total||0,items:TT.filter(t=>+r[t[0]]).map(t=>({id:t[0],name:t[1],qty:+r[t[0]]})),amounts:(()=>{const a={};if(+r.fc)a.FC=+r.fc;if(+r.usd)a.USD=+r.usd;return a})()}));
  let M;try{M=model("official")}catch(e){alert("Rapport indisponible : "+(e&&e.message||e));return}
- M.kindLabel=kind==="sellers"?"Ventes par vendeur":"R\u00E9servations";
- dialog(M,M.L.length+" r\u00E9servation(s) \u00B7 en-t\u00EAte, signature et cachet inclus.",k=>k==="pdf"?makePdf(M):makeXlsx(M))};
+  if(kind==="sellers"){M=offSellerModel(M);M.kindLabel="Ventes par vendeur";M.file=M.file.replace("rapport-","rapport-vendeurs-");
+   dialog(M,M.sellers.length+" vendeur(s) \u00B7 "+M.G.sold+" billet(s) confirm\u00E9(s) \u00B7 en-t\u00EAte, signature et cachet inclus.",k=>k==="pdf"?makeOffSellersPdf(M):makeOffSellersXlsx(M));return}
+  M.kindLabel="R\u00E9servations";
+  dialog(M,M.L.length+" r\u00E9servation(s) \u00B7 en-t\u00EAte, signature et cachet inclus.",k=>k==="pdf"?makePdf(M):makeXlsx(M))};
 const oldCsv=window.p7Csv;
 window.p7Csv=async function(k){
  if(k==="seller")return window.rptSellers();
