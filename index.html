@@ -7237,17 +7237,18 @@ async function pdfNew(M){
  const doc=new window.jspdf.jsPDF({unit:"mm",format:"a4",orientation:"portrait",compress:true});
  const ML=15,MR=15,PW=210,CW=PW-ML-MR,BOT=278,X={doc,y:0,ML,PW,CW,BOT};
  const T=(s,x,yy,o)=>doc.text(cl(s),x,yy,o);X.T=T;
- const contHead=()=>{doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(110);T(M.title+" - "+M.evTitle+(M.kindLabel?" - "+M.kindLabel:""),ML,10);doc.setDrawColor(200);doc.setLineWidth(.2);doc.line(ML,12.5,PW-MR,12.5);X.y=19;doc.setTextColor(0)};
- const newPage=()=>{doc.addPage();contHead()};X.newPage=newPage;
- X.need=h=>{if(X.y+h>BOT)newPage()};
-   try{doc.addImage(IMG.logo,"JPEG",ML,9,64,22)}catch(e){}
+  const drawHead=()=>{try{doc.addImage(IMG.logo,"JPEG",ML,9,64,22)}catch(e){}
   const pill=(y,h,ic)=>{const w=24,x=PW-MR-w;doc.setFillColor(22,22,22);doc.roundedRect(x,y,w,h,h/2,h/2,"F");doc.setFillColor(255,205,40);doc.setDrawColor(255,205,40);const cx=x+8,cy=y+h/2;
    if(ic==="tel"){doc.setLineWidth(.4);doc.roundedRect(cx-1.4,cy-2.2,2.8,4.4,.6,.6,"S");doc.circle(cx,cy+1.3,.25,"F")}
    else{doc.circle(cx,cy-.7,1.8,"F");doc.triangle(cx-1.45,cy+.2,cx+1.45,cy+.2,cx,cy+2.6,"F");doc.setFillColor(22,22,22);doc.circle(cx,cy-.7,.65,"F")}};
   doc.setTextColor(0);doc.setFont("times","normal");doc.setFontSize(8.5);
   const tx=PW-MR-27;
   pill(11,7.5,"tel");T("WhatsApp : "+HEAD.tel,tx,13.7,{align:"right"});T(HEAD.mail,tx,17.1,{align:"right"});
-  pill(22,7.5,"loc");doc.splitTextToSize(cl(HEAD.addr),64).concat([cl(HEAD.org)]).slice(0,4).forEach((l,i)=>T(l,tx,24+i*3.4,{align:"right"}));
+  pill(22,7.5,"loc");doc.splitTextToSize(cl(HEAD.addr),64).concat([cl(HEAD.org)]).slice(0,4).forEach((l,i)=>T(l,tx,24+i*3.4,{align:"right"}));doc.setTextColor(0)};
+  const contHead=()=>{drawHead();X.y=42;doc.setTextColor(0)};
+ const newPage=()=>{doc.addPage();contHead()};X.newPage=newPage;
+ X.need=h=>{if(X.y+h>BOT)newPage()};
+   drawHead();
   doc.setFont("times","bold");doc.setFontSize(14);doc.setTextColor(0);
   let ty=48;doc.splitTextToSize(cl(M.full||M.title).toUpperCase(),CW).forEach(l=>{T(l,PW/2,ty,{align:"center"});const w=doc.getTextWidth(cl(l));doc.setDrawColor(0);doc.setLineWidth(.35);doc.line(PW/2-w/2,ty+1.3,PW/2+w/2,ty+1.3);ty+=7.2});
   ty+=.5;
@@ -7257,7 +7258,10 @@ async function pdfNew(M){
   (M.info||[]).forEach(r=>{const lab=cl(r[0])+" : ";doc.setFont("times","bold");const w=doc.getTextWidth(lab);doc.setFont("times","normal");const ls=doc.splitTextToSize(cl(r[1]),CW-w);doc.setFont("times","bold");T(lab,ML,ty);doc.setFont("times","normal");ls.forEach((l,j)=>T(l,j?ML:ML+w,ty+j*ilh));ty+=ls.length*ilh+.8});
   doc.setTextColor(0);X.y=ty+5;
  X.text=(s,o)=>{o=o||{};doc.setFont("helvetica",o.b?"bold":"italic");doc.setFontSize(8.5);doc.setTextColor(100);const ls=doc.splitTextToSize(cl(s),CW);X.need(ls.length*4+3);ls.forEach(l=>{T(l,ML,X.y+3);X.y+=4});X.y+=4;doc.setTextColor(0)};
- X.boxes=boxes=>{const bw=(CW-3*(boxes.length-1))/boxes.length;
+  X.h=t=>{X.need(20);doc.setFont("times","normal");doc.setFontSize(11.5);doc.setTextColor(0);T(t,ML,X.y);const w=doc.getTextWidth(cl(t));doc.setDrawColor(0);doc.setLineWidth(.2);doc.line(ML,X.y+.9,ML+w,X.y+.9);X.y+=6.8};
+  X.p=t=>{doc.setFont("times","normal");doc.setFontSize(10.5);const ls=doc.splitTextToSize(cl(t),CW);ls.forEach((l,i)=>{X.need(7);doc.setFont("times","normal");doc.setFontSize(10.5);doc.setTextColor(0);if(i<ls.length-1){try{doc.text(l,ML,X.y,{align:"justify",maxWidth:CW})}catch(e){T(l,ML,X.y)}}else T(l,ML,X.y);X.y+=5.2});X.y+=2.8};
+  X.bul=arr=>{arr.forEach(t=>{doc.setFont("times","normal");doc.setFontSize(10.5);const ls=doc.splitTextToSize(cl(t),CW-9);ls.forEach((l,i)=>{X.need(7);doc.setFont("times","normal");doc.setFontSize(10.5);doc.setTextColor(0);if(!i){doc.setFillColor(0);const x=ML+4,y=X.y-1.3,r=1;doc.triangle(x-r,y,x+r,y,x,y-r,"F");doc.triangle(x-r,y,x+r,y,x,y+r,"F")}T(l,ML+9,X.y);X.y+=5.2});X.y+=1.2});X.y+=2.5};
+ X.boxes=boxes=>{X.need(27);const bw=(CW-3*(boxes.length-1))/boxes.length;
   boxes.forEach((b,i)=>{const x=ML+i*(bw+3),y=X.y;doc.setFillColor(247,244,232);doc.setDrawColor(215,200,140);doc.setLineWidth(.25);doc.roundedRect(x,y,bw,19,1.5,1.5,"FD");
    doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(95);T(b[0],x+bw/2,y+5.5,{align:"center"});
    doc.setFont("helvetica","bold");doc.setTextColor(0);let fs=11;doc.setFontSize(fs);let ls=doc.splitTextToSize(cl(b[1]),bw-3);while(ls.length>1&&fs>7){fs-=1;doc.setFontSize(fs);ls=doc.splitTextToSize(cl(b[1]),bw-3)}
@@ -7279,47 +7283,101 @@ async function pdfNew(M){
    let x=ML;cols.forEach((c,i)=>{cells[i].forEach((l,j)=>T(l,c.a==="r"?x+c.w-pd:x+pd,X.y+pd+lh*(j+.82),{align:c.a==="r"?"right":"left"}));x+=c.w});
    doc.setDrawColor(225);doc.setLineWidth(.15);doc.line(ML,X.y+h,ML+CW,X.y+h);X.y+=h});
   X.y+=7};
- X.finish=()=>{
-  X.need(66);const y=X.y+2;
-  doc.setDrawColor(200);doc.setLineWidth(.2);doc.line(ML,y,PW-MR,y);
-  doc.setFont("helvetica","normal");doc.setFontSize(10.5);doc.setTextColor(0);
-  T("Fait \u00E0 "+HEAD.city+", le "+dLong(M.now),PW-MR,y+8,{align:"right"});
-  const cA=ML+CW*0.27,cB=ML+CW*0.74,top=y+16;
-  doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(110);
-  
-  try{doc.addImage(IMG.stamp,"PNG",cA-16,top+3,32,32)}catch(e){}
-  try{doc.addImage(IMG.sig,"PNG",cB-24,top+10,48,16.6)}catch(e){}
-  doc.setDrawColor(120);doc.setLineWidth(.25);doc.line(cB-30,top+30,cB+30,top+30);
-  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(60);
-  T("Pour l\'\u00E9quipe Restau du Rire Tickets",cB,top+34,{align:"center"});
-  X.y=top+38;
-  const n=doc.getNumberOfPages();
-  for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(200);doc.setLineWidth(.2);doc.line(ML,283.5,PW-MR,283.5);doc.setFont("helvetica","bold");doc.setFontSize(8.5);doc.setTextColor(30);
-   T("\u00C9quipe Restau du Rire Tickets",ML,288);T("Page "+i+" / "+n,PW-MR,288,{align:"right"});
-   doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.setTextColor(40);
-   T("E-mail : "+HEAD.mail+"   \u00B7   WhatsApp : "+HEAD.tel,ML,292.5)}
-  return doc.output("blob")};
+  X.finish=()=>{
+   X.need(68);const y=X.y+4;
+   doc.setFont("times","normal");doc.setFontSize(11);doc.setTextColor(0);
+   T("Fait à "+HEAD.city+", le "+dLong(M.now),ML,y);
+   T("Pour l'équipe Restau du Rire Tickets",ML,y+8);
+   try{doc.addImage(IMG.stamp,"PNG",ML+50,y+6,36,36)}catch(e){}
+   try{doc.addImage(IMG.sig,"PNG",ML+2,y+15,52,18)}catch(e){}
+   doc.setFont("times","bold");doc.setFontSize(11.5);doc.setTextColor(0);T("ÉQUIPE RESTAU DU RIRE TICKETS",ML,y+47);
+   doc.setFont("times","normal");doc.setFontSize(10.5);T("Billetterie officielle",ML,y+52.5);T("Bukavu, RDC",ML,y+58);
+   X.y=y+62;
+   const n=doc.getNumberOfPages();
+   for(let i=1;i<=n;i++){doc.setPage(i);
+    doc.setDrawColor(22,22,22);doc.setLineWidth(.6);doc.line(ML,283,PW-MR,283);
+    doc.setFillColor(255,205,40);doc.circle(ML+3,289.3,2.8,"F");doc.setDrawColor(22,22,22);doc.setLineWidth(.25);doc.rect(ML+1.6,288.3,2.8,2,"S");doc.line(ML+1.6,288.3,ML+3,289.5);doc.line(ML+4.4,288.3,ML+3,289.5);
+    doc.setFont("times","normal");doc.setFontSize(10);doc.setTextColor(0);T(HEAD.mail,ML+8,290.8);
+    const so=["f","ig","tt","wa"];so.forEach((t,k)=>{const x=PW-MR-2.8-(3-k)*7;doc.setFillColor(255,205,40);doc.circle(x,289.3,2.6,"F");doc.setFont("helvetica","bold");doc.setFontSize(5.5);doc.setTextColor(22,22,22);T(t,x,290.5,{align:"center"})});
+    doc.setFont("times","normal");doc.setFontSize(10);doc.setTextColor(0);T("Suivez-nous :",PW-MR-2.8-21-5.5,290.8,{align:"right"});
+    doc.setFont("helvetica","normal");doc.setFontSize(7);doc.setTextColor(110);T("Page "+i+" / "+n,PW/2,295,{align:"center"})}
+   return doc.output("blob")};
  return X}
 
 /* ---------------- PDF : rapport complet ---------------- */
+const pc=(a,b)=>b>0?String(Math.round(a*1000/b)/10).replace(".",",")+" %":"0 %";
+const nb=(n,u,pl)=>fN(n)+" "+(n>1?(pl||u+"s"):u);
+const lst=(a,m)=>{m=m||8;const x=a.slice(0,m).join(", ");return a.length>m?x+" et "+(a.length-m)+" autre(s)":x};
+const evq=M=>"« "+M.evTitle+" »";
+const hasAmt=a=>Object.values(a||{}).some(v=>+v>0);
+const subT=(t,i)=>"5."+(i+1)+" "+t.replace(/^\d+\.\s*/,"");
+function narSellers(M){
+ const S=M.sellers.filter(x=>!x.none),G=M.G,rest=Math.max(G.given-G.sold,0),act=S.filter(x=>x.sold>0),idle=S.filter(x=>!x.sold),top=S.slice().sort((a,b)=>b.sold-a.sold)[0],due=amtStr(G.due,"0 FC"),d=dLong(M.now);
+ const R={intro:[],synth:[],ana:[],reco:[],concl:[]};
+ R.intro.push("Le présent rapport a pour objet de rendre compte de la situation des ventes de billets réalisées par les vendeurs partenaires pour "+evq(M)+", à la date du "+d+". Il a été établi à partir des données enregistrées dans l'application Restau du Rire Tickets.");
+ R.intro.push("Il permet à l'organisation de suivre la distribution des billets, les ventes réalisées, le stock restant chez chaque vendeur et les sommes à déposer.");
+ R.synth.push("À ce jour, "+nb(S.length,"vendeur")+" "+(S.length>1?"ont reçu":"a reçu")+" au total "+nb(G.given,"billet")+" à écouler."+(G.given?" Sur ce stock, "+nb(G.sold,"billet")+" "+(G.sold>1?"ont été vendus":"a été vendu")+", soit un taux d'écoulement de "+pc(G.sold,G.given)+", et "+nb(rest,"billet")+" "+(rest>1?"restent disponibles":"reste disponible")+" auprès des vendeurs.":"")+" Le montant total à déposer auprès de l'organisation s'élève à "+due+".");
+ R.synth.push(M.onlineN?"Parallèlement, "+nb(M.onlineN,"billet")+" "+(M.onlineN>1?"ont été achetés":"a été acheté")+" directement en ligne par les clients, pour un montant de "+amtStr(M.onlineAmt,"0 FC")+".":"Parallèlement, aucun achat en ligne n'a encore été enregistré.");
+ if(G.sold>0&&top)R.ana.push("Le meilleur résultat est enregistré par "+top.name+", avec "+nb(top.sold,"billet")+" vendu"+(top.sold>1?"s":"")+", soit "+pc(top.sold,G.sold)+" des ventes réalisées par les vendeurs. "+nb(act.length,"vendeur")+" sur "+S.length+" "+(act.length>1?"ont":"a")+" enregistré au moins une vente.");
+ else R.ana.push("Aucune vente n'a encore été enregistrée par les vendeurs à la date du présent rapport.");
+ if(idle.length&&G.sold>0)R.ana.push(nb(idle.length,"vendeur")+" n'"+(idle.length>1?"ont":"a")+" pas encore enregistré de vente : "+lst(idle.map(x=>x.name))+".");
+ R.ana.push("Le récapitulatif et le détail par vendeur sont présentés dans les sections suivantes.");
+ if(idle.length)R.reco.push("Relancer les vendeurs n'ayant enregistré aucune vente afin d'en comprendre les difficultés et de les accompagner dans l'écoulement de leur stock.");
+ if(rest>0)R.reco.push("Suivre l'évolution du stock restant ("+nb(rest,"billet")+", soit "+pc(rest,G.given)+" des billets remis) et, si nécessaire, redistribuer des billets aux vendeurs les plus actifs avant la date de l'événement.");
+ if(hasAmt(G.due))R.reco.push("Déposer les sommes indiquées dans le récapitulatif ("+due+") auprès de l'équipe de la billetterie, avec confirmation de chaque versement.");
+ R.reco.push("Enregistrer chaque vente dans l'application dès l'encaissement, afin de garantir la fiabilité des chiffres présentés.");
+ R.concl.push("En conclusion, la situation arrêtée au "+d+" fait ressortir "+nb(G.sold,"billet")+" vendu"+(G.sold>1?"s":"")+" sur "+fN(G.given)+" remis aux vendeurs, pour un montant à déposer de "+due+". Nous restons à votre disposition pour toute précision complémentaire et vous remercions de votre attention.");
+ return R}
+function narOff(M){
+ const S=M.sellers,G=M.G,act=S.filter(x=>x.sold>0),top=S.slice().sort((a,b)=>b.sold-a.sold)[0],due=amtStr(G.due,"0 FC"),d=dLong(M.now),wait=S.filter(x=>!x.sold&&x.pend);
+ const R={intro:[],synth:[],ana:[],reco:[],concl:[]};
+ R.intro.push("Le présent rapport a pour objet de présenter la situation des ventes de billets par vendeur pour "+evq(M)+", à la date du "+d+". Il est établi à partir des réservations enregistrées dans l'application Restau du Rire Tickets, hors réservations annulées.");
+ R.synth.push(nb(S.length,"vendeur")+" "+(S.length>1?"figurent":"figure")+" dans les ventes enregistrées. Au total, "+nb(G.sold,"billet")+" "+(G.sold>1?"ont été confirmés":"a été confirmé")+" pour un montant de "+due+", et "+nb(G.pend,"billet")+" "+(G.pend>1?"sont":"est")+" en attente de confirmation.");
+ if(G.sold>0&&top)R.ana.push("Le meilleur résultat est enregistré par "+top.name+", avec "+nb(top.sold,"billet")+" confirmé"+(top.sold>1?"s":"")+", soit "+pc(top.sold,G.sold)+" des billets confirmés. "+nb(act.length,"vendeur")+" sur "+S.length+" "+(act.length>1?"ont":"a")+" au moins un billet confirmé.");
+ else R.ana.push("Aucun billet n'est encore confirmé à la date du présent rapport.");
+ if(G.pend>0)R.ana.push("Les "+nb(G.pend,"billet")+" en attente ne sont pas encore comptabilisés dans le montant confirmé, lequel n'intègre que les ventes validées.");
+ if(G.pend>0)R.reco.push("Vérifier les paiements correspondant aux "+nb(G.pend,"billet")+" en attente"+(wait.length?" (notamment "+lst(wait.map(x=>x.name),5)+")":"")+", puis les confirmer afin d'intégrer leurs montants au total.");
+ R.reco.push("Maintenir l'accompagnement des vendeurs les plus performants et encourager les autres à mobiliser leur réseau avant la date de l'événement.");
+ R.reco.push("Enregistrer chaque vente dans l'application dès l'encaissement, afin de garantir la fiabilité des chiffres présentés.");
+ R.concl.push("En conclusion, la situation arrêtée au "+d+" fait ressortir "+nb(G.sold,"billet")+" confirmé"+(G.sold>1?"s":"")+" pour un montant de "+due+", ainsi que "+nb(G.pend,"billet")+" en attente de confirmation. Nous restons à votre disposition pour toute précision complémentaire et vous remercions de votre attention.");
+ return R}
+function narGen(M){
+ const rec=amtStr(M.tot,"0 FC"),taux=M.conf?Math.round(M.used*100/M.conf):0,d=dLong(M.now),days=Object.keys(M.days).map(k=>M.days[k]),bd=days.slice().sort((a,b)=>b.n-a.n)[0],cats=Object.entries(M.cats).sort((a,b)=>b[1]-a[1]),sel=Object.entries(M.sel).filter(e=>e[1].c>0).sort((a,b)=>b[1].c-a[1].c);
+ const R={intro:[],synth:[],ana:[],reco:[],concl:[]};
+ R.intro.push("Le présent rapport a pour objet de présenter le bilan de la billetterie de "+evq(M)+", à la date du "+d+"."+(M.open?" La billetterie a ouvert le "+dLong(M.open)+".":"")+" Les chiffres proviennent des commandes enregistrées dans l'application Restau du Rire Tickets.");
+ R.synth.push("À ce jour, "+nb(M.conf,"billet")+" "+(M.conf>1?"ont été confirmés":"a été confirmé")+", pour des recettes de "+rec+". "+nb(M.pend,"billet")+" "+(M.pend>1?"sont":"est")+" en attente de confirmation et "+nb(M.canc,"billet")+" "+(M.canc>1?"ont été annulés":"a été annulé")+". "+nb(M.used,"billet")+" "+(M.used>1?"ont déjà été scannés":"a déjà été scanné")+" à l'entrée, soit un taux de présence de "+taux+" %.");
+ if(bd&&bd.n)R.ana.push("La journée la plus active est le "+dLong(bd.d)+", avec "+nb(bd.n,"billet")+" confirmé"+(bd.n>1?"s":"")+".");
+ if(cats.length)R.ana.push("La catégorie la plus demandée est « "+cats[0][0]+" », avec "+nb(cats[0][1],"billet")+", soit "+pc(cats[0][1],M.conf)+" des billets confirmés.");
+ if(sel.length)R.ana.push("Par canal de vente, "+sel[0][0]+" arrive en tête avec "+nb(sel[0][1].c,"billet")+" confirmé"+(sel[0][1].c>1?"s":"")+", soit "+pc(sel[0][1].c,M.conf)+" du total.");
+ if(!R.ana.length)R.ana.push("Aucune vente confirmée n'est encore enregistrée à la date du présent rapport.");
+ R.ana.push("Le détail chiffré est présenté dans les tableaux ci-après.");
+ if(M.pend>0)R.reco.push("Confirmer les "+nb(M.pend,"billet")+" en attente après vérification des paiements, afin d'intégrer leurs montants aux recettes.");
+ R.reco.push("Suivre le taux d'entrée lors de l'événement ("+taux+" % à ce jour) afin d'ajuster l'accueil et le contrôle des billets.");
+ R.reco.push("Enregistrer chaque vente dans l'application dès l'encaissement, afin de garantir la fiabilité des chiffres présentés.");
+ R.concl.push("En conclusion, la billetterie affiche "+nb(M.conf,"billet")+" confirmé"+(M.conf>1?"s":"")+" pour "+rec+" de recettes à la date du "+d+". Nous restons à votre disposition pour toute précision complémentaire et vous remercions de votre attention.");
+ return R}
 async function makePdf(M){
- const X=await pdfNew(M);
+ const X=await pdfNew(M),N=narGen(M),CW=X.CW;
  const rec=amtStr(M.tot,"0 FC"),taux=M.conf?Math.round(M.used*100/M.conf):0;
- X.boxes([["Billets confirm\u00E9s",fN(M.conf)],["Recettes confirm\u00E9es",rec],["En attente / annul\u00E9s",fN(M.pend)+" / "+fN(M.canc)],["Entr\u00E9s",fN(M.used)+" ("+taux+"%)"]]);
- const CW=X.CW;
+ X.h("1. Objet du rapport");N.intro.forEach(t=>X.p(t));
+ X.h("2. Synthèse générale");N.synth.forEach(t=>X.p(t));
+ X.boxes([["Billets confirmés",fN(M.conf)],["Recettes confirmées",rec],["En attente / annulés",fN(M.pend)+" / "+fN(M.canc)],["Entrés",fN(M.used)+" ("+taux+"%)"]]);
+ X.h("3. Analyse des résultats");N.ana.forEach(t=>X.p(t));
  const days=Object.keys(M.days).sort().map(k=>M.days[k]);
- if(days.length)X.table("1. Ventes par jour",[{h:"Date",w:60},{h:"Billets",w:30,a:"r"},{h:"Recettes",w:CW-90,a:"r"}],
+ if(days.length)X.table("4. Ventes par jour",[{h:"Date",w:60},{h:"Billets",w:30,a:"r"},{h:"Recettes",w:CW-90,a:"r"}],
   days.map(d=>({c:[dLong(d.d),d.n,amtStr(d.amt,"-")]})).concat([{t:1,c:["TOTAL",M.conf,rec]}]));
  const cats=Object.entries(M.cats).sort((a,b)=>b[1]-a[1]);
- if(cats.length)X.table("2. Billets par cat\u00E9gorie",[{h:"Cat\u00E9gorie",w:CW-40},{h:"Billets",w:40,a:"r"}],cats.map(([k,v])=>({c:[k,v]})).concat([{t:1,c:["TOTAL",M.conf]}]));
+ if(cats.length)X.table("5. Billets par catégorie",[{h:"Catégorie",w:CW-40},{h:"Billets",w:40,a:"r"}],cats.map(([k,v])=>({c:[k,v]})).concat([{t:1,c:["TOTAL",M.conf]}]));
  const sels=Object.keys(M.sel).sort();
- if(sels.length)X.table("3. Ventes par vendeur",[{h:"Vendeur",w:56},{h:"Confirm\u00E9s",w:24,a:"r"},{h:"En attente",w:24,a:"r"},{h:"Annul\u00E9s",w:22,a:"r"},{h:"Montant confirm\u00E9",w:CW-126,a:"r"}],
+ if(sels.length)X.table("6. Ventes par vendeur",[{h:"Vendeur",w:56},{h:"Confirmés",w:24,a:"r"},{h:"En attente",w:24,a:"r"},{h:"Annulés",w:22,a:"r"},{h:"Montant confirmé",w:CW-126,a:"r"}],
   sels.map(k=>({c:[k,M.sel[k].c,M.sel[k].p,M.sel[k].x,amtStr(M.sel[k].amt,"-")]})));
  const modes=Object.keys(M.modes).sort();
- if(modes.length)X.table("4. Ventes par mode",[{h:"Mode",w:60},{h:"Billets",w:30,a:"r"},{h:"Montant",w:CW-90,a:"r"}],modes.map(k=>({c:[k,M.modes[k].n,amtStr(M.modes[k].amt,"-")]})));
- const cols=[{h:"Date",w:17},{h:"Nom",w:29},{h:"Mode",w:14},{h:"Statut",w:17},{h:"Cat\u00E9gorie",w:28},{h:"Billets",w:10,a:"r"},{h:"Montant",w:22,a:"r"},{h:"Vendeur",w:21},{h:"Code",w:22}];
- X.table("5. D\u00E9tail des commandes ("+M.L.length+")",cols,M.L.map(o=>{const d=new Date(o.created_at);
-  return{c:[dShort(d)+" "+hm(d),o.name||"",kindL(o.kind),(STAT[o.status]||o.status||"")+(o.status==="confirmed"&&o.used?" (entr\u00E9)":""),(o.items||[]).map(i=>i.name+" x"+i.qty).join(" + "),o._n,amtStr(o.amounts,o.kind==="invitation"?"Invitation":"Gratuit"),String(o.seller||"").trim()||"Direct",code(o)]}}),{fs:7});
+ if(modes.length)X.table("7. Ventes par mode",[{h:"Mode",w:60},{h:"Billets",w:30,a:"r"},{h:"Montant",w:CW-90,a:"r"}],modes.map(k=>({c:[k,M.modes[k].n,amtStr(M.modes[k].amt,"-")]})));
+ const cols=[{h:"Date",w:17},{h:"Nom",w:29},{h:"Mode",w:14},{h:"Statut",w:17},{h:"Catégorie",w:28},{h:"Billets",w:10,a:"r"},{h:"Montant",w:22,a:"r"},{h:"Vendeur",w:21},{h:"Code",w:22}];
+ X.table("8. Détail des commandes ("+M.L.length+")",cols,M.L.map(o=>{const d=new Date(o.created_at);
+  return{c:[dShort(d)+" "+hm(d),o.name||"",kindL(o.kind),(STAT[o.status]||o.status||"")+(o.status==="confirmed"&&o.used?" (entré)":""),(o.items||[]).map(i=>i.name+" x"+i.qty).join(" + "),o._n,amtStr(o.amounts,o.kind==="invitation"?"Invitation":"Gratuit"),String(o.seller||"").trim()||"Direct",code(o)]}}),{fs:7});
+ X.h("9. Observations et recommandations");X.bul(N.reco);
+ X.h("10. Conclusion");N.concl.forEach(t=>X.p(t));
  return X.finish()}
 
 /* ---------------- EXCEL : socle commun ---------------- */
@@ -7328,7 +7386,7 @@ async function xlNew(M,W){
  const wb=new window.ExcelJS.Workbook();wb.creator="\u00C9quipe Restau du Rire Tickets";wb.created=M.now;
  const raw=s=>s.slice(s.indexOf(",")+1);
  const iLogo=wb.addImage({base64:raw(IMG.logo),extension:"jpeg"}),iSig=wb.addImage({base64:raw(IMG.sig),extension:"png"}),iStamp=wb.addImage({base64:raw(IMG.stamp),extension:"png"});
- const NC=W.length,ws=wb.addWorksheet("Rapport",{views:[{showGridLines:false}],pageSetup:{paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.6,header:.3,footer:.3}},headerFooter:{oddFooter:"&L&9"+HEAD.mail+"  \u00B7  WhatsApp : "+HEAD.tel+"&R&9Page &P / &N"}});
+ const NC=W.length,ws=wb.addWorksheet("Rapport",{views:[{showGridLines:false}],pageSetup:{paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:"1:4",margins:{left:.4,right:.4,top:.5,bottom:.6,header:.3,footer:.3}},headerFooter:{oddFooter:"&L&9"+HEAD.mail+"  \u00B7  WhatsApp : "+HEAD.tel+"&R&9Page &P / &N"}});
  ws.columns=W.map(w=>({width:w}));
  const px=W.map(w=>Math.round(w*7+5)),total=px.reduce((a,b)=>a+b,0);
  const colAt=x=>{let a=0;for(let i=0;i<NC;i++){if(x<a+px[i])return i+(x-a)/px[i];a+=px[i]}return NC-.01};
@@ -7439,12 +7497,18 @@ function offSellerModel(M0){
  return M}
 const offTitle=(i,s)=>(i+1)+". "+s.name+" - "+s.sold+" vendu"+(s.sold>1?"s":"")+(s.pend?" · "+s.pend+" en attente":"")+" · montant confirmé : "+amtStr(s.due,"0 FC");
 async function makeOffSellersPdf(M){
- const X=await pdfNew(M),CW=X.CW;
+ const X=await pdfNew(M),CW=X.CW,N=narOff(M);
+ X.h("1. Objet du rapport");N.intro.forEach(t=>X.p(t));
+ X.h("2. Synthèse générale");N.synth.forEach(t=>X.p(t));
  X.boxes([["Vendeurs",fN(M.sellers.length)],["Billets confirmés",fN(M.G.sold)],["En attente",fN(M.G.pend)],["Montant confirmé",amtStr(M.G.due,"0 FC")]]);
- X.table("Récapitulatif par vendeur",[{h:"N°",w:8},{h:"Vendeur",w:56},{h:"Confirmés",w:26,a:"r"},{h:"En attente",w:26,a:"r"},{h:"Montant confirmé",w:CW-116,a:"r"}],
+ X.h("3. Analyse des résultats");N.ana.forEach(t=>X.p(t));
+ X.table("4. Récapitulatif par vendeur",[{h:"N°",w:8},{h:"Vendeur",w:56},{h:"Confirmés",w:26,a:"r"},{h:"En attente",w:26,a:"r"},{h:"Montant confirmé",w:CW-116,a:"r"}],
   M.sellers.map((s,i)=>({c:[i+1,s.name,s.sold,s.pend,amtStr(s.due,"0 FC")]})).concat([{t:1,c:["","TOTAL",M.G.sold,M.G.pend,amtStr(M.G.due,"0 FC")]}]));
+ X.h("5. Détail des ventes par vendeur");X.p("Pour chaque vendeur, la liste des commandes enregistrées (hors annulées) est présentée ci-dessous.");
  const cols=[{h:"N°",w:8},{h:"Client",w:34},{h:"Téléphone",w:26},{h:"Date",w:28},{h:"Catégorie",w:30},{h:"Billets",w:11,a:"r"},{h:"Statut",w:19},{h:"Montant",w:CW-156,a:"r"}];
- M.sellers.forEach((s,i)=>X.table(offTitle(i,s),cols,s.orders.map((o,j)=>({c:[j+1,o.name,o.phone,o.d+" "+o.h,o.cat,o.n,o.st,o.amt]})),{fs:7.5}));
+ M.sellers.forEach((s,i)=>X.table(subT(offTitle(i,s),i),cols,s.orders.map((o,j)=>({c:[j+1,o.name,o.phone,o.d+" "+o.h,o.cat,o.n,o.st,o.amt]})),{fs:7.5}));
+ X.h("6. Observations et recommandations");X.bul(N.reco);
+ X.h("7. Conclusion");N.concl.forEach(t=>X.p(t));
  return X.finish()}
 async function makeOffSellersXlsx(M){
  const X=await xlNew(M,[6,28,16,16,28,9,13,16]),wb=X.wb;
@@ -7461,20 +7525,25 @@ async function makeOffSellersXlsx(M){
  wd.autoFilter={from:{row:1,column:1},to:{row:1,column:11}};
  return blobX(wb)}
 async function makeSellersPdf(M){
- const X=await pdfNew(M),CW=X.CW;
- X.boxes([["Vendeurs",fN(M.sellers.filter(s=>!s.none).length)],["Billets donn\u00E9s",fN(M.G.given)],["Billets vendus",fN(M.G.sold)],["\u00C0 d\u00E9poser (total)",amtStr(M.G.due,"0 FC")]]);
- X.table("R\u00E9capitulatif par vendeur",[{h:"N\u00B0",w:8},{h:"Vendeur",w:46},{h:"Donn\u00E9s",w:20,a:"r"},{h:"Vendus",w:20,a:"r"},{h:"Restants",w:22,a:"r"},{h:"\u00C0 d\u00E9poser",w:CW-116,a:"r"}],
+ const X=await pdfNew(M),CW=X.CW,N=narSellers(M);
+ X.h("1. Objet du rapport");N.intro.forEach(t=>X.p(t));
+ X.h("2. Synthèse générale");N.synth.forEach(t=>X.p(t));
+ X.boxes([["Vendeurs",fN(M.sellers.filter(s=>!s.none).length)],["Billets donnés",fN(M.G.given)],["Billets vendus",fN(M.G.sold)],["À déposer (total)",amtStr(M.G.due,"0 FC")]]);
+ X.h("3. Analyse des résultats");N.ana.forEach(t=>X.p(t));
+ X.table("4. Récapitulatif par vendeur",[{h:"N°",w:8},{h:"Vendeur",w:46},{h:"Donnés",w:20,a:"r"},{h:"Vendus",w:20,a:"r"},{h:"Restants",w:22,a:"r"},{h:"À déposer",w:CW-116,a:"r"}],
   M.sellers.map((s,i)=>({c:[i+1,s.name,s.given,s.sold,s.rest,amtStr(s.due,"0 FC")]})).concat([{t:1,c:["","TOTAL",M.G.given,M.G.sold,Math.max(M.G.given-M.G.sold,0),amtStr(M.G.due,"0 FC")]}]));
- const cols=[{h:"N\u00B0",w:8},{h:"Client",w:36},{h:"T\u00E9l\u00E9phone",w:25},{h:"Date",w:18},{h:"Heure",w:12},{h:"Cat\u00E9gorie",w:31},{h:"Billets",w:11,a:"r"},{h:"Montant",w:CW-141,a:"r"}];
+ X.h("5. Détail des ventes par vendeur");X.p("Pour chaque vendeur ayant enregistré des ventes, le détail des billets vendus est présenté ci-dessous, suivi des ventes en ligne et des invitations.");
+ const cols=[{h:"N°",w:8},{h:"Client",w:36},{h:"Téléphone",w:25},{h:"Date",w:18},{h:"Heure",w:12},{h:"Catégorie",w:31},{h:"Billets",w:11,a:"r"},{h:"Montant",w:CW-141,a:"r"}];
  const rows=l=>l.map((o,i)=>({c:[i+1,o.name,o.phone,o.d,o.h,o.cat,o.n,o.amt]}));
  const idle=[];
- M.sellers.forEach((s,i)=>{if(!s.orders.length){idle.push(s.name);return}X.table(sellerTitle(i,s),cols,rows(s.orders),{fs:7.5,note:sellerNote(s)})});
- if(idle.length)X.text("Aucune vente enregistr\u00E9e pour : "+idle.join(", ")+".");
- if(M.online.length)X.table("Billets achet\u00E9s en ligne - "+M.onlineN+" billet(s) \u00B7 "+amtStr(M.onlineAmt,"0 FC"),cols,rows(M.online),{fs:7.5,note:"Achats directs par les clients sur la billetterie en ligne (sans vendeur)."});
- else X.text("Billets achet\u00E9s en ligne : aucun pour le moment.");
+ M.sellers.forEach((s,i)=>{if(!s.orders.length){idle.push(s.name);return}X.table(subT(sellerTitle(i,s),i),cols,rows(s.orders),{fs:7.5,note:sellerNote(s)})});
+ if(idle.length)X.text("Aucune vente enregistrée pour : "+idle.join(", ")+".");
+ if(M.online.length)X.table("Billets achetés en ligne - "+M.onlineN+" billet(s) · "+amtStr(M.onlineAmt,"0 FC"),cols,rows(M.online),{fs:7.5,note:"Achats directs par les clients sur la billetterie en ligne (sans vendeur)."});
+ else X.text("Billets achetés en ligne : aucun pour le moment.");
  if(M.other.length)X.table("Invitations et autres ("+M.other.length+")",cols,rows(M.other),{fs:7.5});
+ X.h("6. Observations et recommandations");X.bul(N.reco);
+ X.h("7. Conclusion");N.concl.forEach(t=>X.p(t));
  return X.finish()}
-
 async function makeSellersXlsx(M){
  const X=await xlNew(M,[6,28,16,12,9,28,9,18]),wb=X.wb;
  X.sec("R\u00E9capitulatif par vendeur");X.th(["N\u00B0","Vendeur","Donn\u00E9s","Vendus","Restants","\u00C0 d\u00E9poser"]);
