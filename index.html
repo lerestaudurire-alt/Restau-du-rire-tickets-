@@ -1960,7 +1960,7 @@ html.dk #pub .lrb .lrt h3{color:#fff!important}
 <section id="joinCta" class="cta2 join"><div><b>Ouvrez votre espace</b><p>Un compte gratuit pour lancer vos soirées, suivre vos encaissements et garder tous vos billets au même endroit.</p></div><button class="btn or2" onclick="accMode='signup';nav('account')">Ouvrir mon espace</button></section>
 <section class="cta2"><div><b>Une soirée à lancer ?</b><p>Mettez-la en ligne et ouvrez la vente : réservation, espèces ou paiement mobile.</p></div><div class="bt2"><button class="btn or2" onclick="nav('create')">Publier mes billets</button><button class="btn or2" onclick="nav('cotcreate')">Lancer une cotisation</button></div></section>
 </div>
-<div id="seg" hidden><button onclick="nav('home')">‹ Retour</button><div class="sgm"><a data-p="reservation" onclick="nav('reservation')">Je réserve</a><a data-p="especes" onclick="nav('especes')">Cash vendeur</a><a data-p="en-ligne" onclick="nav('en-ligne')">Mobile Money</a></div></div>
+<div id="seg" hidden><button onclick="lrrBack()">‹ Retour</button><div class="sgm"><a data-p="reservation" onclick="nav('reservation')">Je réserve</a><a data-p="especes" onclick="nav('especes')">Cash vendeur</a><a data-p="en-ligne" onclick="nav('en-ligne')">Mobile Money</a></div></div>
 <div id="v-res" class="view" hidden>
 <h2 class="sec2">🎟️ Je réserve ma place</h2>
 <div id="dispo" class="card" style="text-align:center"><div class="sm">BILLETS STANDARD DISPONIBLES</div><div style="font-size:27px;font-weight:900" id="avail"></div></div>
@@ -2758,7 +2758,7 @@ async function openEvent(id){const el=$("v-ev");try{await fetch(SB+"/rest/v1/rpc
  let sold={};try{const r=await fetch(SB+"/rest/v1/rpc/event_stock",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_event:id})});if(r.ok)sold=await r.json()}catch(x){}
  EV={e,sold,qty:{},mode:inviteOn(e)?"inv":((e.modes&&e.modes.cash===false)?"online":"cash")};
  const img=evPoster(e);
- el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="nav('home')">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareEv()">${SHI}</button></div></div>
+ el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="lrrBack()">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareEv()">${SHI}</button></div></div>
  <div class="c2i${img?' pf':''}" style="border-radius:24px;overflow:hidden;margin-bottom:14px">${phLogo(e)}${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.parentNode.classList.remove('pf');this.remove()">`:""}<span class="tg3">${esc((catLabel(e.category)).toUpperCase())}</span><div class="pov">${e.owner_id?fpov(e.owner_id):""}${heartBig(e.id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(e.title)}</h2>${orgRow(e)}${chipsRow(e)}<div style="margin-bottom:12px"><button class="btn dk" style="margin:0" onclick="icsEv()">📅 Ajouter au calendrier</button> <button class="btn dk" style="margin:0 0 0 6px" onclick="inviteFriends()">👥 Inviter des amis</button> <button class="btn dk" style="margin:6px 0 0" onclick="shareAffiche()">🖼️ Affiche à partager</button></div>
  <div class="sgm" id="evtabs"><a data-t="tk" class="on" onclick="evTab('tk')">Billets</a><a data-t="dt" onclick="evTab('dt')">Détails</a></div><div id="evdt" hidden><div class="x2"><p class="evp">${ic("cal")}${esc(fmtRange(e))}</p><p class="evp">${ic("pin")}${flagOf(e.country)} ${esc([e.venue,e.city].filter(Boolean).join(", "))}</p>${e.description?`<p class="sm dsc" style="margin-top:8px;white-space:pre-line">${esc(e.description)}</p>${e.description.length>220?`<button class="more" onclick="const p=this.previousElementSibling;p.classList.toggle('open');this.textContent=p.classList.contains('open')?'Réduire':'Lire la suite'">Lire la suite</button>`:""}`:""}</div></div>
@@ -3275,7 +3275,7 @@ async function openCot(id){const el=$("v-cot");el.innerHTML='<p class="sm" style
  COTCUR=c;await loadCotTotals();let dn=[];try{const r=await fetch(SB+"/rest/v1/rpc/cotisation_donors",{method:"POST",headers:H("",{"Content-Type":"application/json"}),body:JSON.stringify({p_id:id})});if(r.ok)dn=await r.json()}catch(e){}
  const t=COTT[id]||{collected:0,n:0},p=cotPct(c),img=cotImg(c),dl=c.deadline?Math.ceil((new Date(c.deadline)-Date.now())/864e5):null,closed=c.status!=="published"||(dl!==null&&dl<0),cur=c.currency==="USD"?[1,5,10,50]:[1000,5000,10000,50000];
  const pn=(c.pay_numbers||[]).map(x=>`<div class="pnl"><b>${esc(x.op)}</b><span>${esc(x.number)}</span><small>${esc(x.name||"")}</small><button class="ab" onclick="cpNum('${esc(x.number)}')">📋 Copier</button></div>`).join("");
- el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="nav('cotis')">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareCot()">${SHI}</button></div></div>
+ el.innerHTML=`<div class="evbar"><button class="chp" style="background:#fff;color:var(--ink);border-color:#e6dfd6" onclick="lrrBack()">‹ Retour</button><div class="ia"><button class="ib" aria-label="Partager" onclick="shareCot()">${SHI}</button></div></div>
  <div class="c2i" style="border-radius:24px;overflow:hidden;margin-bottom:14px"><img class="lgo" alt="" src="${$("mainLogo").src}">${img?`<img class="pic" src="${esc(img)}" alt="" onerror="this.remove()">`:""}<span class="tg3">${esc(tr(cotLab(c.category)).toUpperCase())}</span><div class="pov">${c.owner_id?fpov(c.owner_id):""}${heartBig("c:"+id).replace('class="ib','class="ib dk')}</div></div>
  <h2 class="sec2" style="margin-top:0">${esc(c.title)}</h2>${orgRow(c)}
  <div class="x2"><div class="amt" style="margin-top:0">${mny(t.collected,c.currency)}</div><small class="sm">${tr("récoltés")} · objectif ${mny(c.goal,c.currency)}</small><div class="pb"><i style="width:${p}%"></i><b>${p}%</b></div><p class="sm" style="margin-top:22px">👥 ${t.n} contributeur${t.n>1?"s":""}${dl===null?"":dl>=0?" · ⏳ "+dl+" jour"+(dl>1?"s":"")+" restant"+(dl>1?"s":""):" · 🔒 terminée"}</p></div>
@@ -8918,36 +8918,36 @@ html.dk #v-acc .lr-pf{border-color:#17211f;background-color:#223330}
    card(head("Ouvrir mon espace",SWL)+
     `<button type="button" class="lr-ty" onclick="LRRA.pick('buyer')"><span class="ic">${ico.tk}</span><span><b>Visiteur</b><small>J'achète des billets</small></span></button>`+
     `<button type="button" class="lr-ty" onclick="LRRA.pick('organizer')"><span class="ic">${ico.plus}</span><span><b>Organisateur</b><small>Je publie des événements</small></span></button>`+
-    `<p class="lr-note">Un compte vous permet d'acheter vos billets ou de publier vos événements et de suivre vos ventes en direct.</p>`);
+    `<p class="lr-note">Un compte vous permet d'acheter vos billets ou de publier vos événements et de suivre vos ventes en direct.</p>`+`<button type="button" class="lr-lk" onclick="LRRA.login()">‹ Retour</button>`);
   }else if(S.step==="buyer"){
    card(head("Compte visiteur",SWL)+fld("remail","E-mail",ico.mail,"email","nom@exemple.com",d.email,"username")+pwf("rpw","Mot de passe","10 caractères : lettres, chiffres et @#!",S.pw)+
-    go("Créer mon espace","LRRA.buyer()")+`<button type="button" class="lr-lk" onclick="LRRA.type()">Changer de type de compte</button>`);
+    go("Créer mon espace","LRRA.buyer()")+`<button type="button" class="lr-lk" onclick="LRRA.type()">‹ Retour</button>`);
   }else if(S.step==="org1"){
    card(steps(1)+fld("remail","E-mail",ico.mail,"email","nom@exemple.com",d.email,"username")+
     fld("rwa","Numéro WhatsApp",ico.phone,"tel","243990000000",d.wa,"tel")+
     pwf("rpw","Mot de passe","10 caractères : lettres, chiffres et @#!",S.pw)+
     fld("rorg","Nom de l'organisateur",ico.user,"text","Ex : École régionale d'humour",d.org,"organization")+
     `<div class="lr-lb"><span>Photos de votre page</span></div><div class="lr-cov"><label class="lr-cv" id="rcv">${ico.cam}<span>Photo de couverture</span><input type="file" accept="image/*" onchange="LRRA.pic('cover',this)"></label><label class="lr-pf" id="rpf">${ico.cam}<input type="file" accept="image/*" onchange="LRRA.pic('logo',this)"></label><span class="lr-pl">Photo de profil</span></div>`+
-    go("Continuer","LRRA.next1()")+`<button type="button" class="lr-lk" onclick="LRRA.type()">Changer de type de compte</button>`);
+    go("Continuer","LRRA.next1()")+`<button type="button" class="lr-lk" onclick="LRRA.type()">‹ Retour</button>`);
    paint("cover");paint("logo");
   }else if(S.step==="org2"){
    card(steps(2)+fld("raddr","Adresse complète",ico.pin,"text","Avenue, numéro, quartier, commune",d.addr,"street-address")+
     fld("rcity","Ville",ico.pin,"text","Ex : Bukavu",d.city,"address-level2")+
     `<div class="lr-lb"><span>Pays</span></div><div class="lr-f">${ico.globe}<select id="rcountry">${CT.map(function(c){return `<option value="${E(c)}"${(d.country||"RD Congo")===c?" selected":""}>${(window.LRRFlag?LRRFlag(c):"")} ${E(c)}</option>`}).join("")}</select></div>`+
     `<div class="lr-lb"><span>Description de votre organisation</span></div><textarea id="rbio" class="lr-ta" maxlength="3000" placeholder="Présentez votre organisation, vos événements et votre public." oninput="LRRA.cnt()">${E(d.bio||"")}</textarea><p class="lr-cnt" id="rcnt"></p>`+
-    go("Continuer","LRRA.next2()")+`<button type="button" class="lr-lk" onclick="LRRA.back()">Retour</button>`);
+    go("Continuer","LRRA.next2()")+`<button type="button" class="lr-lk" onclick="LRRA.back()">‹ Retour</button>`);
    LRRA.cnt();
   }else if(S.step==="send"){
    card(steps(3)+head("Confirmation",`Votre compte organisateur sera créé avec <b>${E(d.email)}</b>.`)+
     `<p class="lr-note" style="margin:0 0 6px">Aucun compte n'est ouvert sans confirmation : touchez le bouton ci-dessous, un code vous sera envoyé par e-mail et vous devrez le saisir pour valider la création.</p>`+
-    go("Envoyer le code par e-mail","LRRA.sendCode()")+`<button type="button" class="lr-lk" onclick="LRRA.back2()">Retour</button>`);
+    go("Envoyer le code par e-mail","LRRA.sendCode()")+`<button type="button" class="lr-lk" onclick="LRRA.back2()">‹ Retour</button>`);
   }else if(S.step==="code"){
    var org=S.type==="organizer";
    card((org?steps(3):"")+head("Confirmation",`Nous avons envoyé un code à <b>${E(d.email)}</b>.`)+
     `<div class="lr-lb"><span>Code de confirmation</span></div><input id="rcode" class="lr-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="······" oninput="this.value=this.value.replace(/\\D/g,'')">`+
     go("Confirmer mon compte","LRRA.verify()")+
     `<button type="button" class="lr-lk" id="rres" onclick="LRRA.resend()"${S.cd>0?" disabled":""}>${S.cd>0?"Renvoyer le code ("+S.cd+" s)":"Renvoyer le code"}</button>`+
-    `<button type="button" class="lr-lk" onclick="LRRA.restart()">Changer d'e-mail</button>`+
+    `<button type="button" class="lr-lk" onclick="LRRA.backCode()">‹ Retour</button>`+`<button type="button" class="lr-lk" onclick="LRRA.restart()">Changer d'e-mail</button>`+
     `<p class="lr-note">Si le message n'arrive pas, vérifiez vos courriers indésirables.</p>`);
   }else if(S.step==="ok"){
    var t=S.org?(S.cert?"Votre compte organisateur est créé et certifié. Votre page est en ligne avec votre profil.":"Votre compte organisateur est créé. Complétez votre profil depuis Mon espace."):"Votre compte est créé. Vous pouvez acheter vos billets.";
@@ -9044,7 +9044,7 @@ html.dk #v-acc .lr-pf{border-color:#17211f;background-color:#223330}
    if(!S.pw||!S.d.email){S.step="org1";draw();return}
    send({account_type:"organizer",org_name:S.d.org,whatsapp:S.d.wa,country:S.d.country,city:S.d.city},S.d.email,S.pw)
   },
-  back2:function(){S.step="org2";draw()},
+  back2:function(){S.step="org2";draw()},   backCode:function(){S.step=S.type==="organizer"?"send":"buyer";draw()},
   verify:async function(){
    var c=gv("rcode").replace(/\D/g,"");
    if(c.length<6)return msg("Entrez le code reçu par e-mail.");
@@ -10076,5 +10076,124 @@ loadAds();setInterval(loadAds,150000);
 setTimeout(maybePop,6000);setInterval(maybePop,90000);
 })();
 
+</script>
+<style id="lrr-back-css">
+#lrrBack{position:fixed;left:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100020;display:none;align-items:center;gap:6px;border:0;border-radius:999px;padding:11px 18px 11px 13px;background:#1c1b2e;color:#fff;font:800 15px system-ui,Arial,sans-serif;box-shadow:0 8px 22px rgba(0,0,0,.35);cursor:pointer;-webkit-tap-highlight-color:transparent}
+#lrrBack.on{display:flex}
+#lrrBack:active{transform:scale(.96)}
+#lrrBack b{font-size:24px;line-height:1;margin-top:-3px;font-weight:700}
+@media print{#lrrBack{display:none!important}}
+</style>
+<script>
+/* ===== Retour automatique partout : pages, panneaux, menu, bouton retour du téléphone, touche Échap ===== */
+(function(){
+"use strict";
+var TXT={fr:"Retour",en:"Back",ln:"Zonga",sw:"Rudi"};
+function label(){try{return TXT[lang]||TXT.fr}catch(e){return TXT.fr}}
+function G(i){return document.getElementById(i)}
+function isOn(e){if(!e||e.hidden)return false;var c=getComputedStyle(e);return c.display!=="none"&&c.visibility!=="hidden"}
+function call(n){try{if(typeof window[n]==="function"){window[n]();return true}}catch(e){}return false}
+
+/* Panneaux superposés. Chacun : id + fonction de fermeture. Le plus haut à l'écran (z-index) est fermé en premier. */
+var OV=[
+ ["p6mod",function(e){e.remove()}],
+ ["a25sp",function(e){call("a25ClosePop")||e.remove()}],
+ ["pstm",function(e){call("pstClose")||e.remove()}],
+ ["plv",function(e){var x=G("plx");if(x)x.click();else e.remove()}],
+ ["aiSh",function(e){e.hidden=true;var f=G("aiFab");if(f)f.hidden=false}],
+ ["shs",function(e){e.hidden=true}],
+ ["ckm",function(e){e.hidden=true}],
+ ["ck",function(e){call("ckClose")||e.remove()}],
+ ["ea",function(e){call("eaClose")||e.remove()}],
+ ["grpov",function(e){call("grpClose")||e.remove()}],
+ ["jvov",function(e){call("jvClose")||e.remove()}],
+ ["mapov",function(e){call("mapClose")||e.remove()}],
+ ["p5m",function(e){call("p5Close")||(e.style.display="none")}],
+ ["odb",function(e){call("odbClose")||(e.style.display="none")}],
+ ["mo",function(e){if(!call("payStop")&&!call("closeMo"))e.classList.remove("on")}],
+ ["mdr",function(e){call("closeMenu")||(e.hidden=true)}]
+];
+function zi(e){var z=parseInt(getComputedStyle(e).zIndex,10);return isNaN(z)?0:z}
+function topOv(){
+ var best=null;
+ for(var i=0;i<OV.length;i++){
+  var e=G(OV[i][0]);
+  if(!isOn(e))continue;
+  var z=zi(e);
+  if(!best||z>best.z||(z===best.z&&(best.e.compareDocumentPosition(e)&4)))best={o:OV[i],z:z,e:e};
+ }
+ return best&&best.o;
+}
+function closeOv(o){
+ var e=G(o[0]);
+ try{o[1](e)}catch(x){try{if(e)e.style.display="none"}catch(y){}}
+ try{document.body.style.overflow=""}catch(x){}
+}
+
+function pageName(){return (location.hash||"").slice(1).split("/")[0]}
+function adminOn(){var a=G("adm");return !!a&&!a.hidden}
+function isHome(){
+ var p=pageName();
+ if(adminOn())return false;
+ if(!p||p==="home")return true;
+ try{return !PAGES[p]}catch(e){return false}
+}
+
+/* Pile de navigation : sert à savoir s'il y a une page précédente dans l'application */
+var stack=[location.hash];
+addEventListener("hashchange",function(){
+ var h=location.hash;
+ if(stack.length>1&&stack[stack.length-2]===h)stack.pop();
+ else if(stack[stack.length-1]!==h){stack.push(h);if(stack.length>60)stack.shift()}
+ refresh();
+});
+
+var PARENT={cotisation:"cotis",cotcreate:"cotis",cotmanage:"cotis"};
+function back(){
+ var o=topOv();
+ if(o){closeOv(o);setTimeout(refresh,30);return}
+ if(adminOn()){try{goPublic()}catch(e){location.hash=""}setTimeout(refresh,30);return}
+ /* Retour vers la page d'où l'on vient (Mon espace, Mes billets, accueil...) ; sinon page parent */
+ if(stack.length>1){history.back();return}
+ var t=PARENT[pageName()]||"home";
+ try{nav(t)}catch(e){location.hash=t==="home"?"":"#"+t}
+}
+
+/* Bouton flottant */
+var btn=document.createElement("button");
+btn.id="lrrBack";btn.type="button";
+btn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();back()});
+window.lrrBack=back;
+document.body.appendChild(btn);
+
+/* Le bouton retour du téléphone ferme d'abord le panneau ouvert, au lieu de quitter la page */
+var pushed=false,ignore=0;
+function refresh(){
+ var o=topOv();
+ if(o&&!pushed){try{history.pushState({lrrOv:1},"",location.href);pushed=true}catch(e){}}
+ else if(!o&&pushed){pushed=false;if(history.state&&history.state.lrrOv){ignore++;history.back()}}
+ var kiosk=isOn(G("kioskOv"));
+ var show=!kiosk&&(!!o||!isHome());
+ var l=label();
+ if(btn.getAttribute("data-l")!==l){btn.setAttribute("data-l",l);btn.innerHTML="<b>‹</b><span>"+l+"</span>";btn.setAttribute("aria-label",l)}
+ btn.classList.toggle("on",show);
+}
+addEventListener("popstate",function(){
+ if(ignore>0){ignore--;return}
+ if(pushed){pushed=false;var o=topOv();if(o)closeOv(o);setTimeout(refresh,40)}
+ else if(history.state&&history.state.lrrOv&&!topOv()){history.back()}
+ setTimeout(refresh,40);
+});
+
+addEventListener("keydown",function(e){if(e.key==="Escape"){var o=topOv();if(o){closeOv(o);setTimeout(refresh,30)}}});
+
+/* Mise à jour automatique dès qu'une page ou un panneau s'ouvre / se ferme */
+var t=null;
+function later(){if(t)return;t=setTimeout(function(){t=null;refresh()},80)}
+try{new MutationObserver(later).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:["class","style","hidden"]})}catch(e){setInterval(refresh,400)}
+document.addEventListener("click",function(){setTimeout(refresh,120)},true);
+setInterval(refresh,1500);
+refresh();
+})();
 </script>
 </body></html>
