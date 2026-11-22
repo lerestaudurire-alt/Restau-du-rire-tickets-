@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><script>window.APP_SLOGAN="Réservez en confiance, vivez l'instant.";</script>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover"><script>window.APP_SLOGAN="Réservez en confiance, vivez l'instant.";</script>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://translate.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net https://translate.googleapis.com https://translate-pa.googleapis.com; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(self), geolocation=(), microphone=(), payment=(self)">
@@ -2043,7 +2043,7 @@ html.dk #pub .dp #secb .sec-b span{background:#17211f!important;border-color:#2d
 <div class="ftr-col ftr-about"><h3>Qui sommes-nous ?</h3><p>Né à Bukavu, Restau du Rire Tickets est la billetterie en ligne des soirées d'humour et de spectacle, dont le gala Le Restau du Rire. Cet espace a été pensé pour vous : repérer une soirée, réserver sa place, régler depuis son téléphone et entrer avec un simple QR code. Vous êtes artiste, promoteur ou association ? Mettez votre soirée en ligne et suivez vos encaissements en direct.</p><p>Prochain grand rendez-vous : l'Édition 1.5, le 27 décembre 2026 à la Salle Concordia. « Réservez en confiance, vivez l'instant. »</p></div>
 <div class="ftr-col" id="contact"><h3>Contact</h3>
 <div class="ftr-cta"><a class="w" href="https://wa.me/243902704475" target="_blank" rel="noopener"><i class="ftr-ic ic-wa" aria-hidden="true"></i>WhatsApp</a><a href="tel:+243902704475"><i class="ftr-ic ic-tel" aria-hidden="true"></i>Appeler</a></div>
-<ul class="ftr-ct"><li><i class="ftr-ic ic-gm" aria-hidden="true"></i><a href="mailto:support.restauduriretickets@gmail.com">support.restauduriretickets@gmail.com</a></li><li><i class="ftr-ic ic-tel" aria-hidden="true"></i><a href="tel:+243902704475">+243 902 704 475</a></li><li><i class="ftr-ic ic-loc" aria-hidden="true"></i><span>Bukavu, RD Congo</span></li></ul></div>
+<ul class="ftr-ct"><li><i class="ftr-ic ic-gm" aria-hidden="true"></i><a href="mailto:support.restauduriretickets@gmail.com">support.restauduriretickets@gmail.com</a></li><li><i class="ftr-ic ic-tel" aria-hidden="true"></i><a href="tel:+243902704475">+243 902 704 475</a></li><li><i class="ftr-ic ic-loc" aria-hidden="true"></i><span><b>Siège :</b> Bureau de l'École Régionale d'Humour (ECOD'HUM)<br>Centre Culturel Delia Ndaro<br>Avenue du Lac N°55, La Botte, CRF/Fonds Social,<br>Bukavu, Ibanda, RDC</span></li></ul></div>
 <div class="ftr-col ftr-nl"><h3>Newsletter</h3><p>Les nouvelles soirées, les bons plans et les cotisations, directement dans votre boîte mail.</p><form onsubmit="return nlSub(event)"><input id="nle" type="email" placeholder="votre@email.com" autocomplete="email" required><button aria-label="Je m'inscris">→</button></form><small id="nlm"></small></div>
 </div>
 <div class="ftr-box" id="ftrbox">
@@ -6625,10 +6625,10 @@ function build(o){
   const badge=off?'<span class="vf" title="Organisateur officiel">'+VSVG+'</span>':'<span class="vf" data-ovf="'+esc(o)+'" title="Organisateur certifié"'+((window.VER_&&window.VER_.has(o))?'':' hidden')+'>'+VSVG+'</span>';
   return '<div class="op" style="--oa:'+acc+'">'+
    (rec&&rec.is_public===false?'<div class="op-next" style="margin:0 0 10px" onclick="nav(\'orgedit\')"><span>🔒</span><div>Votre page est hors ligne<small>Touchez pour la mettre en ligne</small></div></div>':'')+
-   '<div class="op-ban">'+(ban?'<img alt="" src="'+esc(ban)+'" onerror="this.remove()">':'')+
+   '<div class="op-ban" onclick="opZoom(event,this)">'+(ban?'<img alt="" src="'+esc(ban)+'" onerror="this.remove()">':'')+
      '<button class="op-ib l" aria-label="Retour" onclick="history.length>1?history.back():nav(\'home\')">←</button>'+
      '<button class="op-ib r" aria-label="Partager" onclick="opShare()">⤴</button></div>'+
-   '<div class="op-seal"><span>'+esc(nm.trim().slice(0,2).toUpperCase())+'</span>'+(logo?'<img alt="" src="'+esc(logo)+'" onerror="this.remove()">':'')+'</div>'+
+   '<div class="op-seal" onclick="opZoom(event,this)"><span>'+esc(nm.trim().slice(0,2).toUpperCase())+'</span>'+(logo?'<img alt="" src="'+esc(logo)+'" onerror="this.remove()">':'')+'</div>'+
    '<div class="op-nm">'+esc(nm)+badge+'</div>'+
    '<div class="op-meta"><span>Organisateur</span>'+'</div>'+
    stats+bio+infoHtml+soc+act+nextHtml+
@@ -9548,12 +9548,23 @@ window.eaDraw=function(){
 };
 })();
 </script>
-<script>/* Agrandir la photo de profil et la couverture d'un organisateur (comme Facebook) */
+<style id="lrr-fix2">
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
+#v-org .op-seal,#v-org .op-ban{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#v-org .op-nm .vf{display:inline-flex!important;align-items:center;justify-content:center;width:24px!important;height:24px!important;margin-left:7px;border-radius:50%!important;background:#1d9bf0!important;padding:0!important;overflow:hidden;position:static!important;vertical-align:-5px}
+#v-org .op-nm .vf[hidden]{display:none!important}
+#v-org .op-nm .vf svg{width:100%!important;height:100%!important;display:block;border-radius:50%}
+.cvf{border-radius:50%;overflow:hidden}
+</style>
+<script>/* Agrandir la photo de profil et la couverture (comme Facebook) + pas de zoom de l'application */
 (function(){var z=null;function close(){if(z){z.remove();z=null;document.removeEventListener("keydown",esc)}}function esc(e){if(e.key==="Escape")close()}
-function open(src,seal){close();z=document.createElement("div");z.id="opzoom";z.style.cssText="position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)";
-var im=document.createElement("img");im.src=src;im.alt="";im.style.cssText="max-width:100%;max-height:92vh;object-fit:contain;"+(seal?"width:min(92vw,92vh);height:min(92vw,92vh);border-radius:50%;object-fit:cover;":"");
-var x=document.createElement("button");x.type="button";x.textContent="✕";x.setAttribute("aria-label","Fermer");x.style.cssText="position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;width:42px;height:42px;border:0;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;font-size:20px";
-z.appendChild(im);z.appendChild(x);z.onclick=close;document.body.appendChild(z);document.addEventListener("keydown",esc)}
-document.addEventListener("click",function(e){var t=e.target;if(!t||!t.closest)return;var h=t.closest("#v-org .op-seal, #v-org .op-ban");if(!h||t.closest("button,a"))return;var im=h.querySelector("img");if(!im||!im.src)return;e.preventDefault();open(im.src,h.classList.contains("op-seal"))},true)})();
+window.opZoom=function(ev,h){try{var t=ev&&ev.target;if(t&&t.closest&&t.closest("button,a"))return;var im=h.querySelector("img");if(!im||!im.src)return;var seal=h.classList.contains("op-seal");close();
+z=document.createElement("div");z.id="opzoom";z.style.cssText="position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;cursor:pointer";
+var i2=document.createElement("img");i2.src=im.src;i2.alt="";i2.style.cssText=seal?"width:min(92vw,80vh);height:min(92vw,80vh);border-radius:50%;object-fit:cover;":"max-width:100%;max-height:90vh;object-fit:contain;";
+var x=document.createElement("button");x.type="button";x.textContent="✕";x.setAttribute("aria-label","Fermer");x.style.cssText="position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:20px";
+z.appendChild(i2);z.appendChild(x);z.onclick=close;document.body.appendChild(z);document.addEventListener("keydown",esc)}catch(e){}};
+["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
+document.addEventListener("touchmove",function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
+document.addEventListener("wheel",function(e){if(e.ctrlKey)e.preventDefault()},{passive:false})})();
 </script>
 </body></html>
