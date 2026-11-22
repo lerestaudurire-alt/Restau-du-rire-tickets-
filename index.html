@@ -7545,6 +7545,9 @@ window.partnerPDF=async function(){
   X.h("8 bis. Types d'événement, annulation et pourcentage non remboursé");
   X.p("Voici les règles propres au choix du type d'événement et à l'annulation, reprises dans la Charte des organisateurs, les Conditions d'utilisation et les Règles de vente :");
   X.bul(["Trois types d'événement : à la création, le partenaire choisit payant, gratuit ou sur invitation. Payant : catégories de billets, prix et nombre de places. Gratuit : seulement le nombre de places ; chaque personne reçoit son QR code. Sur invitation : nombre de places, design et texte de l'invitation hébergés dans l'application ; chaque invité reçoit son QR code. Pour un événement gratuit ou sur invitation, il n'y a pas de catégories.","La réservation sans paiement (place gardée contre paiement ultérieur) est supprimée.","Annulation validée par l'équipe : le partenaire ne peut pas annuler seul. Il envoie sa demande avec le motif ; l'équipe la confirme depuis un espace dédié de son Dashboard. Tant qu'elle n'est pas confirmée, l'événement reste affiché normalement.","Après confirmation, l'événement s'affiche ANNULÉ sur la page d'accueil. L'annulation n'est pas envoyée dans les notifications et les ventes sont fermées.","Billets déjà achetés : ils restent enregistrés. Ce qui concerne les acheteurs reste entre le partenaire et ses clients : il choisit de reprogrammer une nouvelle date (les anciens billets restent valables) ou de les rembourser lui-même.","Pourcentage non remboursé : en cas d'annulation, la commission de 15 % n'est pas remboursée ; elle reste acquise à la plateforme, même en cas de reprogrammation ou de remboursement des clients par le partenaire.","Séparation des espaces : les outils réservés à l'équipe ne sont jamais visibles dans l'espace du partenaire."]);
+  X.h("8 ter. Organisateurs, profil et annonces");
+  X.p("Voici les règles liées aux comptes organisateurs et aux annonces de l'application :");
+  X.bul(["Jusqu'à 5 organisateurs par e-mail : une même adresse e-mail peut gérer jusqu'à 5 organisateurs différents. Tous apparaissent dans le tableau de bord (Gestion pro > Mes organisateurs).","Annulation ciblée : le partenaire peut demander l'annulation d'un seul de ses événements, au choix ; les autres événements et leurs billets restent inchangés. Chaque annulation est confirmée par l'équipe et la commission de la plateforme n'est pas remboursée.","Profil à la création : pour chaque événement, le partenaire renseigne la biographie de l'organisateur, sa photo de profil (logo), sa photo de couverture, ses contacts et son adresse séparée en pays, ville, commune, quartier et avenue. Ces informations s'affichent sur la page de l'événement.","Annonces : la cloche est remplacée par la rubrique Annonces (annonce, promotion, actualité, sponsorisé). Une publicité sponsorisée doit comporter une affiche et une description ; elle est validée par l'équipe, puis s'affiche en plein écran pendant 30 secondes."]);
   X.h("9. Ce que nous attendons du partenaire");
   X.bul(["Les informations complètes de l'événement : titre, date, lieu, programme, tarifs et visuels.","Un interlocuteur désigné pour le suivi de l'événement, joignable sur WhatsApp ou par e-mail.","Des informations de paiement exactes pour les reversements.","Une réponse rapide aux questions qui demandent sa décision (prix, report, annulation, remboursement).","Le respect de la charte des organisateurs, des Conditions d'utilisation et des Règles de vente de l'application."]);
   X.h("10. Durée, modalités et convention");
@@ -9675,5 +9678,394 @@ window.admCancelDecide=async function(id,ok){const note=prompt(ok?"Message pour 
 try{const _le2=loadExtras;loadExtras=async function(){const r=await _le2.apply(this,arguments);try{admCancelLoad()}catch(x){}return r}}catch(x){}
 setInterval(()=>{try{if(TEAMV())admCancelLoad()}catch(e){}},15000);setTimeout(()=>{try{if(TEAMV())admCancelLoad()}catch(e){}},3000);
 })();
+</script>
+<script>
+/* ===== V25 : organisateurs (5 par e-mail) + profil à la création + annonces / sponsorisé ===== */
+(function(){
+"use strict";
+const g=id=>document.getElementById(id);
+const E=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const UID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const slug=n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const me=()=>{try{return typeof myId==="function"?(myId()||""):""}catch(e){return""}};
+const isTeam=()=>{try{return role==="admin"}catch(e){return false}};
+const pub=p=>p?SB+"/storage/v1/object/public/affiches/"+p:"";
+const url=u=>{try{return typeof safeUrl==="function"?safeUrl(u):""}catch(e){return""}};
+const fd=d=>{try{return new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
+const KINDS={annonce:["📣","Annonce"],promotion:["🏷️","Promotion"],actualite:["📰","Actualité"],sponsorise:["⭐","Sponsorisé"]};
+const MAXORG=5;
+
+/* ---------- styles ---------- */
+const css=document.createElement("style");
+css.textContent=`
+#p5bell{display:none!important}
+.a25b{position:relative;border:0;background:transparent;font-size:20px;cursor:pointer;padding:6px 8px}
+.a25b i{position:absolute;top:0;right:0;background:#d71920;color:#fff;border-radius:999px;font:700 10px/1 system-ui;padding:3px 5px;font-style:normal}
+.a25t{display:flex;gap:6px;overflow-x:auto;margin:8px 0;padding-bottom:4px}
+.a25t button{flex:none;border:1.5px solid #dfe7e4;background:#fff;color:#33413e;border-radius:999px;padding:7px 12px;font:600 12px system-ui;cursor:pointer}
+.a25t button.on{background:#0e2f2b;color:#fff;border-color:#0e2f2b}
+.a25c{border:1px solid #e3ebe8;border-radius:14px;margin:10px 0;overflow:hidden;background:#fff;color:#000;text-align:left}
+.a25c img.p{display:block;width:100%;max-height:200px;object-fit:cover}
+.a25c .bd{padding:10px 12px}
+.a25c .k{font:700 11px system-ui;color:#0d6b5c;text-transform:uppercase;letter-spacing:.4px}
+.a25c.sp .k{color:#b45309}
+.a25c b.t{display:block;font-size:15px;margin:3px 0}
+.a25c small{display:block;color:#5b6b67;margin-top:3px;font-size:12px}
+.a25c .go{margin-top:8px;border:0;background:#0e2f2b;color:#fff;border-radius:10px;padding:8px 12px;font:600 13px system-ui;cursor:pointer}
+.a25f label{display:block;font:600 12px system-ui;margin:10px 0 4px}
+.a25f input,.a25f textarea,.a25f select{width:100%;box-sizing:border-box}
+.a25k{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0}
+.a25k button{border:1.5px solid #dfe7e4;background:#fff;border-radius:12px;padding:10px;font:600 13px system-ui;cursor:pointer;text-align:left}
+.a25k button.on{border-color:#0e2f2b;background:#eaf5f2}
+.a25k button small{display:block;font-weight:400;color:#5b6b67;margin-top:2px;font-size:11px}
+/* publication sponsorisée plein écran, 30 secondes */
+#a25sp{position:fixed;inset:0;z-index:100000;background:rgba(5,15,13,.72);display:flex;align-items:flex-end;justify-content:center;animation:a25f .35s ease both}
+#a25sp .cd{width:100%;max-width:460px;background:#fff;color:#000;border-radius:22px 22px 0 0;overflow:hidden;animation:a25u .5s cubic-bezier(.2,.9,.3,1.1) both;box-shadow:0 -10px 40px rgba(0,0,0,.35);max-height:92vh;display:flex;flex-direction:column}
+#a25sp .pr{height:4px;background:#e3ebe8}
+#a25sp .pr i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#f59e0b,#d71920);transform-origin:left;animation:a25p 30s linear forwards}
+#a25sp .hd{display:flex;align-items:center;gap:8px;padding:10px 14px}
+#a25sp .hd b{font-size:13px}#a25sp .hd span{font:700 10px system-ui;background:#fef3c7;color:#92400e;border-radius:6px;padding:3px 6px}
+#a25sp .hd em{margin-left:auto;font:600 12px system-ui;color:#5b6b67;font-style:normal}
+#a25sp .hd button{border:0;background:#eef3f1;border-radius:999px;width:30px;height:30px;font-size:16px;cursor:pointer;opacity:.35;pointer-events:none;transition:opacity .3s}
+#a25sp .hd button.on{opacity:1;pointer-events:auto}
+#a25sp .im{overflow:hidden;background:#000;flex:0 1 auto}
+#a25sp .im img{display:block;width:100%;max-height:52vh;object-fit:cover;animation:a25z 30s ease-out forwards}
+#a25sp .tx{padding:12px 16px 4px;overflow:auto}
+#a25sp .tx b{display:block;font-size:18px;margin-bottom:4px}#a25sp .tx p{margin:0;font-size:14px;line-height:1.45;color:#33413e;white-space:pre-line}
+#a25sp .cta{margin:12px 16px 16px;border:0;border-radius:14px;padding:14px;font:700 15px system-ui;color:#fff;background:linear-gradient(135deg,#0d6b5c,#0e2f2b);cursor:pointer;position:relative;overflow:hidden;animation:a25g 1.8s ease-in-out infinite}
+#a25sp .cta:after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);animation:a25s 2.4s ease-in-out infinite}
+@keyframes a25f{from{opacity:0}to{opacity:1}}
+@keyframes a25u{from{transform:translateY(100%)}to{transform:none}}
+@keyframes a25p{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@keyframes a25z{from{transform:scale(1)}to{transform:scale(1.08)}}
+@keyframes a25g{0%,100%{transform:scale(1)}50%{transform:scale(1.025)}}
+@keyframes a25s{0%{left:-60%}60%,100%{left:130%}}
+/* profil organisateur à la création */
+#o25{margin:16px 0;padding:12px;border:1.5px solid #dfe7e4;border-radius:16px;background:#f8fbfa}
+#o25 h3{margin:0 0 4px}#o25 label{display:block;font:600 12px system-ui;margin:10px 0 4px}
+#o25 input,#o25 textarea,#o25 select{width:100%;box-sizing:border-box}
+#o25 .ad{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#o25 .ad .full{grid-column:1/-1}
+#o25 .sm{font-size:12px;color:#5b6b67}
+.o25card{margin:12px 0;border:1px solid #e3ebe8;border-radius:16px;overflow:hidden;background:#fff;color:#000}
+.o25card img{display:block;width:100%;max-height:150px;object-fit:cover}
+.o25card .bd{padding:10px 12px;font-size:13px;line-height:1.45}.o25card .bd b{display:block;font-size:14px;margin-bottom:4px}
+.o25card .bd p{margin:4px 0}.o25card .bd a{color:#0d6b5c;font-weight:600}
+.o25g{border:1px solid #e3ebe8;border-radius:14px;margin:10px 0;padding:10px 12px;background:#fff;color:#000}
+.o25g h4{margin:0 0 6px;font-size:15px}.o25g .ev{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:8px 0;border-top:1px solid #eef3f1;font-size:13px}
+.o25g .ev button{border:0;background:#fee2e2;color:#991b1b;border-radius:10px;padding:7px 10px;font:600 12px system-ui;cursor:pointer;flex:none}
+.o25b{display:inline-block;font:700 10px system-ui;border-radius:6px;padding:2px 6px;margin-left:4px}
+.o25b.r{background:#fee2e2;color:#991b1b}.o25b.o{background:#fef3c7;color:#92400e}.o25b.v{background:#dcfce7;color:#166534}
+`;
+document.head.appendChild(css);
+
+/* =====================================================
+   1) ORGANISATEURS : 5 maximum par e-mail
+   ===================================================== */
+function mineEv(){
+  const my=me(),seen=new Map();
+  [...(typeof MYEV!=="undefined"&&MYEV||[]),...(typeof DBEV!=="undefined"&&DBEV||[])].forEach(e=>{
+    if(!e||!e.id)return;const o=e._ro||String(e.owner_id||"").split("~")[0];
+    if(my&&o===my&&!seen.has(e.id))seen.set(e.id,e)});
+  return [...seen.values()];
+}
+function orgGroups(){
+  const m=new Map();
+  mineEv().forEach(e=>{const nm=String(e.organizer_name||"").trim()||"Sans nom",k=slug(nm)||"sans-nom";
+    if(!m.has(k))m.set(k,{k,name:nm,ev:[]});m.get(k).ev.push(e)});
+  return [...m.values()];
+}
+window.a25Cancel=function(eid){try{window.p5Manage("ann",eid)}catch(e){alert("Ouvrez Gestion pro puis l'onglet Annulation.")}};
+async function tOrgs(b){
+  let ev=mineEv();
+  if(!ev.length){try{await loadMine()}catch(e){}ev=mineEv()}
+  ev=ev.filter(e=>e.status==="published"||e.status==="pending"||e.status==="cancelled");
+  let rq={};
+  try{if(ev.length){const r=await api("event_cancel_requests?event_id=in.("+ev.map(e=>e.id).join(",")+")&select=event_id,status,created_at&order=created_at.desc");(r||[]).forEach(x=>{if(!rq[x.event_id])rq[x.event_id]=x.status})}}catch(e){}
+  const G=orgGroups().map(gr=>({...gr,ev:gr.ev.filter(e=>ev.includes(e))})).filter(gr=>gr.ev.length);
+  const full=G.length>=MAXORG;
+  b.innerHTML=`<div class="p5cd"><b>🗂️ Mes organisateurs : ${G.length} / ${MAXORG}</b><small>Une même adresse e-mail peut gérer jusqu'à ${MAXORG} organisateurs différents. Tous apparaissent ici. Vous pouvez demander l'annulation d'un seul événement : les autres restent en ligne, avec leurs billets.</small>${full?`<small style="color:#b45309">Limite atteinte : pour un 6e organisateur, utilisez une autre adresse e-mail.</small>`:""}</div>`+
+  (G.length?G.map(gr=>`<div class="o25g"><h4>🎤 ${E(gr.name)} <small>(${gr.ev.length} événement${gr.ev.length>1?"s":""})</small></h4>${gr.ev.map(e=>{
+    const cx=!!(e.modes&&e.modes.cancelled),st=rq[e.id];
+    const bd=cx?'<span class="o25b r">ANNULÉ</span>':st==="pending"?'<span class="o25b o">Annulation en attente</span>':e.status==="pending"?'<span class="o25b o">En validation</span>':'<span class="o25b v">En ligne</span>';
+    return `<div class="ev"><span>${E(e.title)} ${bd}</span>${cx?"":`<button onclick="a25Cancel('${E(e.id)}')">${st==="pending"?"Voir la demande":"❌ Annuler"}</button>`}</div>`}).join("")}</div>`).join(""):'<p class="sm">Aucun événement pour le moment.</p>');
+}
+/* onglet « Mes organisateurs » ajouté à la barre de Gestion pro */
+function injectOrgTab(){
+  const bar=document.querySelector("#p5m .p5tb");if(!bar||g("a25tab"))return;
+  const btn=document.createElement("button");btn.id="a25tab";btn.textContent="🗂️ Mes organisateurs";
+  btn.onclick=function(){window.p5Tab("orgs");this.classList.add("on")};
+  bar.insertBefore(btn,bar.firstChild);
+}
+/* plafond de 5 organisateurs (contrôle à l'écran ; la base de données le contrôle aussi) */
+function orgLimitMsg(name){
+  if(isTeam())return"";
+  const k=slug(name),ks=new Set(orgGroups().map(x=>x.k).filter(x=>x!=="sans-nom"));
+  return(k&&!ks.has(k)&&ks.size>=MAXORG)?"Limite atteinte : une adresse e-mail peut gérer "+MAXORG+" organisateurs au maximum. Utilisez l'un de vos organisateurs existants ou une autre adresse e-mail.":"";
+}
+
+/* =====================================================
+   2) CRÉATION : profil de l'organisateur + adresse séparée
+   ===================================================== */
+const O={cover:null,busy:false};
+function countryOpts(){const L=(window.COUNTRIES_ALL||(typeof COUNTRIES!=="undefined"?COUNTRIES:[])).filter(x=>x[0]!=="ALL");return L.map(x=>`<option value="${E(x[0])}" data-n="${E(x[3]||x[1])}">${E(x[1])}</option>`).join("")}
+function buildOrgBlock(root){
+  const S0=root.querySelector('.wzs[data-s="1"]');if(!S0||g("o25"))return;
+  const nav=S0.querySelector(".wzn");if(!nav)return;
+  const d=document.createElement("div");d.id="o25";
+  d.innerHTML=`<h3>🎤 Profil de l'organisateur</h3><p class="sm">Ces informations s'affichent sur la page de votre événement. Votre logo (ci-dessus) sert de photo de profil.</p>
+  <label>Biographie / description de l'organisateur *</label><textarea id="o25bio" rows="4" maxlength="600" placeholder="Qui êtes-vous ? Votre histoire, vos spectacles, votre équipe…"></textarea>
+  <label>Photo de couverture * (image)</label><input id="o25cov" type="file" accept="image/*"><p class="sm" id="o25cs"></p>
+  <label>Téléphone / WhatsApp *</label><input id="o25tel" type="tel" placeholder="+243…">
+  <label>E-mail de contact</label><input id="o25mail" type="email" placeholder="contact@…">
+  <label>Site web ou réseau social</label><input id="o25web" placeholder="https://…">
+  <label>Adresse de l'organisateur *</label>
+  <div class="ad"><div class="full"><select id="o25ctry">${countryOpts()}</select></div>
+  <input id="o25city" placeholder="Ville *"><input id="o25com" placeholder="Commune *">
+  <input id="o25qua" placeholder="Quartier *"><input id="o25ave" placeholder="Avenue / rue *">
+  <input id="o25num" placeholder="N°"></div>
+  <p class="sm">Chaque élément est séparé : pays | ville | commune | quartier | avenue.</p>`;
+  nav.insertAdjacentElement("beforebegin",d);
+  try{const c=typeof cty!=="undefined"?cty:"CD";const s=g("o25ctry");if(s&&[...s.options].some(o=>o.value===c))s.value=c}catch(e){}
+  /* relabel du logo = photo de profil */
+  try{[...root.querySelectorAll("label")].forEach(l=>{if(/^Logo de l.organisateur/.test(l.textContent))l.textContent="Photo de profil / logo de l'organisateur *"})}catch(e){}
+  g("o25cov").addEventListener("change",async function(){
+    const f=this.files&&this.files[0],st=g("o25cs");O.cover=null;if(!f)return;
+    if(f.size>10485760){st.textContent="Image trop lourde (10 Mo maximum).";this.value="";return}
+    O.busy=true;st.textContent="⏳ Envoi de la photo…";
+    try{const p=me()+"/cover-"+Date.now()+"-"+f.name.replace(/[^\w.\-]/g,"_");
+      const r=await af(SB+"/storage/v1/object/affiches/"+p,{method:"POST",headers:{"Content-Type":f.type||"image/jpeg"},body:f});
+      if(!r.ok)throw 0;O.cover=p;st.textContent="✅ Photo de couverture envoyée."}
+    catch(e){st.textContent="❌ Envoi impossible, réessayez."}
+    O.busy=false});
+  const co=g("co");if(co){co.addEventListener("change",()=>prefill(co.value));co.addEventListener("blur",()=>prefill(co.value))}
+  try{loadMine()}catch(e){}
+}
+function addrObj(){const s=g("o25ctry"),o=s&&s.options[s.selectedIndex],v=i=>((g(i)||{}).value||"").trim();
+  return{country:s?s.value:"",countryName:o?o.dataset.n||o.textContent:"",city:v("o25city"),commune:v("o25com"),quartier:v("o25qua"),avenue:v("o25ave"),num:v("o25num")}}
+function prefill(name){
+  const k=slug(name);if(!k||!g("o25"))return;
+  const e=mineEv().filter(x=>slug(x.organizer_name)===k&&x.modes&&x.modes.org).sort((a,b)=>String(b.created_at||"").localeCompare(String(a.created_at||"")))[0];
+  if(!e)return;const o=e.modes.org,set=(i,v)=>{const el=g(i);if(el&&!el.value&&v)el.value=v};
+  set("o25bio",o.bio);set("o25tel",o.tel);set("o25mail",o.mail);set("o25web",o.web);
+  const a=o.addr||{};set("o25city",a.city);set("o25com",a.commune);set("o25qua",a.quartier);set("o25ave",a.avenue);set("o25num",a.num);
+  if(a.country&&g("o25ctry"))g("o25ctry").value=a.country;
+  if(o.cover&&!O.cover){O.cover=o.cover;const st=g("o25cs");if(st)st.textContent="✅ Photo de couverture déjà enregistrée pour cet organisateur."}
+}
+function checkOrg(){
+  const v=i=>((g(i)||{}).value||"").trim(),a=addrObj();
+  const lim=orgLimitMsg((g("co")||{}).value);if(lim)return lim;
+  if(v("o25bio").length<20)return"Écrivez la biographie de l'organisateur (au moins 20 caractères).";
+  if(O.busy)return"⏳ La photo de couverture est en cours d'envoi, patientez un instant.";
+  if(!O.cover)return"Ajoutez la photo de couverture de l'organisateur.";
+  if(v("o25tel").replace(/\D/g,"").length<6)return"Entrez le téléphone / WhatsApp de l'organisateur.";
+  if(!a.country||!a.city||!a.commune||!a.quartier||!a.avenue)return"Complétez l'adresse : pays, ville, commune, quartier et avenue.";
+  return"";
+}
+function hookWizard(){
+  const root=document.querySelector("#v-create .x2[data-wz]");if(!root)return;
+  buildOrgBlock(root);
+  if(root.dataset.o25)return;root.dataset.o25=1;
+  root.addEventListener("click",function(e){
+    const b=e.target.closest&&e.target.closest("button[data-n]");if(!b)return;
+    const S0=root.querySelector('.wzs[data-s="1"]');if(!S0||!S0.classList.contains("on"))return;
+    const m=checkOrg();
+    if(m){e.stopPropagation();e.preventDefault();const er=S0.querySelector(".wzerr");if(er){er.textContent=m;er.scrollIntoView({behavior:"smooth",block:"center"})}else alert(m)}
+  },true);
+}
+/* le profil part avec l'événement (modes.org) */
+(function(){const _e=window.evExtra;window.evExtra=function(){const r=_e?_e():{};
+  try{if(g("o25bio")){const v=i=>((g(i)||{}).value||"").trim(),w=v("o25web"),a=addrObj();
+    r.org={bio:v("o25bio"),cover:O.cover||null,tel:v("o25tel"),mail:v("o25mail"),web:w?url(w):"",addr:a};r.addr=a}}catch(x){}
+  return r}})();
+/* après l'envoi : on met aussi à jour la fiche publique de l'organisateur (si c'est le sien) */
+try{const _sl=showLink;showLink=function(e){
+  try{const o=e&&e.modes&&e.modes.org;if(o)saveProfile(e,o)}catch(x){}
+  return _sl.apply(this,arguments)}}catch(x){}
+async function saveProfile(e,o){
+  try{const my=me();if(!my)return;
+    const r=await af(SB+"/rest/v1/organizers?owner_id=eq."+encodeURIComponent(my)+"&select=name",{});
+    const l=r.ok?await r.json():[];
+    if(l&&l[0]&&slug(l[0].name)!==slug(e.organizer_name))return;
+    const a=o.addr||{},adr=[[a.avenue,a.num].filter(Boolean).join(" "),a.quartier,a.commune,a.city,a.countryName].filter(Boolean).join(", ");
+    const base={owner_id:my,name:e.organizer_name||null,city:a.city||null,bio:o.bio||null,banner_path:o.cover||null,whatsapp:o.tel||null,email:o.mail||null,is_public:true,updated_at:new Date().toISOString()};
+    const H2={"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"};
+    let p=await af(SB+"/rest/v1/organizers",{method:"POST",headers:H2,body:JSON.stringify({...base,address:adr||null,country:a.country||null})});
+    if(!p.ok)await af(SB+"/rest/v1/organizers",{method:"POST",headers:H2,body:JSON.stringify(base)})
+  }catch(x){}
+}
+/* affichage sur la page de l'événement */
+try{const _or=orgRow;orgRow=function(e){let h=_or.apply(this,arguments);
+  try{const d=(typeof DBEV!=="undefined"&&DBEV.find(x=>e&&x.id===e.id))||e,o=d&&d.modes&&d.modes.org;
+    if(o&&(o.bio||o.cover)){const a=o.addr||{},adr=[[a.avenue,a.num].filter(Boolean).join(" "),a.quartier,a.commune,a.city,a.countryName].filter(Boolean).join(" | ");
+      const tel=String(o.tel||"").replace(/\D/g,""),w=o.web?url(o.web):"";
+      h+=`<div class="o25card">${o.cover?`<img alt="" src="${E(pub(o.cover))}" onerror="this.remove()">`:""}<div class="bd"><b>À propos de l'organisateur</b>${o.bio?`<p>${E(o.bio)}</p>`:""}${adr?`<p>📍 ${E(adr)}</p>`:""}${tel?`<p>📞 <a href="https://wa.me/${tel}" target="_blank" rel="noopener">${E(o.tel)}</a></p>`:""}${o.mail?`<p>✉️ <a href="mailto:${E(o.mail)}">${E(o.mail)}</a></p>`:""}${w?`<p>🔗 <a href="${E(w)}" target="_blank" rel="noopener">${E(w.replace(/^https?:\/\//,""))}</a></p>`:""}</div></div>`}}catch(x){}
+  return h}}catch(x){}
+
+/* =====================================================
+   3) ANNONCES (remplacent la cloche) + SPONSORISÉ 30 s
+   ===================================================== */
+let ADS=[],adsLoaded=0;
+async function loadAds(){
+  let L=[];
+  try{const r=await window.p5rp("public_annonces",{});L=Array.isArray(r)?r:[]}catch(e){}
+  try{const o=[...(typeof FLS!=="undefined"?FLS:[])].filter(x=>UID.test(String(x)));
+    if(o.length){const f=await window.p5rp("feed_for",{p_owners:o});
+      (f||[]).filter(n=>n.kind==="update").forEach(n=>L.push({id:"f"+n.id,kind:"annonce",title:n.title,body:n.body,advertiser:n.organizer,event_id:n.event_id,created_at:n.at}))}}catch(e){}
+  L.sort((a,b)=>Date.parse(b.created_at||0)-Date.parse(a.created_at||0));
+  ADS=L;adsLoaded=Date.now();badge();return L;
+}
+function seenTs(){try{return+localStorage.getItem("lrr_a25_seen")||0}catch(e){return 0}}
+function badge(){const u=ADS.filter(x=>Date.parse(x.created_at||0)>seenTs()).length,b=g("a25n");if(b){b.hidden=!u;b.textContent=u>9?"9+":u}}
+function injectBtn(){
+  const r=document.querySelector("#pub header.tb .tb-r");if(!r||g("a25b"))return;
+  r.insertAdjacentHTML("afterbegin",'<button class="a25b" id="a25b" aria-label="Annonces" onclick="a25Open()">📣<i id="a25n" hidden></i></button>');badge();
+}
+function cardHTML(x){
+  const k=KINDS[x.kind]||KINDS.annonce,p=x.poster_path?pub(x.poster_path):"",l=x.link?url(x.link):"";
+  const act=x.event_id?`<button class="go" onclick="a25Go('${E(x.event_id)}')">${E(x.cta||"Voir l'événement")}</button>`:l?`<button class="go" onclick="a25Link('${E(l)}')">${E(x.cta||"En savoir plus")}</button>`:"";
+  return `<div class="a25c${x.kind==="sponsorise"?" sp":""}">${p?`<img class="p" alt="" src="${E(p)}" onerror="this.remove()">`:""}<div class="bd"><span class="k">${k[0]} ${E(k[1])}</span><b class="t">${E(x.title)}</b>${x.body?`<span style="font-size:13px;white-space:pre-line">${E(x.body)}</span>`:""}<small>${E(x.advertiser||"")}${x.advertiser?" · ":""}${E(fd(x.created_at))}</small>${act}</div></div>`;
+}
+let FILT="all";
+function drawAds(){
+  const box=g("a25l");if(!box)return;
+  const L=ADS.filter(x=>FILT==="all"||x.kind===FILT);
+  box.innerHTML=L.length?L.map(cardHTML).join(""):'<p class="sm" style="margin:10px 0">Aucune annonce pour le moment.</p>';
+  document.querySelectorAll("#a25t button").forEach(b=>b.classList.toggle("on",b.dataset.k===FILT));
+}
+window.a25F=k=>{FILT=k;drawAds()};
+window.a25Open=async function(){
+  mo.classList.add("on");
+  $("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:16px;width:100%;max-width:420px;margin:auto;max-height:90vh;overflow:auto"><h2 style="color:#000;font-size:18px">📣 Annonces</h2><div class="a25t" id="a25t"><button data-k="all" onclick="a25F('all')">Tout</button>${Object.entries(KINDS).map(([k,v])=>`<button data-k="${k}" onclick="a25F('${k}')">${v[0]} ${v[1]}${k==="sponsorise"?"":"s"}</button>`).join("")}</div><div id="a25l"><p class="sm">⏳ Chargement…</p></div><button class="ab" onclick="closeMo()">Fermer</button></div>`;
+  try{localStorage.setItem("lrr_a25_seen",String(Date.now()))}catch(e){}
+  badge();await loadAds();try{localStorage.setItem("lrr_a25_seen",String(Date.now()))}catch(e){}badge();drawAds();
+};
+window.a25Go=id=>{try{closeMo()}catch(e){}closePop();try{const e=(DBEV||[]).find(x=>String(x.id)===String(id));if(e)nav("event/"+evUrlKey(e))}catch(x){}};
+window.a25Link=u=>{closePop();window.open(u,"_blank","noopener")};
+
+/* publication sponsorisée : 30 secondes puis elle se ferme toute seule */
+let popT=null,popI=null;
+function closePop(){clearTimeout(popT);clearInterval(popI);const p=g("a25sp");if(p)p.remove()}
+window.a25ClosePop=closePop;
+function showPop(x){
+  closePop();
+  const p=x.poster_path?pub(x.poster_path):"",l=x.link?url(x.link):"";
+  const act=x.event_id?`a25Go('${E(x.event_id)}')`:l?`a25Link('${E(l)}')`:"";
+  const d=document.createElement("div");d.id="a25sp";
+  d.innerHTML=`<div class="cd" role="dialog" aria-label="Publication sponsorisée"><div class="pr"><i></i></div><div class="hd"><b>${E(x.advertiser||"Annonceur")}</b><span>Sponsorisé</span><em id="a25cd">30 s</em><button id="a25x" aria-label="Fermer" onclick="a25ClosePop()">✕</button></div>${p?`<div class="im"><img alt="" src="${E(p)}" onerror="this.parentNode.remove()"></div>`:""}<div class="tx"><b>${E(x.title)}</b>${x.body?`<p>${E(x.body)}</p>`:""}</div>${act?`<button class="cta" onclick="${act}">${E(x.cta||(x.event_id?"Voir l'événement":"En savoir plus"))}</button>`:'<div style="height:12px"></div>'}</div>`;
+  d.addEventListener("click",e=>{if(e.target===d&&g("a25x").classList.contains("on"))closePop()});
+  document.body.appendChild(d);
+  let n=30;setTimeout(()=>{const b=g("a25x");if(b)b.classList.add("on")},3000);
+  popI=setInterval(()=>{n--;const c=g("a25cd");if(c)c.textContent=n+" s"},1000);
+  popT=setTimeout(closePop,30000);
+  try{const m=JSON.parse(localStorage.getItem("lrr_a25_pop")||"{}");m[x.id]=Date.now();localStorage.setItem("lrr_a25_pop",JSON.stringify(m))}catch(e){}
+}
+function maybePop(){
+  try{
+    if(g("a25sp")||(typeof mo!=="undefined"&&mo.classList.contains("on"))||(g("p5m")&&g("p5m").style.display==="block"))return;
+    if(isTeam()&&(typeof TEAMV==="function"&&TEAMV()))return;
+    const m=JSON.parse(localStorage.getItem("lrr_a25_pop")||"{}"),now=Date.now();
+    const c=ADS.filter(x=>x.kind==="sponsorise"&&x.title&&(x.poster_path||x.body)&&now-(m[x.id]||0)>6*36e5).sort((a,b)=>(m[a.id]||0)-(m[b.id]||0))[0];
+    if(c)showPop(c);
+  }catch(e){}
+}
+
+/* ----- composeur d'annonces : organisateur (onglet « Annonce ») et équipe ----- */
+const HINT={
+ annonce:"Un message court pour tout le monde (ex : dernières places, changement d'horaire).",
+ promotion:"Une offre ou une réduction. L'affiche est conseillée.",
+ actualite:"Une nouvelle sur votre activité ou vos événements.",
+ sponsorise:"Publicité : l'<b>affiche</b> et la <b>description</b> sont obligatoires. Elle s'affiche en plein écran pendant <b>30 secondes</b>, comme une publication sponsorisée. Elle est envoyée à l'équipe pour validation avant diffusion."};
+function composer(b,team){
+  const evs=team?(typeof DBEV!=="undefined"?DBEV:[]):mineEv().filter(e=>e.status==="published");
+  let KIND="annonce",busy=false,dn="";
+  try{const cur=typeof window.p5Ev==="function"?window.p5Ev():null;dn=(cur&&cur.organizer_name)||(evs[0]&&evs[0].organizer_name)||""}catch(e){}
+  b.innerHTML=`<div class="p5cd a25f"><b>📣 Nouvelle annonce</b>
+  <div class="a25k" id="a25kk">${Object.entries(KINDS).map(([k,v])=>`<button type="button" data-k="${k}" class="${k==="annonce"?"on":""}">${v[0]} ${v[1]}</button>`).join("")}</div>
+  <small id="a25h">${HINT.annonce}</small>
+  <label>Nom affiché (organisateur ou annonceur)</label><input id="a25adv" maxlength="60" value="${E(dn)}">
+  <label>Titre *</label><input id="a25ti" maxlength="100" placeholder="Ex : Dernières places VIP !">
+  <label id="a25dl">Description</label><textarea id="a25de" rows="4" maxlength="500" placeholder="Votre message…"></textarea>
+  <label id="a25pl">Affiche (image)</label><input id="a25po" type="file" accept="image/*">
+  <label>Bouton : lien vers un événement (facultatif)</label><select id="a25ev"><option value="">— aucun —</option>${evs.map(e=>`<option value="${E(e.id)}">${E(e.title)}</option>`).join("")}</select>
+  <label>… ou lien web (facultatif)</label><input id="a25li" placeholder="https://…"><label>Texte du bouton</label><input id="a25cta" maxlength="24" placeholder="Ex : Réserver">
+  <label>Durée de diffusion</label><select id="a25dy"><option value="3">3 jours</option><option value="7" selected>7 jours</option><option value="14">14 jours</option><option value="30">30 jours</option></select>
+  <button class="btn dk" id="a25go" style="margin-top:12px">📣 Publier</button><p class="sm" id="a25st"></p></div><div id="a25my"></div>`;
+  const sync=()=>{g("a25h").innerHTML=HINT[KIND];const sp=KIND==="sponsorise";
+    g("a25dl").textContent="Description"+(sp?" *":"");g("a25pl").textContent="Affiche (image)"+(sp?" *":"");
+    g("a25go").textContent=sp&&!team?"📤 Envoyer pour validation":"📣 Publier"};
+  g("a25kk").onclick=e=>{const k=e.target.closest("button");if(!k)return;KIND=k.dataset.k;g("a25kk").querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===k));sync()};
+  g("a25go").onclick=async()=>{
+    if(busy)return;const v=i=>(g(i).value||"").trim(),st=g("a25st"),f=g("a25po").files[0];
+    if(!v("a25ti")){st.textContent="Écrivez le titre.";return}
+    if(KIND==="sponsorise"&&(!v("a25de")||(!f)) ){st.textContent="Pour un sponsorisé, l'affiche et la description sont obligatoires.";return}
+    if(f&&f.size>10485760){st.textContent="Affiche trop lourde (10 Mo maximum).";return}
+    const lk=v("a25li")?url(v("a25li")):"";if(v("a25li")&&!lk){st.textContent="Lien web invalide.";return}
+    busy=true;g("a25go").disabled=true;st.textContent="⏳ Envoi…";
+    try{let poster=null;
+      if(f){poster=(me()||"team")+"/ad-"+Date.now()+"-"+f.name.replace(/[^\w.\-]/g,"_");
+        const u=await af(SB+"/storage/v1/object/affiches/"+poster,{method:"POST",headers:{"Content-Type":f.type||"image/jpeg"},body:f});
+        if(!u.ok)throw new Error("Envoi de l'affiche impossible.")}
+      const r=await window.p5ra("submit_annonce",{p_kind:KIND,p_title:v("a25ti"),p_body:v("a25de")||null,p_poster:poster,p_link:lk||null,p_cta:v("a25cta")||null,p_event:v("a25ev")||null,p_advertiser:v("a25adv")||null,p_days:+v("a25dy")||7});
+      const ok=!!(r&&r.status==="pending");
+      st.textContent=ok?"✅ Envoyée à l'équipe : elle sera diffusée après validation.":"✅ Annonce publiée.";
+      ["a25ti","a25de","a25po","a25li","a25cta"].forEach(i=>g(i).value="");loadAds();myList();admLoad(true)
+    }catch(x){st.textContent="❌ "+(x.message||"Erreur")+" (le SQL 29-annonces-organisateurs.sql est-il installé ?)"}
+    busy=false;g("a25go").disabled=false};
+  sync();if(!team)myList();
+}
+async function myList(){
+  const box=g("a25my");if(!box)return;
+  try{const l=await window.p5ra("my_annonces",{});
+    const st={pending:'<span class="o25b o">En validation</span>',approved:'<span class="o25b v">Diffusée</span>',rejected:'<span class="o25b r">Refusée</span>'};
+    box.innerHTML=(l&&l.length)?'<div class="p5cd"><b>Mes annonces</b>'+l.map(x=>`<small>${(KINDS[x.kind]||KINDS.annonce)[0]} <b>${E(x.title)}</b> ${st[x.status]||""}${x.note?" — "+E(x.note):""} <a href="#" onclick="a25Del('${E(x.id)}');return false" style="color:#991b1b">supprimer</a></small>`).join("")+'</div>':""}
+  catch(e){}
+}
+window.a25Del=async function(id){if(!confirm("Supprimer cette annonce ?"))return;try{await window.p5ra("delete_annonce",{p_id:id});myList();admLoad(true);loadAds()}catch(e){alert(e.message||"Erreur")}};
+/* l'onglet « 📣 Annonce » de Gestion pro devient le composeur complet */
+window.P7T=window.P7T||{};
+window.P7T.news=async function(b){composer(b,false)};
+
+/* ----- Dashboard de l'équipe : validation des sponsorisés ----- */
+let lastAdm=0;
+function admCard(){
+  if(g("a25adm"))return;const a=g("cncadm");if(!a)return;
+  a.insertAdjacentHTML("afterend",'<div class="card adm-only" id="a25adm"><h2>📣 Annonces & sponsorisés <span id="a25ac" class="sm"></span></h2><p class="sm">Les organisateurs envoient leurs publicités sponsorisées ici. Confirmez ou refusez-les. Vous pouvez aussi publier directement une annonce ou un sponsorisé.</p><div id="a25al"><p class="sm">⏳</p></div><button class="btn dk" id="a25new">➕ Créer une annonce / un sponsorisé</button><div id="a25cmp"></div></div>');
+  g("a25new").onclick=()=>{const c=g("a25cmp");if(c.innerHTML){c.innerHTML="";return}composer(c,true)};
+}
+async function admLoad(force){
+  admCard();const box=g("a25al");if(!box)return;
+  if(!force&&Date.now()-lastAdm<15000)return;lastAdm=Date.now();
+  let l;try{l=await window.p5ra("admin_annonces",{})}catch(e){box.innerHTML='<p class="sm">⚠️ Fonction introuvable : lancez le SQL 29-annonces-organisateurs.sql dans Supabase.</p>';return}
+  l=Array.isArray(l)?l:[];const P=l.filter(x=>x.status==="pending"),c=g("a25ac");if(c)c.textContent=P.length?"("+P.length+" en attente)":"";
+  const row=x=>{const k=KINDS[x.kind]||KINDS.annonce;return `<div class="a25c${x.kind==="sponsorise"?" sp":""}" style="margin:8px 0">${x.poster_path?`<img class="p" alt="" src="${E(pub(x.poster_path))}" style="max-height:140px">`:""}<div class="bd"><span class="k">${k[0]} ${E(k[1])}</span><b class="t">${E(x.title)}</b>${x.body?`<span style="font-size:13px">${E(x.body)}</span>`:""}<small>${E(x.advertiser||"")} · ${E(fd(x.created_at))}${x.status!=="pending"?" · "+E(x.status):""}</small>
+   ${x.status==="pending"?`<button class="go" onclick="a25Rev('${E(x.id)}',true)">✅ Confirmer</button> <button class="go" style="background:#991b1b" onclick="a25Rev('${E(x.id)}',false)">✕ Refuser</button>`:""} <button class="go" style="background:#5b6b67" onclick="a25Del('${E(x.id)}')">🗑️</button></div></div>`};
+  box.innerHTML=l.length?l.slice(0,25).map(row).join(""):'<p class="sm">Aucune annonce.</p>';
+}
+window.a25Rev=async function(id,ok){let note=null;if(!ok){note=prompt("Motif du refus (visible par l'organisateur) :");if(note===null)return}
+  try{await window.p5ra("admin_annonce_review",{p_id:id,p_ok:ok,p_note:note});admLoad(true);loadAds()}catch(e){alert(e.message||"Erreur")}};
+
+/* ---------- conditions : nouveaux articles ---------- */
+function addTerms(){
+  try{
+    const add=(key,title,html)=>{const a=INFO&&INFO[key];if(!a||a[1].indexOf("lrr-v25")>-1)return;
+      const nums=[...a[1].matchAll(/<span>(\d+)<\/span>/g)].map(m=>+m[1]),n=(nums.length?Math.max(...nums):0)+1;
+      a[1]+=`<div class="lgart" data-v="lrr-v25"><h3><span>${n}</span>${title}</h3>${html}</div>`};
+    const org="<p>Une même adresse e-mail peut gérer jusqu'à <b>5 organisateurs</b> différents, chacun avec son profil (biographie, photo de profil, photo de couverture, contacts et adresse séparée en pays, ville, commune, quartier et avenue). L'organisateur peut demander l'annulation d'un seul de ses événements : les autres événements et leurs billets ne sont pas touchés. Toute annulation reste confirmée par l'équipe, et la commission de la plateforme n'est pas remboursée.</p>";
+    const ann="<p>Les annonces, promotions et actualités sont publiées dans la rubrique « Annonces » de l'application. Une publicité <b>sponsorisée</b> doit comporter une affiche et une description ; elle est validée par l'équipe avant diffusion et s'affiche 30 secondes à l'écran. L'équipe peut refuser ou retirer toute annonce contraire à la charte.</p>";
+    add("charte","Organisateurs, profil et annonces",org+ann);
+    add("cgu","Organisateurs, profil et annonces",org+ann);
+  }catch(e){}
+}
+
+/* ---------- démarrage ---------- */
+function tick(){try{hookWizard();injectOrgTab();injectBtn();admCard();if(isTeam()&&typeof TEAMV==="function"&&TEAMV()&&g("a25adm")&&g("a25adm").offsetParent)admLoad(false)}catch(e){}}
+window.P7T.orgs=tOrgs;
+setInterval(tick,1200);tick();
+addTerms();setTimeout(addTerms,2500);
+loadAds();setInterval(loadAds,150000);
+setTimeout(maybePop,6000);setInterval(maybePop,90000);
+})();
+
 </script>
 </body></html>
