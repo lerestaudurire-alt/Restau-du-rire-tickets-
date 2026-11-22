@@ -1,28 +1,30 @@
-V24 : envoi automatique du billet / de l'invitation (e-mail + WhatsApp)
+V24 = votre index.html (sw lrr-v113) + annulations validées par l'équipe, types d'événement, séparation équipe / organisateur.
 
-ÉTAPE 1 : base de données
-  Supabase > SQL Editor : coller et lancer  supabase/sql/28-invitations.sql
+A FAIRE (dans l'ordre)
+1) Supabase > SQL Editor : lancer 28-annulations.sql (relançable sans risque).
+2) Remplacer index.html et sw.js sur le site (le sw passe à lrr-v114). Ouvrir le site avec ?v=114 une fois.
+3) App mobile (Capacitor) : recopier index.html + sw.js dans capacitor-app/www puis reconstruire l'app.
 
-ÉTAPE 2 : fonctions (Supabase > Edge Functions)
-  a) simplypaye       : remplacer le code par supabase/functions/simplypaye/index.ts  (puis Deploy)
-  b) send-invitation  : Deploy a new function, nom exact : send-invitation,
-                        coller supabase/functions/send-invitation/index.ts
-                        (désactiver « Verify JWT » comme pour simplypaye)
+1. ANNULATION D'UN ÉVÉNEMENT
+- Organisateur : Gestion pro > « 📢 Annulation » : il écrit le motif et envoie la DEMANDE. L'événement reste affiché normalement.
+- Équipe : Dashboard de l'équipe (5 clics) > carte « ❌ Confirmation des annulations » : Confirmer ou Refuser (avec message).
+- Après confirmation : l'événement s'affiche « ANNULÉ » sur la page d'accueil (carte grisée + bandeau sur la page de l'événement), les ventes sont fermées (aussi côté base de données). Rien n'est envoyé dans les notifications (la cloche refuse l'option « annulé »).
+- Les billets déjà achetés restent enregistrés (rien n'est supprimé). La suite est entre l'organisateur et ses clients :
+  choix 1 = « Reprogrammer » : nouvelle date, les anciens billets restent valables, l'événement redevient disponible ;
+  choix 2 = rembourser lui-même ses acheteurs (message WhatsApp prêt à envoyer).
+- Pourcentage non remboursé : la commission de 15 % de la plateforme n'est jamais remboursée (affichée à l'organisateur avec le montant calculé sur ses ventes en ligne confirmées).
 
-ÉTAPE 3 : clés (Edge Functions > Secrets). Les mêmes que notify-confirmation, donc peut-être déjà faites :
-  RESEND_KEY   MAIL_FROM        -> e-mails
-  WA_TOKEN     WA_PHONE_ID      -> WhatsApp
-  WA_TEMPLATE                   -> modèle WhatsApp (3 variables : nom, événement, code)
-  WA_INV_TEMPLATE (facultatif)  -> modèle WhatsApp avec IMAGE en en-tête (2 variables : nom, événement),
-                                   nécessaire pour envoyer l'invitation en image dès le premier contact
-  SITE_URL
+2. ÉQUIPE / ORGANISATEUR SÉPARÉS
+Tout ce qui vient du Dashboard de l'équipe n'apparaît plus chez l'organisateur, même quand l'e-mail est celui de l'administrateur : événements à valider, Billets & stock / Dernière minute, onglets Versements et Commissions, « Vue globale admin », Sauvegarde, toutes les réclamations, et la liste de TOUS les événements dans Outils pro (il ne voit que les siens). Ces outils restent dans le Dashboard de l'équipe.
 
-ÉTAPE 4 : site
-  Remplacer index.html sur GitHub, ouvrir le site en navigation privée.
+3. TYPES D'ÉVÉNEMENT (création, étape 3)
+💰 Payant : catégories, prix, places (comme avant).
+🎁 Gratuit : seulement le nombre de places, pas de catégories ; chaque personne reçoit son QR code.
+✉️ Sur invitation : nombre de places + design et texte de l'invitation hébergés dans l'application ; chaque invité reçoit son QR code, sans catégories.
+Sur la page de l'événement, un événement gratuit ou sur invitation affiche « Entrée gratuite » / « Entrée sur invitation » (aucune catégorie).
 
-CE QUI SE PASSE
-  - Achat en ligne payé (SimplyPaye) : au moment où le paiement passe à « confirmé », le client reçoit
-    par e-mail le design de CHAQUE catégorie achetée (celui que l'organisateur a ajouté) + son QR code + son code.
-    Un message WhatsApp de confirmation part aussi si WA_TEMPLATE est configuré.
-  - Réservation par invitation : le client remplit son nom, WhatsApp, e-mail, adresse ; son invitation (avec son nom)
-    s'affiche tout de suite et part par e-mail et WhatsApp. Le destinataire est relu dans la commande (pas dans la requête).
+4. « RÉSERVER SANS PAYER » SUPPRIMÉ
+Bouton retiré de la page d'accueil, mode désactivé à la création (hold = false), lignes retirées du chatbot et du PDF partenaires.
+
+5. CONDITIONS ET PDF PARTENAIRES
+Mis à jour : Conditions d'utilisation (art. 4 et 7), Charte des organisateurs (art. 3 et 8), Règles de vente (art. 8 et 9) et PDF partenaires (nouvelle section « 8 bis »).
