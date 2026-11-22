@@ -9674,7 +9674,7 @@ window.admCancelLoad=async function(){const box=$("cnclist");if(!box)return;let 
  +(H.length?'<details style="margin-top:10px"><summary class="sm">Historique ('+H.length+")</summary>"+H.slice(0,15).map(r=>'<div class="sm" style="margin:6px 0"><b>'+E(r.title)+"</b> — "+(st[r.status]||E(r.status))+(r.admin_note?" · "+E(r.admin_note):"")+"</div>").join("")+"</details>":"")};
 window.admCancelDecide=async function(id,ok){const note=prompt(ok?"Message pour l’organisateur (facultatif) :":"Motif du refus (obligatoire) :");if(note===null)return;if(!ok&&note.trim().length<3){alert("Indiquez le motif du refus.");return}
  if(!confirm(ok?"Confirmer l’annulation ? L’événement s’affichera ANNULÉ sur la page d’accueil et les ventes seront fermées.":"Refuser cette demande ?"))return;
- try{await rpcA("decide_event_cancel",{p_req:id,p_approve:!!ok,p_note:note.trim()||null});alert(ok?"✅ Événement annulé : il s’affiche ANNULÉ sur la page d’accueil.":"✅ Demande refusée.");admCancelLoad();try{loadEvents()}catch(x){}}catch(e){alert("❌ Échec. Vérifiez que le SQL 28-annulations.sql est installé, puis réessayez.")}};
+ try{const _r=await af(SB+"/rest/v1/rpc/decide_event_cancel",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({p_req:id,p_approve:!!ok,p_note:note.trim()||null})});if(!_r.ok){let _t="";try{const _j=await _r.json();_t=_j.message||_j.hint||JSON.stringify(_j)}catch(_x){}throw new Error(_t||("HTTP "+_r.status))}alert(ok?"✅ Événement annulé : il s’affiche ANNULÉ sur la page d’accueil.":"✅ Demande refusée.");admCancelLoad();try{loadEvents()}catch(x){}}catch(e){alert("❌ Échec : "+(e&&e.message?e.message:"erreur inconnue")+"\n\nSi le message parle d'une fonction introuvable, lancez le SQL 28-annulations.sql.")}};
 try{const _le2=loadExtras;loadExtras=async function(){const r=await _le2.apply(this,arguments);try{admCancelLoad()}catch(x){}return r}}catch(x){}
 setInterval(()=>{try{if(TEAMV())admCancelLoad()}catch(e){}},15000);setTimeout(()=>{try{if(TEAMV())admCancelLoad()}catch(e){}},3000);
 })();
@@ -9690,7 +9690,7 @@ const slug=n=>String(n||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLo
 const me=()=>{try{return typeof myId==="function"?(myId()||""):""}catch(e){return""}};
 const isTeam=()=>{try{return role==="admin"}catch(e){return false}};
 const pub=p=>p?SB+"/storage/v1/object/public/affiches/"+p:"";
-const url=u=>{try{return typeof safeUrl==="function"?safeUrl(u):""}catch(e){return""}};
+const url=u=>{u=String(u||"").trim().replace(/\s+/g,"");if(!u)return"";if(!/^https?:\/\//i.test(u))u="https://"+u;try{const x=new URL(u);return/^https?:$/.test(x.protocol)?x.href:""}catch(e){return""}};
 const fd=d=>{try{return new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"short",year:"numeric"})}catch(e){return""}};
 const KINDS={annonce:["📣","Annonce"],promotion:["🏷️","Promotion"],actualite:["📰","Actualité"],sponsorise:["⭐","Sponsorisé"]};
 const MAXORG=5;
