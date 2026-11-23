@@ -10044,7 +10044,7 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
  window.vxSaveMsg=async function(id){try{await rpc("set_sponsor_media",{p_id:id,p_message:$g("vxm_"+id).value});const s=L.find(x=>x.id===id);if(s)s.message=$g("vxm_"+id).value;st(id,"✅ Texte enregistré",true)}catch(e){st(id,"❌ "+e.message,false)}};
  window.vxUp=async function(id,inp,kind){
   const f=inp.files&&inp.files[0];inp.value="";if(!f)return;
-  if(f.size>20*1024*1024){st(id,"❌ Fichier trop lourd (20 Mo maximum).",false);return}
+  const mxMo=kind==="video"?50:20;if(f.size>mxMo*1024*1024){st(id,"❌ Fichier trop lourd ("+mxMo+" Mo maximum).",false);return}
   st(id,"⏳ Envoi de « "+f.name+" »…");
   try{
    const path=id+"/"+kind+"-"+Date.now()+"-"+f.name.replace(/[^\w.\-]/g,"_");

@@ -1,4 +1,4 @@
-const V="lrr-v120",KEEP=[V,"lrr-posters","lrr-img","lrr-data"],SHELL=["./","index.html","manifest.json","icon-192.png","icon-512.png","logo-horizontal.png","apple-touch-icon.png"];
+const V="lrr-v121",KEEP=[V,"lrr-posters","lrr-img","lrr-data"],SHELL=["./","index.html","manifest.json","icon-192.png","icon-512.png","logo-horizontal.png","apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>KEEP.indexOf(x)<0).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});
 /* Affiches et logos (Supabase Storage public) : copie locale d'abord, mise à jour en arrière-plan */
