@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no,viewport-fit=cover"><script>window.APP_SLOGAN="Réservez en confiance, vivez l'instant.";</script>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://translate.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net https://translate.googleapis.com https://translate-pa.googleapis.com; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://translate.google.com https://translate.googleapis.com https://www.gstatic.com; style-src 'self' 'unsafe-inline' https://www.gstatic.com https://translate.googleapis.com; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api-simply-pay.net https://translate.googleapis.com https://translate-pa.googleapis.com; object-src 'none'; frame-src 'none'; worker-src 'self'; manifest-src 'self'; base-uri 'self'; form-action 'self' https://api-simply-pay.net; upgrade-insecure-requests">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(self), geolocation=(), microphone=(), payment=(self)">
 <title>Restau du Rire Tickets — Billetterie en ligne</title>
@@ -1498,7 +1498,7 @@ window.QRCode=QRCodeLocal;window.QRCode.prototype={};
 try{if("BarcodeDetector" in window)BD=new BarcodeDetector({formats:["qr_code"]})}catch(e){}
 function loadReal(){if(loading)return;loading=true;var s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js";s.onerror=function(){setTimeout(function(){loading=false},3000)};document.head.appendChild(s)}
 if(!BD)setTimeout(loadReal,2500); /* précharge le lecteur de QR (mis en cache pour l'entrée de la salle) */
-window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageData(d,w,h)).then(function(r){if(r&&r[0])hit={data:r[0].rawValue}}).catch(function(){}).then(function(){busy=false})}catch(e){busy=false}}var x=hit;hit=null;return x}loadReal();return null}})();
+window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageData(d,w,h)).then(function(r){if(r&&r[0])hit={data:r[0].rawValue}}).catch(function(){}).then(function(){busy=false})}catch(e){busy=false}}var x=hit;hit=null;return x}loadReal();return null};window.jsQR.__shim=true})();
 </script>
 <style id="rr-css">
 .bl{display:inline-block;margin-top:8px;background:#eef2f7;color:#1c1b2e;border-radius:999px;padding:4px 11px;font-size:11px;font-weight:800}.bl.fl{background:#fde2e2;color:#a40000}
@@ -2293,12 +2293,7 @@ function stopScan(){cancelAnimationFrame(raf);if(stream){stream.getTracks().forE
 async function scan(){
  $("mc").innerHTML=`<h2 style="color:#000;margin-bottom:8px">📷 Scanner un billet</h2><video id="vid" playsinline muted></video><div id="res" style="margin:10px 0;font-size:14px"></div><input id="man" placeholder="ou tapez le N° (LRR-XXXXXXXX)" style="color:#000;background:#eee;margin-bottom:8px"><button class="ab" onclick="check($('man').value)">Vérifier</button><button class="ab" onclick="closeMo()">Fermer</button>`;
  mo.classList.add("on");
- try{ stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
-  const v=$("vid"); v.srcObject=stream; await v.play();
-  const cv=document.createElement("canvas"),cx=cv.getContext("2d"); let last="";
-  const tick=()=>{ if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);
-    const q=jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height); if(q&&q.data!==last){last=q.data;check(q.data)}}
-   raf=requestAnimationFrame(tick)}; tick();
+ try{ stream=await LRRQR.cam();LRRQR.attach($("vid"),stream,function(c){check(c)});$("res").textContent="📷 Visez le QR du billet…";
  }catch(e){$("res").textContent="Caméra indisponible : tapez le numéro du billet."}
 }
 const off=()=>{try{return JSON.parse(localStorage.getItem("lrr_off")||"[]")}catch(e){return[]}};
@@ -2884,10 +2879,45 @@ async function sellerNames(eid){if(SELC[eid])return SELC[eid];const N=[],get=asy
  if(Array.isArray(a))a.forEach(x=>x&&x.name&&N.push(x.name));if(Array.isArray(b))b.forEach(x=>{if(x){x.name&&N.push(x.name);x.code&&N.push(x.code)}});
  try{const e=(DBEV||[]).find(x=>x.id===eid)||(EV&&EV.e)||{},m=(e.modes||{}).sellers;if(Array.isArray(m))m.forEach(x=>x&&x.name&&N.push(x.name))}catch(x){}
  SELO[eid]={};N.forEach(n=>{const k=_nrm(n);if(k&&!SELO[eid][k])SELO[eid][k]=String(n).trim()});return SELC[eid]=N.map(_nrm).filter(Boolean)}
+/* Détecteur de nom de vendeur : majuscules/minuscules, accents, virgules, tirets, espaces en trop, mots inversés et petites fautes de frappe */
+const _lv=(a,b)=>{if(a===b)return 0;const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=[];for(let j=0;j<=n;j++)p[j]=j;for(let i=1;i<=m;i++){const c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]};
+const _sm=(a,b)=>{const L=Math.max(a.length,b.length);return L?1-_lv(a,b)/L:1};
+function _sellerScore(t,n){
+ if(t===n)return{s:1,k:"exact"};
+ const ct=t.replace(/ /g,""),cn=n.replace(/ /g,"");
+ if(ct===cn)return{s:1,k:"exact"};
+ const tw=t.split(" "),nw=n.split(" ");
+ if(tw.slice().sort().join(" ")===nw.slice().sort().join(" "))return{s:1,k:"exact"};
+ let best={s:0,k:""};
+ if(t.length>=3&&(n.includes(t)||t.includes(n)))best={s:.9,k:"partial"};
+ const cs=_sm(ct,cn);if(ct.length>=3&&cs>=.75&&cs>best.s)best={s:cs,k:"fuzzy"};
+ const tk=tw.filter(w=>w.length>=2);
+ if(tk.length){let sum=0,ok=true;tk.forEach(w=>{let b=0;nw.forEach(x=>{const v=w===x?1:(w.length>=3&&x.length>=3?_sm(w,x):0);if(v>b)b=v});if(b<.66)ok=false;sum+=b});
+  const ts=sum/tk.length;if(ok&&ts>=.75&&ts*.97>best.s)best={s:ts*.97,k:ts>=.999?"partial":"fuzzy"}}
+ if(best.s<.8&&tw.some(w=>w.length>=3&&nw.includes(w)))best={s:.8,k:"partial"};
+ return best}
+function _sellerBest(S,t){
+ const R=S.map(n=>{const r=_sellerScore(t,n);return{n,s:r.s,k:r.k}}).filter(r=>r.s>=.75).sort((a,b)=>b.s-a.s);
+ if(!R.length)return{m:null,amb:[]};
+ const top=R[0];return{m:top.n,k:top.k,s:top.s,amb:R.filter(r=>r.n!==top.n&&top.s-r.s<.04).map(r=>r.n)}}
+function _sellerHintEl(el){let h=document.getElementById("os_hint");if(!h){h=document.createElement("div");h.id="os_hint";h.style.cssText="margin:4px 2px 8px;font-size:13px;font-weight:600";el.insertAdjacentElement("afterend",h)}return h}
+function _sellerSay(el,kind,txt){const h=_sellerHintEl(el);h.style.color=kind==="ok"?"#1d8a56":kind==="warn"?"#b26a00":"#c0392b";h.textContent=txt}
+/* détection en direct : corrige le champ tout seul (comme le +243) */
+async function sellerLive(eid,el,final){
+ const t=_nrm(el.value);if(!t){_sellerSay(el,"ok","");return}
+ const S=await sellerNames(eid);if(!S.length){_sellerSay(el,"ok","");return}
+ const r=_sellerBest([...new Set(S)],t),O=SELO[eid]||{};
+ if(r.m&&!(r.amb.length&&r.k!=="exact")){
+  const nm=O[r.m]||r.m;
+  if(final||(r.k==="exact"&&!r.amb.length)){if(el.value!==nm)el.value=nm;_sellerSay(el,"ok","\u2713 Vendeur reconnu : "+nm)}
+  else _sellerSay(el,"ok","\u2713 Vendeur reconnu : "+nm+" (corrig\u00E9 automatiquement)")
+ }else if(r.m){_sellerSay(el,"warn","\u26A0\uFE0F Plusieurs vendeurs possibles : "+[r.m].concat(r.amb).map(n=>O[n]||n).join(", ")+". \u00C9crivez le nom complet.")}
+ else _sellerSay(el,"ko","\u26A0\uFE0F Ce nom n'est pas celui d'un vendeur de cet \u00E9v\u00E9nement.")}
 async function sellerOk(eid,typed){const t=_nrm(typed);if(!t)return true;const S=await sellerNames(eid);if(!S.length)return true;
- const tw=t.split(" "),m=S.find(n=>n===t)||S.find(n=>t.length>=3&&(n.includes(t)||t.includes(n)))||S.find(n=>n.split(" ").some(w=>w.length>=3&&tw.includes(w)));
- if(!m){alert("❌ Le nom « "+String(typed).trim()+" » n'est pas celui d'un vendeur ou d'un ambassadeur de cet événement.\nVérifiez le nom de la personne qui vous a vendu le billet, puis réessayez.");return false}
- const o=(SELO[eid]||{})[m],i=document.getElementById("os");if(o&&i)i.value=o;return true}
+ const r=_sellerBest([...new Set(S)],t),O=SELO[eid]||{};
+ if(r.m&&r.amb.length&&r.k!=="exact"){alert("\u26A0\uFE0F Plusieurs vendeurs correspondent \u00E0 \u00AB "+String(typed).trim()+" \u00BB : "+[r.m].concat(r.amb).map(n=>O[n]||n).join(", ")+".\n\u00C9crivez le nom complet du vendeur, puis r\u00E9essayez.");return false}
+ if(!r.m){alert("\u274C Le nom \u00AB "+String(typed).trim()+" \u00BB n'est pas celui d'un vendeur ou d'un ambassadeur de cet \u00E9v\u00E9nement.\nV\u00E9rifiez le nom de la personne qui vous a vendu le billet, puis r\u00E9essayez.");return false}
+ const o=O[r.m],i=document.getElementById("os");if(o&&i){i.value=o;_sellerSay(i,"ok","\u2713 Vendeur reconnu : "+o)}return true}
 async function ptSubmit(pcs,A,hasA){const e=EV.e,v=i=>$(i).value.trim(),p=pcs[0],t=(e.tickets||[]).find(t=>t.id===p.r.ticket_id);
  if(!t){alert("❌ Catégorie de ticket inconnue.");return}
  if(!(await sellerOk(e.id,v("os"))))return;
@@ -3008,8 +3038,7 @@ function orgBox(eid){const sm=orgSum(eid),ks=Object.keys(sm);
  const rows=ks.length?ks.map(c=>{const x=sm[c];return `<div class="sm" style="margin:4px 0">${esc(c)} : ventes ${mnyF(x.gross,c)} − commission ${PLAT_PCT}% (${mnyF(x.plat,c)}) = <b>net ${mnyF(x.net,c)}</b> • déjà reversé ${mnyF(x.paid,c)} • <b>reste ${mnyF(Math.max(x.net-x.paid,0),c)}</b></div>`}).join(""):'<div class="sm">Aucune vente en ligne confirmée pour le moment.</div>';
  return `<div class="x3" style="background:#f3f7f5;color:#0e2f2b"><b>💰 Mes ventes en ligne</b>${rows}<div class="sm">Le net est versé sur votre Mobile Money par l'administrateur. Les ventes encaissées directement par vous (réservation, espèces) ne sont pas incluses.</div></div><div class="g"><button class="btn dk" style="margin:0" onclick="orgScan('${eid}')">📷 Scanner</button>${window.ODB?``:""}</div>`}
 async function orgScan(eid){mo.classList.add("on");$("mc").innerHTML=`<h2 style="color:#000;margin-bottom:8px">📷 Scanner un billet</h2><video id="vid" playsinline muted></video><div id="res" style="margin:10px 0;font-size:14px"></div><input id="man" placeholder="ou tapez le code (EV-XXXXXXXX)" style="color:#000;background:#eee;margin-bottom:8px"><button class="ab" onclick="orgCheck('${eid}',$('man').value)">Vérifier</button><button class="ab" onclick="stopScan();closeMo()">Fermer</button>`;
- try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});const v=$("vid");v.srcObject=stream;await v.play();const cv=document.createElement("canvas"),cx=cv.getContext("2d");let last="";
-  const tick=()=>{if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const q=jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height);if(q&&q.data!==last){last=q.data;(async()=>{let c=q.data;try{if(window.f6Pre)c=await window.f6Pre(c)}catch(_){}if(c)orgCheck(eid,c);else $("res").innerHTML='<div class="ko">⚠️ QR expiré : demandez le billet actuel</div>'})()}}raf=requestAnimationFrame(tick)};tick();$("res").textContent="📷 Visez le QR du billet…"}catch(e){$("res").textContent="Caméra indisponible : autorisez la caméra, ou tapez le code du billet."}}
+ try{stream=await LRRQR.cam();LRRQR.attach($("vid"),stream,function(q){(async()=>{let c=q;try{if(window.f6Pre)c=await window.f6Pre(c)}catch(_){}if(c)orgCheck(eid,c);else $("res").innerHTML='<div class="ko">⚠️ QR expiré : demandez le billet actuel</div>'})()});$("res").textContent="📷 Visez le QR du billet…"}catch(e){$("res").textContent="Caméra indisponible : autorisez la caméra, ou tapez le code du billet."}}
 function orgCheck(eid,c){c=String(c||"").trim();const o=(ORD[eid]||[]).find(x=>ocode(x)===c.toUpperCase()||x.id===c.toLowerCase()),r=$("res");
  if(!o){r.innerHTML='<div class="ko">❌ Billet INTROUVABLE</div>';return}
  const info=`<b>${esc(o.name)}</b><br>${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}`;
@@ -3164,19 +3193,138 @@ async function ckPay(){const m=CKS.op;if(!m)return;const card=m==="card",mm=(CKS
 </script>
 <script>
 (function(){
-const J=[["Un bon billet, c'est comme une bonne blague : mieux vaut l'avoir avant que ça commence.","A good ticket is like a good joke: better to have it before things get going."],
-["Mon réveil sonne à 6 h, moi je me lève à 6 h 45. On n'a jamais eu la même notion du rendez-vous.","My alarm rings at 6, I get up at 6:45. We never agreed on what an appointment is."],
+const J=[["Mon médecin m'a dit de rire plus. J'ai pris un billet pour le Restau du Rire : c'est la seule ordonnance que j'ai suivie jusqu'au bout.","My doctor told me to laugh more. I bought a ticket to Restau du Rire: the only prescription I ever followed to the end."],
+["Mon téléphone avait 1 % de batterie. Il a tenu jusqu'à la porte de la salle, m'a regardé droit dans les yeux, puis il s'est éteint. Les traîtres ont un sens du timing.","My phone had 1% battery. It lasted until the hall door, looked me straight in the eye, then died. Traitors have great timing."],
+["« J'arrive dans 5 minutes » : unité de temps officielle qui varie de 5 minutes à la semaine prochaine.","\"I'll be there in 5 minutes\": the official unit of time that ranges from 5 minutes to next week."],
+["Mon cousin m'a dit : « Je te rends l'argent demain. » Cela fait 14 « demain ». Je commence à croire que c'est un pays.","My cousin said: \"I'll pay you back tomorrow.\" That was 14 tomorrows ago. I'm starting to think it's a country."],
+["Mon père dit : « À ton âge, je marchais 10 km pour aller à l'école. » Moi, à son âge, je marche 10 mètres pour trouver le réseau.","My dad says: \"At your age I walked 10 km to school.\" At his age, I walk 10 metres to find a signal."],
+["Un spectateur ronfle au premier rang. Le comédien : « Je prends ça pour un compliment : personne ne s'était senti aussi à l'aise chez moi depuis des années. »","A spectator snores in the front row. The comedian: \"I take it as a compliment: nobody has felt this comfortable at my place in years.\""],
+["Un monsieur arrive en retard : « J'ai raté le début ? » Le voisin : « Non, juste la blague sur les gens qui arrivent en retard. »","A man arrives late: \"Did I miss the start?\" His neighbour: \"No, only the joke about people who arrive late.\""],
+["Le comédien demande : « Y a-t-il des médecins dans la salle ? » Trois lèvent la main. « Parfait, vous soignerez ceux qui vont mourir de rire. »","The comedian asks: \"Any doctors in the room?\" Three raise a hand. \"Perfect, you'll treat those who die laughing.\""],
+["Dans mon quartier, le coq chante à 3 h du matin. Il n'a pas de montre, mais il a beaucoup d'avis.","In my neighbourhood the rooster crows at 3 a.m. He has no watch, but plenty of opinions."],
+["Quelqu'un a essayé d'entrer avec un faux billet. Le scanner a fait « BIP-BIP-BIP ». Même la machine a ri.","Someone tried to get in with a fake ticket. The scanner went \"BEEP-BEEP-BEEP\". Even the machine laughed."],
+["Mon scanner de billets est comme ma belle-sœur : il remarque tout, il ne pardonne rien, et on ne le trompe pas avec une photo floue.","The ticket scanner is like my sister-in-law: it notices everything, forgives nothing, and you can't fool it with a blurry photo."],
+["Mon réveil dit « Lève-toi ». Je réponds « Je négocie ». Il dit « Non négociable ». Alors on s'est mis d'accord sur 9 minutes de plus… depuis trois ans.","My alarm says \"Get up.\" I say \"I'm negotiating.\" It says \"Non-negotiable.\" So we agreed on 9 more minutes… three years ago."],
+["J'ai demandé une augmentation à mon patron. Il m'a dit : « Je vais y réfléchir. » Ça fait trois ans. Il doit avoir une très belle réflexion.","I asked my boss for a raise. He said: \"I'll think about it.\" That was three years ago. It must be a very deep thought."],
+["Si le rire était une monnaie, le Restau du Rire serait la banque centrale, et mes amis seraient en faillite.","If laughter were a currency, Restau du Rire would be the central bank and my friends would be bankrupt."],
+["Au marché : « Maman, combien le manioc ? — Pour toi, 2 000. — Mais c'est le double d'hier ! — Oui, hier tu n'étais pas cliente VIP. »","At the market: \"How much for the cassava? — For you, 2,000. — That's double yesterday's price! — Yes, yesterday you weren't a VIP customer.\""],
+["Mon ami dit qu'il ne rit jamais. Je l'ai emmené au spectacle : il a ri si fort qu'on a dû lui rendre son sérieux à la sortie.","My friend says he never laughs. I took him to the show: he laughed so hard we had to give him his serious face back at the exit."],
+["Quand je dis « je regarde mon téléphone une minute », mon téléphone entend « rendez-vous dans deux heures ».","When I say \"I'll check my phone for a minute\", my phone hears \"see you in two hours\"."],
+["Les promesses de mes amis : « Je viens sans faute. » Traduction : « Je viens avec une faute, je l'ai déjà choisie. »","My friends' promises: \"I'll come, no fail.\" Translation: \"I'll fail, I've already picked the excuse.\""],
+["Mon voisin sent le poulet braisé à trois quartiers de distance. Certains ont un sixième sens, lui a un sens de l'appétit.","My neighbour can smell grilled chicken three blocks away. Some have a sixth sense, he has a sense of appetite."],
+["Le comédien : « Y a un Patrick dans la salle ? » Dix mains se lèvent. « Désolé, je cherchais celui qui m'a emprunté 50 dollars en 2019. »","The comedian: \"Is there a Patrick in the room?\" Ten hands go up. \"Sorry, I meant the one who borrowed $50 from me in 2019.\""],
+["J'ai essayé le yoga. Le prof a dit : « Lâchez prise. » J'ai lâché mon téléphone. Il a atterri sur le prof.","I tried yoga. The teacher said \"Let go.\" I let go of my phone. It landed on the teacher."],
+["J'ai voulu faire un régime. Le premier jour, j'ai perdu 2 kg… de patience. Le deuxième jour, j'ai retrouvé le frigo.","I tried a diet. Day one I lost 2 kg… of patience. Day two I found the fridge again."],
+["J'ai demandé une blague à l'assistant IA. Il m'a répondu : « Ton solde Mobile Money. » Je ne lui parle plus.","I asked the AI assistant for a joke. It answered: \"Your Mobile Money balance.\" I'm not talking to it anymore."],
+["Mon forfait internet, c'est comme mon salaire : le 5 du mois il est énorme, le 20 il a disparu, le 28 je fais semblant de ne pas le chercher.","My data plan is like my salary: huge on the 5th, gone by the 20th, and on the 28th I pretend I'm not looking for it."],
+["Au guichet : « Vous prenez Mobile Money ? — On prend aussi les sourires. — Alors je vous paie en dix ans de sourires. »","At the counter: \"Do you take Mobile Money? — We also take smiles. — Then I'll pay you in ten years of smiles.\""],
+["J'ai pris un billet VIP : j'ai maintenant la meilleure place pour voir tous ceux qui arrivent en retard devant moi.","I bought a VIP ticket: I now have the best seat to watch everyone who arrives late walk in front of me."],
+["Un spectateur au comédien : « Vous êtes drôle, faites ça à plein temps ! — C'est ce que je fais, madame. — Ah… alors c'est moins drôle. »","A spectator to the comedian: \"You're funny, you should do this full time!\" \"I do, madam.\" \"Oh… then it's less funny.\""],
+["Mon chat me regarde comme un huissier chaque fois que la gamelle est vide.","My cat looks at me like a bailiff every time the bowl is empty."],
+["Le fou rire, c'est comme le hoquet : plus on essaie de s'arrêter, plus on est ridicule, surtout en pleine réunion sérieuse.","A fit of laughter is like hiccups: the harder you try to stop, the sillier you look, especially in a serious meeting."],
+["Ma grand-mère disait : « Qui rit le vendredi pleure le dimanche. » Elle n'a jamais dit pourquoi, mais elle a ri tous les vendredis.","My grandmother used to say: \"Who laughs on Friday cries on Sunday.\" She never said why, but she laughed every Friday."],
+["Un artiste dit qu'il vit de son art. Sa voisine dit qu'il vit surtout de ses voisins.","An artist says he lives off his art. His neighbour says he mostly lives off his neighbours."],
+["Il y a trois sortes de gens : ceux qui arrivent à l'heure, ceux qui arrivent en retard, et ceux qui arrivent à la fin pour dire qu'ils ont tout vu.","There are three kinds of people: those who arrive on time, those who arrive late, and those who show up at the end to say they saw it all."],
+["Mon voisin répare la lumière « ce week-end » depuis 2022. Personne ne sait de quel week-end il parle.","My neighbour has been fixing the light \"this weekend\" since 2022. Nobody knows which weekend he means."],
+["Un bon billet, c'est comme une bonne blague : mieux vaut l'avoir avant que ça commence.","A good ticket is like a good joke: better to have it before things get going."],
 ["Le secret d'une bonne soirée : arriver tôt, garder son rire en réserve et ne pas oublier son QR code.","The secret of a good night: arrive early, keep your laugh in reserve and don't forget your QR code."],
 ["Mon portefeuille dit qu'il faut économiser. Mon cœur répond : il y a un gala d'humour le 27 décembre.","My wallet says save money. My heart replies: there is a comedy gala on 27 December."],
-["Rire dix minutes, c'est gratuit. Rire toute une soirée, ça s'appelle le Restau du Rire.","Laughing for ten minutes is free. Laughing all night is called Restau du Rire."],
-["On dit que le rire est le meilleur remède. Ici, l'ordonnance se retire en ligne.","They say laughter is the best medicine. Here, the prescription is picked up online."],
-["Un spectacle sans fou rire, c'est un repas sans sel : on peut l'avaler, mais on ne s'en souvient pas.","A show without laughter is a meal without salt: you can swallow it, but you won't remember it."]];
+["J'ai écrit mon code au dos du ticket avec un stylo qui n'écrit plus. Je l'ai gravé avec l'ongle. Le contrôleur a validé par pitié.","I wrote my code on the back of the ticket with a dead pen. I carved it with my fingernail. The checker approved out of pity."],
+["Un spectacle sans fou rire, c'est un repas sans sel : on peut l'avaler, mais on ne s'en souvient pas.","A show without laughter is a meal without salt: you can swallow it, but you won't remember it."],
+["Mon ami m'a dit « je décide à la dernière minute ». À la dernière minute, il n'y avait plus de places. Il a décidé de m'en vouloir.","My friend said \"I'll decide at the last minute.\" At the last minute there were no seats left. He decided to blame me."],
+["Rire dix minutes, c'est gratuit. Rire toute une soirée, ça s'appelle le Restau du Rire.","Laughing for ten minutes is free. Laughing all night is called Restau du Rire.",
+["Mon père m'a dit : « Mon fils, l'argent ne fait pas le bonheur. » Je lui ai demandé de me le prouver en me prêtant le sien.","My dad told me: \"Son, money can't buy happiness.\" I asked him to prove it by lending me his."],
+["Le réseau, c'est comme un ex : quand tu n'en as plus besoin, il revient tout seul avec toutes les barres.","The network is like an ex: when you no longer need it, it comes back on its own with full bars."],
+["Mon forfait m'annonce : « Il vous reste 2 Mo. » Avec ça, je peux envoyer un « Bonjour » et attendre la réponse jusqu'à Noël.","My data plan says: \"You have 2 MB left.\" Enough to send a \"Hello\" and wait for the reply until Christmas."],
+["Ma mère cherche ses lunettes depuis 20 minutes. Elles sont sur sa tête. Je le lui dis. Elle répond : « Ne me parle pas, je réfléchis. »","My mum has been looking for her glasses for 20 minutes. They're on her head. I tell her. She says: \"Don't talk to me, I'm thinking.\""],
+["Quand mon ami dit « je te donne la moitié », il parle toujours de la moitié de la sauce, jamais de la moitié du poulet.","When my friend says \"I'll give you half\", he always means half of the sauce, never half of the chicken."],
+["J'ai dit au taxi-moto d'aller doucement. Il a répondu « pas de souci patron », puis il a doublé un camion en priant à voix haute. J'ai retrouvé la foi ce jour-là.","I told the motorbike taxi to go slowly. He said \"no worries boss\", then overtook a truck praying out loud. I found my faith that day."],
+["Mon cousin dit qu'il est « en route ». Il est en réalité en train de chercher ses chaussures. Ce n'est pas de la route, c'est de la poésie.","My cousin says he's \"on his way\". He's actually looking for his shoes. That's not a journey, that's poetry."],
+["Mon médecin m'a dit de marcher 30 minutes par jour. Je marche donc 30 minutes… entre le frigo et le salon. Je fais du sport de haut niveau.","My doctor told me to walk 30 minutes a day. So I walk 30 minutes… between the fridge and the living room. I'm an elite athlete."],
+["Le comédien demande : « Qui est venu avec sa belle-mère ? » Une seule main se lève, très lentement, très bas. On sent le courage.","The comedian asks: \"Who came with their mother-in-law?\" One hand rises, very slowly, very low. You can feel the courage."],
+["À la banque : « Votre solde est de 3 dollars. » — « Dites-le-moi doucement, j'ai le cœur fragile. »","At the bank: \"Your balance is 3 dollars.\" \"Tell me gently, I have a weak heart.\""],
+["Ma tante fait un pili-pili si fort qu'il faut signer une décharge avant de goûter.","My aunt makes a chilli sauce so hot you have to sign a waiver before tasting."],
+["Je ne suis pas en retard : je laisse simplement aux autres le temps de s'installer et de dire du mal de moi.","I'm not late: I'm just giving everyone time to settle in and speak badly about me."],
+["Quand le courant revient, tout le quartier crie de joie. C'est le seul but qu'on fête sans match.","When the power comes back, the whole street cheers. It's the only goal we celebrate without a match."],
+["Mon téléphone affiche « Mémoire pleine ». J'ai effacé les photos de mes vacances. Il garde encore 600 captures d'écran de « merci pour ta réponse ».","My phone says \"Storage full\". I deleted my holiday photos. It's still keeping 600 screenshots of \"thanks for your reply\"."],
+["Le Wi-Fi de mon voisin s'appelle « Pas pour toi ». Je l'ai craqué au troisième essai : le mot de passe était « paspourtoi ».","My neighbour's Wi-Fi is called \"Not For You\". I cracked it on the third try: the password was \"notforyou\"."],
+["Chez nous, le système de sécurité le plus avancé, c'est ma mère : aucun voleur n'entre, aucun enfant ne sort.","At home the most advanced security system is my mother: no thief gets in, no child gets out."],
+["Mon grand frère m'a dit : « Étudie, tu auras un bon travail. » J'ai maintenant un bon diplôme et un très bon canapé… chez mes parents.","My big brother said: \"Study hard and you'll get a good job.\" Now I have a great degree and a great sofa… at my parents' house."],
+["Une femme dit à son mari : « Tu ne m'écoutes jamais ! » Lui : « Hein ? Tu disais quoi ? »","A woman tells her husband: \"You never listen to me!\" He says: \"Huh? What were you saying?\""],
+["Mon ami est si radin qu'il compte ses pas pour ne pas user ses chaussures.","My friend is so stingy he counts his steps so he doesn't wear out his shoes."],
+["Au restaurant : « Garçon, il y a une mouche dans ma soupe ! » — « Rassurez-vous monsieur, elle ne mange pas beaucoup. »","At the restaurant: \"Waiter, there's a fly in my soup!\" \"Don't worry sir, it doesn't eat much.\""],
+["J'ai voulu devenir végétarien. Le soir, j'ai senti l'odeur des brochettes. J'ai découvert que mes principes sont comestibles.","I tried to become vegetarian. That evening I smelled the grilled skewers. I discovered my principles are edible."],
+["Mon patron dit que je manque d'ambition. Je lui ai répondu que mon ambition, c'est vendredi 17 h.","My boss says I lack ambition. I told him my ambition is Friday at 5 p.m."],
+["J'ai dit à mon réveil : « Sois gentil. » Il a sonné encore plus fort. Même les objets ont un caractère.","I told my alarm clock: \"Be nice.\" It rang even louder. Even objects have attitude."],
+["On dit que rire prolonge la vie. À ce rythme, au Restau du Rire, on va tous vivre jusqu'à 120 ans… et arriver en retard à notre propre enterrement.","They say laughter prolongs life. At this rate, at Restau du Rire we'll all live to 120… and be late for our own funeral."],
+["Moi : « Ce soir je dors tôt. » Moi à 3 h du matin, en train de regarder comment on fabrique des crayons.","Me: \"Tonight I'm going to bed early.\" Me at 3 a.m., watching how pencils are made."],
+["Mon oncle parle cinq langues : le français, le swahili, le lingala, l'anglais… et le silence quand sa femme entre dans la pièce.","My uncle speaks five languages: French, Swahili, Lingala, English… and silence when his wife walks into the room."],
+["Mon voisin joue de la guitare depuis trois ans. Il maîtrise déjà l'accordage. C'est un artiste, il prend son temps.","My neighbour has played guitar for three years. He has already mastered tuning. He's an artist, he takes his time."],
+["Les femmes disent « je n'ai rien à me mettre » devant une armoire pleine. Les hommes disent « il n'y a rien à manger » devant un frigo plein. Enfin l'égalité.","Women say \"I have nothing to wear\" in front of a full wardrobe. Men say \"there's nothing to eat\" in front of a full fridge. Finally, equality."],
+["Au marché : « Je te fais un prix d'ami. » J'ai répondu : « Je ne suis pas ton ami. » Il a baissé de moitié. Les amitiés se négocient.","At the market: \"I'll give you a friend's price.\" I said: \"I'm not your friend.\" He halved it. Friendships are negotiable."],
+["Mon coiffeur demande toujours « comme d'habitude ? ». Je dis oui. Pourtant je ressors chaque fois différent. Il a des habitudes très créatives.","My barber always asks \"the usual?\". I say yes. Yet I come out different every time. He has very creative habits."],
+["Dans ma famille, il y a deux équipes : ceux qui cuisinent et ceux qui critiquent. Je suis le capitaine de la deuxième.","In my family there are two teams: those who cook and those who criticise. I'm the captain of the second."],
+["Mon voisin m'a dit qu'il me rendrait mon marteau. C'était en 2019. Je crois qu'il l'a pris pour un cadeau d'anniversaire.","My neighbour said he'd return my hammer. That was in 2019. I think he took it as a birthday present."],
+["Mon cousin a lancé son business : il vend des téléphones avec batterie incluse. « Incluse, mais déjà à 3 %. »","My cousin launched a business: he sells phones with the battery included. \"Included, but already at 3%.\""],
+["Ma belle-mère m'a dit : « Tu as maigri ! » J'ai pris 4 kilos. C'est ça, l'amour : une balance qui ne dit que du bien.","My mother-in-law said: \"You've lost weight!\" I gained 4 kilos. That's love: a scale that only says nice things."],
+["Celui qui a dit que l'argent ne fait pas le bonheur n'a jamais vu un homme trouver 5 000 francs dans un vieux pantalon.","Whoever said money can't buy happiness never saw a man find 5,000 francs in an old pair of trousers."],
+["J'ai cherché mes clés pendant une heure. Elles étaient dans ma main. Pas de panique : je voulais seulement les retrouver avec dignité.","I searched for my keys for an hour. They were in my hand. Don't panic: I just wanted to find them with dignity."],
+["Un homme dit au médecin : « Docteur, j'oublie tout ! » — « Depuis quand ? » — « Depuis quand quoi ? »","A man tells the doctor: \"Doctor, I forget everything!\" \"Since when?\" \"Since when what?\""],
+["Mon voisin a un coq, trois chiens et une voix de baryton. À 5 h du matin, c'est un orchestre. Pas de billet, mais le spectacle est complet.","My neighbour has a rooster, three dogs and a baritone voice. At 5 a.m. it's an orchestra. No ticket needed, but the show is sold out."],
+["Le Wi-Fi gratuit, c'est comme un mariage : tout le monde est là, personne ne sait comment ça marche, et tout le monde se plaint à la fin.","Free Wi-Fi is like a wedding: everyone's there, nobody knows how it works, and everyone complains at the end."],
+["Mon chien a mangé mon billet. Il était persuadé d'y trouver le spectacle. Il a trouvé le QR code. Indigeste.","My dog ate my ticket. He was convinced the show was inside. He found the QR code. Indigestible."],
+["Un spectateur à son voisin : « Vous riez toujours à l'avance ? » — « J'ai payé mon billet, j'ai droit aux intérêts. »","A spectator asks his neighbour: \"Do you always laugh in advance?\" \"I paid for my ticket, I'm entitled to the interest.\""],
+["Le secret d'un couple heureux : lui fait semblant d'écouter, elle fait semblant de le croire.","The secret of a happy couple: he pretends to listen, she pretends to believe him."],
+["Mon réveil et moi, c'est compliqué : il m'appelle tous les jours, et je le rejette tous les jours.","My alarm clock and I have a complicated relationship: it calls me every day, and I decline every day."],
+["Si les blagues rapportaient de l'argent, mon oncle serait milliardaire : il se raconte les siennes tout seul depuis 1987.","If jokes paid, my uncle would be a billionaire: he's been telling himself his own since 1987."],
+["J'ai voulu me lever tôt pour être productif. À 6 h j'étais debout. À 6 h 05, j'étais productif… dans mon lit.","I tried to get up early to be productive. At 6 a.m. I was up. At 6:05 I was productive… in bed."],
+["Mon ami et moi, on est fauchés tous les deux. On a monté une entreprise : zéro capital, deux directeurs, aucun salaire.","My friend and I are both broke. We started a company: zero capital, two directors, no salary."],
+["Mon ami a dormi pendant tout le spectacle. Il a quand même mis cinq étoiles : « Fauteuils très confortables. »","My friend slept through the whole show. He still gave five stars: \"Very comfortable seats.\""],
+["La vie est belle : on naît, on grandit, et un jour on reçoit un SMS : « Votre forfait est épuisé. »","Life is beautiful: you're born, you grow up, and one day you get a text: \"Your data plan is exhausted.\""],
+["Mon père connaît tous les raccourcis. Résultat : on arrive toujours un jour plus tard, mais par un très beau chemin.","My dad knows all the shortcuts. Result: we always arrive a day later, but by a very scenic route."],
+["Mon fils m'a dit : « Papa, je t'aime. » J'ai demandé : « Combien ? » Il a répondu : « 5 000 francs. »","My son said: \"Dad, I love you.\" I asked: \"How much?\" He said: \"5,000 francs.\""],
+["Ma grand-mère a un remède pour tout : le mal de tête, boire de l'eau. Le mal de ventre, boire de l'eau. Le mal d'amour… boire de l'eau. Un plan de santé très stable.","My grandmother has a cure for everything: headache, drink water. Stomach ache, drink water. Heartbreak… drink water. A very stable health plan."],
+["Ma voisine n'est pas curieuse, mais elle connaît mon forfait téléphone avant moi.","My neighbour isn't nosy, but she knows my phone plan before I do."],
+["J'ai acheté un cadenas pour mon vélo. Le voleur a pris le vélo et m'a laissé le cadenas. Au moins, il a respecté ma décision.","I bought a padlock for my bike. The thief took the bike and left me the padlock. At least he respected my decision."],
+["Le comédien : « Éteignez vos téléphones ! » Trois cents spectateurs obéissent. Les trois cents autres cherchent le bouton « éteindre » depuis la dernière mise à jour.","The comedian: \"Switch off your phones!\" Three hundred people obey. The other three hundred have been looking for the \"off\" button since the last update."],
+["Mon oncle dit que le QR code, c'est de la sorcellerie moderne. Il a raison : tu montres un carré noir à un monsieur, et il te laisse entrer.","My uncle says the QR code is modern witchcraft. He's right: you show a black square to a man and he lets you in."],
+["Mon QR code était si beau que le scanner a fait « oooh » avant de dire « valide ».","My QR code was so beautiful the scanner went \"ooh\" before saying \"valid\"."],
+["Il y a ceux qui entrent dans une salle et saluent tout le monde, et ceux qui cherchent d'abord où est la nourriture. Moi, je suis bien élevé : je salue la nourriture.","Some people walk into a room and greet everyone, others look for the food first. I'm well brought up: I greet the food."],
+["Le comédien a été si drôle que mon voisin a oublié de me dire du mal de ma coiffure. Merci l'art !","The comedian was so funny that my neighbour forgot to criticise my haircut. Thank you, art!"],
+["Mon téléphone s'est éteint pendant un appel important. J'ai crié « Allô ? » pendant quatre minutes. Le voisin d'en face m'a répondu : « Oui ? » On est devenus amis.","My phone died during an important call. I shouted \"Hello?\" for four minutes. The neighbour across the street answered: \"Yes?\" We became friends."],
+["Dans mon quartier, le DJ du mariage a dit « dernière chanson ». Quatre heures plus tard, c'était toujours la dernière chanson.","In my neighbourhood the wedding DJ said \"last song\". Four hours later it was still the last song."],
+["Ma sœur met trois heures pour se préparer. Quand elle dit « je suis prête », le taxi est déjà reparti deux fois.","My sister takes three hours to get ready. When she says \"I'm ready\", the taxi has already left twice."],
+["L'amour, c'est partager ses frites. Le vrai amour, c'est partager la dernière.","Love is sharing your fries. True love is sharing the last one."],
+["La différence entre moi et un GPS : lui recalcule l'itinéraire, moi je continue tout droit en priant.","The difference between me and a GPS: it recalculates, I keep going straight and pray."],
+["J'ai dit à mon docteur : « Je me sens vieux. » Il a répondu : « Vous avez 29 ans. » J'ai dit : « Oui, mais mon dos en a 80. »","I told my doctor: \"I feel old.\" He said: \"You're 29.\" I said: \"Yes, but my back is 80.\""],
+["Ma mère a trois niveaux de colère : mon prénom, mon prénom complet, et mon prénom complet avec le nom de mon père.","My mother has three levels of anger: my first name, my full name, and my full name with my father's surname."],
+["Je n'ai pas peur du noir. J'ai peur de la facture d'électricité quand j'allume la lumière.","I'm not afraid of the dark. I'm afraid of the electricity bill when I turn the light on."],
+["Hier j'ai dit « je commence mon régime lundi ». Aujourd'hui, nous sommes mardi. Mon régime et moi, on a décidé de se donner du temps.","Yesterday I said \"my diet starts Monday\". Today is Tuesday. My diet and I decided to give each other time."],
+["Mon ami m'a demandé un conseil sur l'amour. Je lui ai dit : « Demande à quelqu'un qui est marié. » Il a demandé à un célibataire, et c'est lui qui s'est senti mieux.","My friend asked me for love advice. I said: \"Ask someone who's married.\" He asked a bachelor instead, and he felt better."],
+["Le serveur m'a demandé : « Plat du jour ou plat du soir ? » J'ai répondu : « Plat du mois, si possible, j'ai faim depuis le début du mois. »","The waiter asked: \"Dish of the day or dish of the evening?\" I said: \"Dish of the month, if possible, I've been hungry since the start of the month.\""],
+["Le comédien a demandé à un spectateur : « Vous faites quoi dans la vie ? » — « Je suis chômeur. » — « Pas de souci, ici aussi, on a un rôle pour vous : le public. »","The comedian asked a spectator: \"What do you do for a living?\" \"I'm unemployed.\" \"No problem, we have a role for you here too: the audience.\""],
+["Mon voisin a trois téléphones, deux cartes SIM chacun, et pourtant il crie « Allô ? Allô ? » comme si le réseau était dans l'autre village.","My neighbour has three phones, two SIM cards each, and still shouts \"Hello? Hello?\" as if the signal were in the next village."],
+["Je lui ai dit « tu as changé ». Elle m'a répondu « oui, d'avis, de numéro et de quartier ». Au moins, elle est cohérente.","I told her \"you've changed\". She replied \"yes: my mind, my number and my neighbourhood\". At least she's consistent."],
+["J'ai gagné un concours de rire. Le jury a dit : « Il ne rit pas très bien, mais il rit longtemps. » Je garde le trophée sur la télé.","I won a laughing contest. The jury said: \"He doesn't laugh very well, but he laughs for a long time.\" The trophy's on my TV."],
+["Mon fils a dit qu'il voulait devenir comédien. Je lui ai dit : « Fais d'abord rire ta mère. » Elle a ri… en voyant ses notes.","My son said he wanted to be a comedian. I told him: \"First make your mother laugh.\" She laughed… when she saw his grades."],
+["Dans la salle, il y a trois sortes de rires : le poli, le vrai, et celui qui part une seconde après tout le monde parce qu'il vient de comprendre.","In the hall there are three kinds of laughter: the polite one, the real one, and the one that starts a second after everyone else because it just understood."],
+["Hier soir j'ai dit à ma femme : « Tu es la lumière de ma vie. » Elle m'a répondu : « Alors paie la facture de lumière. »","Last night I told my wife: \"You're the light of my life.\" She said: \"Then pay the electricity bill.\""],
+["Un bon comédien fait rire avec une phrase. Mon oncle y arrive avec « je vais vous dire une chose ». Les gens rient déjà.","A good comedian makes you laugh with one sentence. My uncle manages it with \"let me tell you something\". People are already laughing."],
+["Mon voisin m'a dit « je passe dans 5 minutes ». C'était il y a trois semaines. J'ai fini par ajouter son nom sur mes meubles.","My neighbour said \"I'll drop by in 5 minutes\". That was three weeks ago. I've started labelling my furniture with his name."],
+["Au Restau du Rire, il n'y a qu'un seul danger : mourir de rire, et rater la fin du spectacle.","At Restau du Rire there's only one danger: dying of laughter and missing the end of the show."],
+["Mon billet est sur mon téléphone, mon téléphone est à 4 %, et ma chance est à 0 %. Mais mon QR code, lui, est parfaitement en forme.","My ticket is on my phone, my phone is at 4%, and my luck is at 0%. But my QR code is in perfect shape."]]];
+let idx=null,bag=[];
+function nextJoke(){if(!bag.length){bag=J.map(function(_,i){return i}).filter(function(i){return i!==idx});for(let i=bag.length-1;i>0;i--){const k=Math.floor(Math.random()*(i+1));const t=bag[i];bag[i]=bag[k];bag[k]=t}}return bag.pop()}
+function today(){return Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5)%J.length}
 function draw(){
  const en=(typeof lang!=="undefined"&&lang==="en");
- const d=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/864e5);
- const j=J[d%J.length];
- const a=document.getElementById("rrjoke");
- if(a)a.textContent=en?j[1]:j[0];
+ if(idx===null)idx=today();
+ const j=J[idx],a=document.getElementById("rrjoke");
+ if(a){a.style.cssText="font-size:15px;line-height:1.45;font-weight:600";a.textContent="😂 "+(en?j[1]:j[0]);
+  if(!document.getElementById("rrjokebtn")){const b=document.createElement("button");b.id="rrjokebtn";b.type="button";
+   b.style.cssText="margin-top:10px;border:0;border-radius:999px;padding:9px 16px;font-weight:800;font-size:13px;background:#f5b800;color:#111;cursor:pointer";
+   b.onclick=function(ev){ev.stopPropagation();idx=nextJoke();draw()};a.insertAdjacentElement("afterend",b)}
+  const b=document.getElementById("rrjokebtn");b.textContent=en?"🤣 Another joke":"🤣 Une autre blague"}
 }
 draw();addEventListener("hashchange",draw);document.addEventListener("click",()=>setTimeout(draw,60));
 })();
@@ -3977,7 +4125,7 @@ function scanUI(){const el=$("v-dscan"),c=counts(),title=S.title||ld("lrr_title_
  <button class="p4b" onclick="p5Sync()">🔄 Synchroniser</button><button class="p4b" onclick="p5Out()">Quitter</button></div>`;startCam();window.addEventListener("online",()=>p5Sync(),{once:true})}
 window.p5Out=()=>{stopCam();sessionStorage.removeItem("lrr_pin_"+S.id);dscan(S.id)};
 window.p5Sync=async function(){const ok=await sync();toast(ok?"Synchronisé ✅":"Pas de connexion");scanUI()};
-async function startCam(){try{S.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});const v=$("dv");v.srcObject=S.stream;await v.play();const cv=document.createElement("canvas"),cx=cv.getContext("2d");let last="",lt=0;const tick=()=>{if(!$("dv")){stopCam();return}if(v.videoWidth){cv.width=v.videoWidth;cv.height=v.videoHeight;cx.drawImage(v,0,0);const q=window.jsQR&&jsQR(cx.getImageData(0,0,cv.width,cv.height).data,cv.width,cv.height);if(q&&(q.data!==last||Date.now()-lt>4000)){last=q.data;lt=Date.now();f6Pre(q.data).then(c=>{if(c)p5Check(c)})}}S.raf=requestAnimationFrame(tick)};tick()}catch(x){const r=$("dr");if(r)r.innerHTML='<p class="sm">Caméra indisponible : tapez le code du billet.</p>'}}
+async function startCam(){try{S.stream=await LRRQR.cam();LRRQR.attach($("dv"),S.stream,function(c){f6Pre(c).then(function(x){if(x)p5Check(x)})})}catch(x){const r=$("dr");if(r)r.innerHTML='<p class="sm">Caméra indisponible : tapez le code du billet.</p>'}}
 function stopCam(){cancelAnimationFrame(S.raf);if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
 function show(cls,html){const r=$("dr");if(r)r.innerHTML=`<div class="p5res ${cls}">${html}</div>`;try{navigator.vibrate&&navigator.vibrate(cls==="ok"?60:[120,60,120])}catch(e){}}
 window.p5Check=async function(code){code=String(code||"").trim();if(!code)return;const door=($("dd")||{}).value||S.door,cu=code.toUpperCase().replace(/\s/g,"");
@@ -5403,7 +5551,7 @@ window.f8Req=async function(eid){let l=[];try{l=await api("special_requests?even
  M("<h3>📝 Demandes de tarif spécial</h3>"+(l.length?l.map(r=>'<div class="f6c"><b>'+E(r.name)+'</b> · '+E(r.kind)+'<br>'+E(r.note||"")+'<br>'+E(r.status)+' <button class="p4b" onclick="f8ReqSet(\''+r.id+'\',\'approved\',\''+eid+'\')">✔ Accepter</button><button class="p4b" onclick="f8ReqSet(\''+r.id+'\',\'refused\',\''+eid+'\')">✖ Refuser</button></div>').join(""):"<p>Aucune demande.</p>"))};
 window.f8ReqSet=async function(id,s,eid){try{await patch("special_requests?id=eq."+id,{status:s})}catch(e){}f8Req(eid)};
 /* 4. Sponsors */
-(async function(){let l=[];try{l=await api("sponsors?active=eq.true&select=id,name,logo_url,link&limit=20")}catch(e){}if(!l.length)return;const b=document.createElement("div");b.id="f8sp";document.body.appendChild(b);let i=0;
+(async function(){return;let l=[];try{l=await api("sponsors?active=eq.true&select=id,name,logo_url,link&limit=20")}catch(e){}if(!l.length)return;const b=document.createElement("div");b.id="f8sp";document.body.appendChild(b);let i=0;
  const show=()=>{const s=l[i++%l.length];b.innerHTML="<small>Partenaire</small> "+(s.logo_url?'<img src="'+E(s.logo_url)+'" alt="">':"")+"<b>"+E(s.name)+"</b>";b.onclick=()=>{rp("sponsor_hit",{p_id:s.id,p_kind:"click"}).catch(()=>{});if(s.link)window.open(s.link,"_blank")};rp("sponsor_hit",{p_id:s.id,p_kind:"view"}).catch(()=>{})};show();setInterval(show,8000)})();
 window.f8SpAdd=async function(eid){const n=prompt("Nom du sponsor :");if(!n)return;const lg=prompt("Lien du logo (https://…, facultatif) :")||null,lk=prompt("Lien du site du sponsor (facultatif) :")||null;try{await post("sponsors",{event_id:eid,name:n,logo_url:lg,link:lk});alert("✅ Sponsor ajouté.")}catch(e){alert("❌ Échec")}};
 window.f8SpStats=async function(eid){let l=[];try{l=await api("sponsors?event_id=eq."+eid+"&select=name,views,clicks,active")}catch(e){}M("<h3>📈 Retour sponsors</h3>"+(l.length?l.map(s=>'<div class="f6c"><b>'+E(s.name)+'</b><br>👁️ '+s.views+' vues · 👆 '+s.clicks+' clics'+(s.views?' ('+Math.round(s.clicks/s.views*100)+' %)':"")+'</div>').join(""):"<p>Aucun sponsor.</p>"))};
@@ -7413,7 +7561,7 @@ async function pdfNew(M){
   doc.setFillColor(17,17,17);doc.rect(0,0,PW,36,"F");
   doc.setFillColor(245,184,0);doc.rect(0,36,PW,6.4,"F");
   try{doc.addImage(IMG.tk,"PNG",ML,3.2,90,30)}catch(e){}
-  doc.setFont("helvetica","bolditalic");doc.setFontSize(9.5);doc.setTextColor(0);if(doc.getNumberOfPages()===1)T(HEAD.quote,PW/2,40.6,{align:"center"});
+  doc.setFont("helvetica","bolditalic");doc.setFontSize(9.5);doc.setTextColor(0);if(doc.getNumberOfPages()===2)T(HEAD.quote,PW/2,40.6,{align:"center"});
   const pill=(y,ic)=>{const w=18,h=7.4,x=PW-MR-w;doc.setFillColor(17,17,17);doc.setDrawColor(245,184,0);doc.setLineWidth(.35);doc.roundedRect(x,y,w,h,h/2,h/2,"FD");
    try{doc.addImage(ICO[ic],"PNG",x+w/2-2.5,y+h/2-2.5,5,5)}catch(e){}};
   doc.setTextColor(255);doc.setFont("helvetica","normal");doc.setFontSize(8.5);
@@ -7423,6 +7571,41 @@ async function pdfNew(M){
   const contHead=()=>{drawHead();X.y=50;doc.setTextColor(0)};
  const newPage=()=>{doc.addPage();contHead()};X.newPage=newPage;
  X.need=h=>{if(X.y+h>BOT)newPage()};
+
+  const qrData=(t,sz)=>{try{const d=document.createElement("div");new QRCode(d,{text:String(t),width:sz,height:sz});const c=d.querySelector("canvas");return c?c.toDataURL("image/png"):""}catch(e){return ""}};
+  const drawCover=()=>{
+   doc.setFillColor(17,17,17);doc.rect(0,0,PW,297,"F");
+   try{doc.setGState(new doc.GState({opacity:.1}));doc.addImage(IMG.tkwm,"PNG",(PW-150)/2,98,150,150);doc.setGState(new doc.GState({opacity:1}))}catch(e){try{doc.setGState(new doc.GState({opacity:1}))}catch(x){}}
+   try{doc.addImage(IMG.tk,"PNG",ML,16,90,30)}catch(e){}
+   doc.setFont("helvetica","bolditalic");doc.setFontSize(9.5);doc.setTextColor(245,184,0);T("\u00AB "+HEAD.quote+" \u00BB",PW-MR,32,{align:"right"});
+   doc.setFont("helvetica","bold");doc.setFontSize(9);doc.setTextColor(245,184,0);T((M.kindLabel||"Document officiel").toUpperCase(),ML,88,{charSpace:1.4});
+   doc.setFillColor(245,184,0);doc.rect(ML,91,14,1.4,"F");
+   const ttl=cl(M.full||M.title);let fs=30;doc.setFont("helvetica","bold");doc.setFontSize(fs);let ls=doc.splitTextToSize(ttl,CW);
+   while(ls.length>4&&fs>18){fs-=2;doc.setFontSize(fs);ls=doc.splitTextToSize(ttl,CW)}
+   let y=108;ls.forEach((l,i)=>{doc.setTextColor.apply(doc,(i===ls.length-1&&ls.length>1)||ls.length===1&&false?[245,184,0]:[255,255,255]);T(l,ML,y);y+=fs*.47});
+   y+=4;
+   if(M.evWhen){doc.setFont("helvetica","bold");doc.setFontSize(12);doc.setTextColor(245,184,0);doc.splitTextToSize(cl(M.evWhen),CW).forEach(l=>{T(l,ML,y);y+=6});y+=2}
+   doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(215,215,215);
+   (M.info||[]).slice(0,6).forEach(r=>{const t=cl(r[0])+" : "+cl(r[1]);doc.splitTextToSize(t,CW).slice(0,2).forEach(l=>{T(l,ML,y);y+=4.8})});
+   y=Math.max(y+8,196);
+   /* pastilles */
+   {const chips=["Document officiel","\u00C9mis le "+dLong(M.now),"Restau du Rire Tickets"];doc.setFont("helvetica","bold");doc.setFontSize(8.5);
+    let x=ML;chips.forEach(c=>{const w=doc.getTextWidth(cl(c))+9,h=8;if(x+w>PW-MR){x=ML;y+=11}doc.setDrawColor(245,184,0);doc.setLineWidth(.35);doc.roundedRect(x,y,w,h,h/2,h/2,"S");doc.setTextColor(255,255,255);T(c,x+w/2,y+5.3,{align:"center"});x+=w+3})}
+   /* bloc contact + QR */
+   const by=232;doc.setDrawColor(245,184,0);doc.setLineWidth(.6);doc.line(ML,by,PW-MR-50,by);
+   const row=(ic,txt,yy,bold)=>{try{doc.addImage(ic,"PNG",ML,yy-3.8,4.8,4.8)}catch(e){}doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(9.5);doc.setTextColor(255,255,255);T(txt,ML+7,yy)};
+   row(ICO.tel,"WhatsApp : "+HEAD.tel,by+9,true);row(ICO2.gm,HEAD.mail,by+16.5,true);
+   doc.setFont("helvetica","normal");doc.setFontSize(7.8);doc.setTextColor(200,200,200);
+   const sg=(HEAD.siege||[]).join(" ").replace(/\s+/g," ");doc.splitTextToSize(cl(sg),CW-62).slice(0,3).forEach((l,i)=>T(l,ML+7,by+24+i*3.8));
+   try{doc.addImage(ICO.loc,"PNG",ML,by+20.4,4.8,4.8)}catch(e){}
+   doc.setFont("helvetica","bolditalic");doc.setFontSize(8.5);doc.setTextColor(255,255,255);T("Suivez-nous :",ML,by+42);
+   ["tt","th","fb","ig","xx"].forEach((k,q)=>{try{doc.addImage(ICO3[k],"PNG",ML+26+q*7,by+38.4,5.2,5.2)}catch(e){}});
+   const qr=qrData("https://wa.me/"+String(HEAD.tel).replace(/\D/g,""),360);
+   if(qr){const qx=PW-MR-42,qy=by-6;doc.setFillColor(255,255,255);doc.roundedRect(qx,qy,42,42,2.5,2.5,"F");try{doc.addImage(qr,"PNG",qx+3.5,qy+3.5,35,35)}catch(e){}
+    doc.setFont("helvetica","bold");doc.setFontSize(7.8);doc.setTextColor(245,184,0);T("Scannez : \u00E9crivez-nous",qx+21,qy+46,{align:"center"});T("sur WhatsApp",qx+21,qy+50,{align:"center"})}
+   doc.setFillColor(245,184,0);doc.rect(0,291,PW,6,"F");
+  };
+   drawCover();doc.addPage();
    drawHead();
   let ty=54;
   if(M.kindLabel){doc.setFont("helvetica","bold");doc.setFontSize(7.5);doc.setTextColor(200,140,0);T(M.kindLabel.toUpperCase(),ML,ty,{charSpace:.6});ty+=6.2}
@@ -7479,7 +7662,7 @@ async function pdfNew(M){
      row("gm",HEAD.mail,ML+4,by+20);row("loc","Bukavu, RD Congo",ML+CW/2+2,by+20)}
     X.y=y+92;
    const n=doc.getNumberOfPages();
-   for(let i=1;i<=n;i++){doc.setPage(i);
+   for(let i=2;i<=n;i++){doc.setPage(i);
     doc.setDrawColor(245,184,0);doc.setLineWidth(1.1);doc.line(ML,283,PW-MR,283);
      const ic=(k,x,y,sz)=>{try{doc.addImage(ICO3[k],"PNG",x,y,sz,sz)}catch(e){}};
      doc.setFont("helvetica","normal");doc.setFontSize(9);doc.setTextColor(0);
@@ -7544,7 +7727,7 @@ window.partnerPDF=async function(){
   X.h("9. Ce que nous attendons du partenaire");
   X.bul(["Les informations complètes de l'événement : titre, date, lieu, programme, tarifs et visuels.","Un interlocuteur désigné pour le suivi de l'événement, joignable sur WhatsApp ou par e-mail.","Des informations de paiement exactes pour les reversements.","Une réponse rapide aux questions qui demandent sa décision (prix, report, annulation, remboursement).","Le respect de la charte des organisateurs, des Conditions d'utilisation et des Règles de vente de l'application."]);
   X.h("10. Durée, modalités et convention");
-  X.p("Les conditions financières, la durée et la répartition des rôles sont définies d'un commun accord et consignées dans une convention de partenariat écrite, signée par les deux parties avant le lancement de la vente des billets. Le taux de 15 % s'applique par défaut (10 % pour les achats en ligne, 5 % pour les achats en espèces et le rapport de fin d'événement ; 0 % pour les événements gratuits ou sur réservation, sans commission) ; toute adaptation n'est valable que si elle figure dans la convention signée.");
+  X.p("Les conditions financières, la durée et la répartition des rôles sont définies d'un commun accord et consignées dans une convention de partenariat écrite, signée par les deux parties avant le lancement de la vente des billets. Le taux de 15 % s'applique, tout inclus (frais de paiement en ligne, suivi des ventes en espèces et en réservation, contrôle des entrées et rapport de billetterie) ; toute adaptation n'est valable que si elle figure dans la convention signée.");
   X.p("Le partenariat peut porter sur un seul événement, sur une série d'événements ou sur une saison. Le présent document est une présentation : il ne remplace pas la convention.");
   X.h("11. Les étapes pour démarrer");
   X.bul(["Étape 1 - Premier contact : vous nous écrivez sur WhatsApp ou par e-mail et vous présentez votre événement.","Étape 2 - Échange en boîte de réception : nous répondons à vos questions et nous discutons les points négociables (taux dans le cas particulier, durée, rôles, services).","Étape 3 - Convention : les accords sont écrits et signés par les deux parties.","Étape 4 - Mise en ligne : nous créons l'événement avec vos visuels, vos catégories et vos prix, puis nous le validons.","Étape 5 - Ventes et promotion : les ventes s'ouvrent et la promotion démarre sur tous nos canaux.","Étape 6 - Le jour J : contrôle d'accès à l'entrée avec les QR codes.","Étape 7 - Après l'événement : rapport de billetterie et reversement des fonds selon la convention."]);
@@ -7661,6 +7844,22 @@ async function xlNew(M,W){
  const wb=new window.ExcelJS.Workbook();wb.creator="\u00C9quipe Restau du Rire Tickets";wb.created=M.now;
  const raw=s=>s.slice(s.indexOf(",")+1);
  const iLogo=wb.addImage({base64:raw(IMG.tkj),extension:"jpeg"}),iSig=wb.addImage({base64:raw(IMG.sig),extension:"png"}),iStamp=wb.addImage({base64:raw(IMG.stamp),extension:"png"}),iTel=wb.addImage({base64:raw(ICO.tel),extension:"png"}),iLoc=wb.addImage({base64:raw(ICO.loc),extension:"png"});
+
+ {const cw=wb.addWorksheet("Couverture",{views:[{showGridLines:false}],pageSetup:{paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:1}});
+  cw.columns=[{width:4},{width:34},{width:34},{width:34},{width:4}];
+  const dk={type:"pattern",pattern:"solid",fgColor:{argb:"FF111111"}};
+  for(let r=1;r<=36;r++){cw.getRow(r).height=22;for(let c=1;c<=5;c++)cw.getCell(r,c).fill=dk}
+  cw.addImage(iLogo,{tl:{col:1,row:1.3},ext:{width:233,height:80}});
+  const put=(r,t,f,h)=>{cw.mergeCells(r,2,r,4);const c=cw.getCell(r,2);c.value=t;c.font=f;c.fill=dk;c.alignment={wrapText:true,vertical:"middle"};if(h)cw.getRow(r).height=h};
+  const Y={name:"Calibri",size:11,bold:true,color:{argb:"FFF5B800"}},Wt={name:"Calibri",size:11,color:{argb:"FFFFFFFF"}};
+  put(10,(M.kindLabel||"Document officiel").toUpperCase(),Y);
+  put(11,String(M.full||M.title),{name:"Calibri",size:24,bold:true,color:{argb:"FFFFFFFF"}},78);
+  if(M.evWhen)put(12,String(M.evWhen),{name:"Calibri",size:13,bold:true,color:{argb:"FFF5B800"}},26);
+  let rr=14;(M.info||[]).slice(0,7).forEach(x=>{put(rr++,x[0]+" : "+x[1],{name:"Calibri",size:11,color:{argb:"FFDDDDDD"}},String(x[1]).length>70?36:22)});
+  put(28,"WhatsApp : "+HEAD.tel,Wt);put(29,HEAD.mail,Wt);put(30,(HEAD.siege||[]).join(" "),{name:"Calibri",size:9,color:{argb:"FFCCCCCC"}},30);
+  put(32,"Suivez-nous : Restau du Rire Tickets (TikTok, Threads, Facebook, Instagram, X)",{name:"Calibri",size:10,italic:true,color:{argb:"FFFFFFFF"}});
+  put(34,"\u00AB "+HEAD.quote+" \u00BB",{name:"Calibri",size:11,italic:true,bold:true,color:{argb:"FFF5B800"}});
+ }
  const NC=W.length,ws=wb.addWorksheet("Rapport",{views:[{showGridLines:false}],pageSetup:{paperSize:9,orientation:"portrait",fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:"1:4",margins:{left:.4,right:.4,top:.5,bottom:.6,header:.3,footer:.3}},headerFooter:{oddFooter:"&L&9"+HEAD.mail+"  \u00B7  WhatsApp : "+HEAD.tel+"&R&9Page &P / &N"}});
  ws.columns=W.map(w=>({width:w}));
  const px=W.map(w=>Math.round(w*7+5)),total=px.reduce((a,b)=>a+b,0);
@@ -7966,7 +8165,7 @@ async function makeStoryPdf(M0){
  for(const k of [1,.95,.9,.86,.82,.78,.74,.7]){
   kk=k;const X=await pdfNew(M);X.k=k;
   SEC.forEach(s=>{X.h(s.h);(s.p||[]).forEach(t=>X.p(t));if(s.bul)X.bul(s.bul);if(s.boxes)X.boxes(s.boxes)});
-  blob=X.finish();if(X.doc.getNumberOfPages()<=2)break}
+  blob=X.finish();if(X.doc.getNumberOfPages()<=3)break}
  /* même mise en page qu'avant ; on ajoute seulement le tableau des commandes (le PDF peut dépasser 2 pages) */
  const X=await pdfNew(M);X.k=kk;let done=false;
  SEC.forEach(s=>{if(s.h==="NB"&&!done){tblOrders(X,M);done=true}X.h(s.h);(s.p||[]).forEach(t=>X.p(t));if(s.bul)X.bul(s.bul);if(s.boxes)X.boxes(s.boxes)});
@@ -9374,7 +9573,8 @@ window.sgOk2=async function(){const m=$("am"),r=await fetch(SB+"/auth/v1/verify"
 <script>/* v30 */
 (function(){
 const ph=x=>String(x||"").replace(/\D/g,"");
-document.addEventListener("change",async function(ev){const t=ev.target;if(t&&t.id==="os"&&typeof EV!=="undefined"&&EV&&EV.e)try{await sellerOk(EV.e.id,t.value)}catch(x){}});
+document.addEventListener("change",async function(ev){const t=ev.target;if(t&&t.id==="os"&&typeof EV!=="undefined"&&EV&&EV.e)try{await sellerLive(EV.e.id,t,true)}catch(x){}});
+let _sd;document.addEventListener("input",function(ev){const t=ev.target;if(t&&t.id==="os"&&typeof EV!=="undefined"&&EV&&EV.e){clearTimeout(_sd);_sd=setTimeout(function(){try{sellerLive(EV.e.id,t,false)}catch(x){}},900)}});
 window.p30One=function(){const d=ph(($("rm9_ph")||{}).value),w=$("rm9_who"),g=$("rm9_go");window.P30=null;if(g)g.disabled=true;if(!w)return;
  if(d.length<9){w.textContent="";return}
  const o=((window.RM9&&window.RM9.l)||[]).find(x=>{const n=ph(x.phone);return n&&(n.endsWith(d.slice(-9))||d.endsWith(n.slice(-9)))});
@@ -9590,10 +9790,39 @@ html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 <script>/* Agrandir la photo de profil et la couverture (comme Facebook) + pas de zoom de l'application */
 (function(){var z=null;function close(){if(z){z.remove();z=null;document.removeEventListener("keydown",esc)}}function esc(e){if(e.key==="Escape")close()}
 window.opZoom=function(ev,h){try{var t=ev&&ev.target;if(t&&t.closest&&t.closest("button,a"))return;var im=h.querySelector("img");if(!im||!im.src)return;var seal=h.classList.contains("op-seal");close();
-z=document.createElement("div");z.id="opzoom";z.style.cssText="position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;cursor:pointer";
-var i2=document.createElement("img");i2.src=im.src;i2.alt="";i2.style.cssText=seal?"width:min(92vw,80vh);height:min(92vw,80vh);border-radius:50%;object-fit:cover;":"max-width:100%;max-height:90vh;object-fit:contain;";
-var x=document.createElement("button");x.type="button";x.textContent="✕";x.setAttribute("aria-label","Fermer");x.style.cssText="position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:20px";
-z.appendChild(i2);z.appendChild(x);z.onclick=close;document.body.appendChild(z);document.addEventListener("keydown",esc)}catch(e){}};
+z=document.createElement("div");z.id="opzoom";z.style.cssText="position:fixed;left:0;top:0;right:0;bottom:0;z-index:2147483000;background:rgba(0,0,0,.94);display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none";
+var i2=document.createElement("img");i2.src=im.src;i2.alt="";i2.draggable=false;i2.style.cssText=(seal?"width:min(92vw,80vh);height:min(92vw,80vh);border-radius:50%;object-fit:cover;":"max-width:100%;max-height:90vh;object-fit:contain;")+"transform-origin:50% 50%;will-change:transform;touch-action:none;-webkit-user-drag:none;pointer-events:none";
+var x=document.createElement("button");x.type="button";x.textContent="\u2715";x.setAttribute("aria-label","Fermer");x.style.cssText="position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:14px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(255,255,255,.2);color:#fff;font-size:20px;z-index:2";
+x.onclick=function(e){e.stopPropagation();close()};x.addEventListener("touchend",function(e){e.stopPropagation()});
+var S=1,TX=0,TY=0,MAXS=6;
+function apply(a){i2.style.transition=a?"transform .22s ease":"none";i2.style.transform="translate("+TX+"px,"+TY+"px) scale("+S+")"}
+function clamp(){var w=i2.offsetWidth*S,hh=i2.offsetHeight*S,bx=Math.max(0,(w-innerWidth)/2),by=Math.max(0,(hh-innerHeight)/2);TX=Math.max(-bx,Math.min(bx,TX));TY=Math.max(-by,Math.min(by,TY))}
+function zoomAt(ns,mx,my){ns=Math.max(1,Math.min(MAXS,ns));var cx=innerWidth/2,cy=innerHeight/2,lx=(mx-cx-TX)/S,ly=(my-cy-TY)/S;S=ns;TX=mx-cx-S*lx;TY=my-cy-S*ly;if(S<=1.001){S=1;TX=0;TY=0}clamp()}
+var pinch=null,pan=null,moved=false,lastTap=0,tapT=null;
+function dist(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)}
+z.addEventListener("touchstart",function(e){e.preventDefault();moved=false;
+ if(e.touches.length===2){var a=e.touches[0],b=e.touches[1];pinch={d:dist(a,b),s:S};pan=null;clearTimeout(tapT)}
+ else if(e.touches.length===1){var t0=e.touches[0];pan={x:t0.clientX,y:t0.clientY,tx:TX,ty:TY,t:Date.now()}}},{passive:false});
+z.addEventListener("touchmove",function(e){e.preventDefault();
+ if(e.touches.length===2&&pinch){var a=e.touches[0],b=e.touches[1],mx=(a.clientX+b.clientX)/2,my=(a.clientY+b.clientY)/2;moved=true;zoomAt(pinch.s*dist(a,b)/pinch.d,mx,my);apply(false)}
+ else if(e.touches.length===1&&pan&&S>1.001){var t1=e.touches[0];if(Math.abs(t1.clientX-pan.x)+Math.abs(t1.clientY-pan.y)>6)moved=true;TX=pan.tx+(t1.clientX-pan.x);TY=pan.ty+(t1.clientY-pan.y);clamp();apply(false)}
+ else if(pan){var t2=e.touches[0];if(t2&&Math.abs(t2.clientX-pan.x)+Math.abs(t2.clientY-pan.y)>6)moved=true}},{passive:false});
+z.addEventListener("touchend",function(e){e.preventDefault();
+ if(e.touches.length===0){
+  if(pinch){pinch=null;if(S<1.05){S=1;TX=0;TY=0}clamp();apply(true);pan=null;return}
+  if(!moved&&pan){var now=Date.now(),ct=e.changedTouches[0];
+   if(now-lastTap<300){clearTimeout(tapT);lastTap=0;if(S>1.01){S=1;TX=0;TY=0}else zoomAt(2.6,ct.clientX,ct.clientY);apply(true)}
+   else{lastTap=now;tapT=setTimeout(function(){if(S<=1.01)close()},300)}}
+  else{clamp();apply(true)}
+  pan=null}
+ else if(e.touches.length===1){var t3=e.touches[0];pan={x:t3.clientX,y:t3.clientY,tx:TX,ty:TY,t:Date.now()};pinch=null}},{passive:false});
+z.addEventListener("wheel",function(e){e.preventDefault();zoomAt(S*(e.deltaY<0?1.18:1/1.18),e.clientX,e.clientY);apply(false)},{passive:false});
+var md=null;z.addEventListener("mousedown",function(e){if(e.target===x)return;md={x:e.clientX,y:e.clientY,tx:TX,ty:TY,m:false}});
+window.addEventListener("mousemove",function mm(e){if(!z||!md)return;if(S>1.001){TX=md.tx+e.clientX-md.x;TY=md.ty+e.clientY-md.y;md.m=true;clamp();apply(false)}});
+window.addEventListener("mouseup",function(){setTimeout(function(){md=null},0)});
+z.addEventListener("click",function(e){if(e.target===x)return;if(md&&md.m)return;if(S<=1.01)close()});
+z.addEventListener("dblclick",function(e){e.preventDefault();if(S>1.01){S=1;TX=0;TY=0}else zoomAt(2.6,e.clientX,e.clientY);apply(true)});
+z.appendChild(i2);z.appendChild(x);document.body.appendChild(z);document.addEventListener("keydown",esc)}catch(e){}};
 ["gesturestart","gesturechange","gestureend"].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault()},{passive:false})});
 document.addEventListener("touchmove",function(e){if(e.touches&&e.touches.length>1)e.preventDefault()},{passive:false});
 document.addEventListener("wheel",function(e){if(e.ctrlKey)e.preventDefault()},{passive:false})})();
@@ -9643,7 +9872,7 @@ var _d=window.doAuth;if(typeof _d==="function")window.doAuth=function(){try{if(t
 function list(){try{return(allEvs()||[]).filter(function(e){return e&&(e.sponsored||e.is_sponsored||e.sponsorise||e.sponsor_ad)})}catch(x){return[]}}
 function music(on){try{if(!on){if(ac){ac.close();ac=null}return}ac=new(window.AudioContext||window.webkitAudioContext)();var n=[392,494,587,784,587,494],i=0;(function t(){if(!ac)return;var o=ac.createOscillator(),g=ac.createGain();o.type="triangle";o.frequency.value=n[i++%n.length];g.gain.value=.05;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.32);setTimeout(t,360)})()}catch(x){}}
 function voice(txt){try{var u=new SpeechSynthesisUtterance(txt),V=speechSynthesis.getVoices().filter(function(v){return/^fr/i.test(v.lang)}),m=V.filter(function(v){return/thomas|paul|henri|male|homme|daniel|google/i.test(v.name)})[0]||V[0];if(m)u.voice=m;u.lang="fr-FR";u.pitch=.7;u.rate=.95;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(x){}}
-function show(){if(busy)return;var L=list();if(!L.length)return;var e=L[Math.floor(Math.random()*L.length)],ti=e.title||e.name||"un événement",lieu=e.venue||e.lieu||e.location||"",img=e.poster||e.image||e.cover||"";busy=true;
+function show(){if(busy||document.getElementById("spOv"))return;var L=list();if(!L.length)return;var e=L[Math.floor(Math.random()*L.length)],ti=e.title||e.name||"un événement",lieu=e.venue||e.lieu||e.location||"",img=e.poster||e.image||e.cover||"";busy=true;
 var d=document.createElement("div");d.style.cssText="position:fixed;inset:0;z-index:2147483000;background:linear-gradient(135deg,#111,#2a2100,#111);background-size:300% 300%;animation:lrrAd 6s ease infinite;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:sans-serif";
 d.innerHTML='<style>@keyframes lrrAd{0%{background-position:0 50%}50%{background-position:100% 50%}100%{background-position:0 50%}}@keyframes lrrP{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}</style><div style="color:#f5b800;letter-spacing:3px;font-weight:700;font-size:13px">PUBLICITÉ SPONSORISÉE</div>'+(img?'<img src="'+img+'" style="max-width:82%;max-height:42vh;border-radius:14px;margin:18px 0;animation:lrrP 2.4s ease infinite">':'')+'<h1 style="font-size:28px;margin:12px 0;color:#f5b800">'+ti+'</h1><div style="font-size:16px;opacity:.9">'+lieu+'</div><div style="margin-top:22px;font-size:13px;opacity:.7">Restau du Rire Tickets · Réservez en confiance, vivez l\'instant.</div><div id="lrrAdT" style="margin-top:18px;font-size:12px;opacity:.6"></div>';
 document.body.appendChild(d);music(true);voice("Publicité sponsorisée. "+ti+(lieu?", à "+lieu:"")+". Réservez vos billets sur Restau du Rire Tickets.");var s=LEN/1000,t=document.getElementById("lrrAdT");
@@ -9855,19 +10084,37 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
 .sp-vd{display:block;width:100%;max-height:220px;object-fit:cover;background:#000;position:relative}
 @media (prefers-reduced-motion:reduce){.sp-c,.sp-c::before,.sp-lg,.sp-eq i{animation:none}}
 </style>
+<style>
+#spOv.spFull{position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483600;display:flex;align-items:center;justify-content:center;padding:0;background:#000;transform:none;opacity:0;transition:opacity .45s;pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none}
+#spOv.spFull.on{opacity:1;transform:none}
+.spf-v{width:100%;height:100%;object-fit:contain;background:#000;display:block}
+.spf-tag{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);left:12px;z-index:3;background:rgba(0,0,0,.55);color:#fff;border-radius:999px;padding:7px 12px;font:600 11px/1 system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+.spf-hint{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 28px);transform:translateX(-50%);z-index:3;background:rgba(0,0,0,.62);color:#fff;border-radius:999px;padding:10px 16px;font:600 13px system-ui,sans-serif;white-space:nowrap;animation:spHint 1.6s ease-in-out infinite}
+@keyframes spHint{50%{opacity:.5}}
+#spOv.spFull .spf-card{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;color:#fff;font-family:system-ui,-apple-system,sans-serif;background:linear-gradient(120deg,#0e2f2b,#14574d,#7a3b8f,#0e2f2b);background-size:300% 300%;animation:spBg 7s ease infinite}
+#spOv.spFull .sp-lg{width:110px;height:110px;font-size:48px}
+.spf-nm{font-size:28px;font-weight:800;margin:20px 0 8px;overflow-wrap:anywhere}
+.spf-sub{font-size:16px;opacity:.92;max-width:420px}
+#spOv.spFull .sp-eq{margin-top:20px;height:22px}
+.spf-pb{position:absolute;left:0;right:0;bottom:0;height:5px;background:rgba(255,255,255,.18)}
+.spf-pb i{display:block;height:100%;width:0;background:#fff}
+</style>
 <script>
+/* Spot sponsor PLEIN ÉCRAN : à l'ouverture de l'application, puis toutes les 5 minutes.
+   Impossible à ignorer (aucun bouton) ; il disparaît tout seul quand la vidéo se termine. */
 (function(){
- const EVERY=5*60*1000, FIRST=20*1000, KEY="lrr_spot_last", MUTE="lrr_spot_mute";
+ const EVERY=5*60*1000, FIRST=1500, IDX="lrr_spot_idx";
  const E=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
  const ld=k=>{try{return localStorage.getItem(k)}catch(e){return null}},sv=(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}};
  const isEn=()=>{try{return typeof lang!=="undefined"&&String(lang).slice(0,2)==="en"}catch(e){return false}};
- let busy=false,unlocked=false,cur=null,timer=null,voice=null;
+ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+ let busy=false,unlocked=false,cur=null,voice=null;
 
- /* son autorisé après le premier toucher (règle des navigateurs) */
- const unlock=()=>{if(unlocked)return;unlocked=true;try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u)}catch(e){}};
+ /* le son est autorisé après le premier toucher (règle des navigateurs) : la vidéo démarre muette, puis le son s'active au toucher */
+ const unlock=()=>{if(unlocked)return;unlocked=true;try{const u=new SpeechSynthesisUtterance(" ");u.volume=0;speechSynthesis.speak(u)}catch(e){}
+  const v=document.querySelector("#spOv video");if(v&&v.muted){try{v.muted=false;v.play().catch(()=>{})}catch(e){}const h=document.getElementById("spHint");if(h)h.remove()}};
  ["pointerdown","touchstart","keydown","click"].forEach(ev=>addEventListener(ev,unlock,{once:true,passive:true}));
 
- /* choix d'une voix féminine */
  function pickVoice(){
   try{
    const L=speechSynthesis.getVoices()||[],en=isEn(),pre=en?/^en/i:/^fr/i;
@@ -9879,7 +10126,6 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
  }
  try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
 
- /* sponsors : table + sponsors de tous les événements (déjà programmés inclus) */
  async function getSponsors(){
   const out=[],seen=new Set();
   const add=s=>{if(!s||!s.name)return;const k=String(s.name).trim().toLowerCase();if(seen.has(k))return;seen.add(k);out.push(s)};
@@ -9890,98 +10136,107 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
   try{(typeof DBEV!=="undefined"?DBEV:[]).forEach(ev=>((ev.modes||{}).sponsors||[]).forEach(s=>add({name:s.name,logo:s.logo,link:s.link||s.url,text:s.message||s.slogan||s.text,ev:ev.title})))}catch(e){}
   return out;
  }
-
  function script(s){
-  const en=isEn();
-  const body=s.text?String(s.text):(en?"Thank you for your trust.":"Merci de leur faire confiance.");
+  const en=isEn(),body=s.text?String(s.text):(en?"Thank you for your trust.":"Merci de leur faire confiance.");
   return en?("A message from our partner "+s.name+". "+body):("Un message de notre partenaire "+s.name+". "+body);
  }
-
  function speak(txt,done){
   let fin=false;const end=()=>{if(!fin){fin=true;done&&done()}};
-  if(ld(MUTE)==="1"||!unlocked||!("speechSynthesis" in window)){return false}
+  if(!unlocked||!("speechSynthesis" in window))return false;
   try{
    speechSynthesis.cancel();
    const u=new SpeechSynthesisUtterance(txt);
    if(!voice)pickVoice();
    if(voice){u.voice=voice;u.lang=voice.lang}else u.lang=isEn()?"en-US":"fr-FR";
-   u.pitch=1.12;u.rate=.97;u.volume=1;
-   u.onend=end;u.onerror=end;
-   speechSynthesis.speak(u);
-   setTimeout(end,Math.max(9000,txt.length*95));
+   u.pitch=1.12;u.rate=.97;u.volume=1;u.onend=end;u.onerror=end;
+   speechSynthesis.speak(u);setTimeout(end,Math.max(9000,txt.length*95));
    return true;
   }catch(e){return false}
  }
-
  function hit(s,kind){try{if(s.id&&window.p5rp)window.p5rp("sponsor_hit",{p_id:s.id,p_kind:kind}).catch(()=>{})}catch(e){}}
 
  function close(){
   const o=document.getElementById("spOv");
   try{speechSynthesis.cancel()}catch(e){}
-  if(cur&&cur.aud){try{cur.aud.pause()}catch(e){}}
-  if(o){o.classList.remove("on");setTimeout(()=>{if(o.parentNode&&!o.classList.contains("on"))o.remove()},700)}
-  const f=cur&&cur.fin;cur=null;if(f)f();
+  if(cur){
+   const c=cur;cur=null;
+   try{c.aud&&c.aud.pause()}catch(e){}
+   try{c.vid&&c.vid.pause()}catch(e){}
+   clearInterval(c.iv);clearTimeout(c.cap);
+   document.removeEventListener("visibilitychange",c.vis);
+   document.documentElement.style.overflow=c.ov;
+   if(o){o.classList.remove("on");setTimeout(()=>{if(o.parentNode&&!o.classList.contains("on"))o.remove()},500)}
+   c.res();
+  }else if(o)o.remove();
  }
  window.spClose=close;
 
  function showOne(s){
   return new Promise(res=>{
    let o=document.getElementById("spOv");if(o)o.remove();
-   o=document.createElement("div");o.id="spOv";
-   const en=isEn(),muted=ld(MUTE)==="1";
-   const logo=s.logo?'<img alt="" src="'+E(s.logo)+'" onerror="this.replaceWith(document.createTextNode(\''+E((s.name||"?").trim().charAt(0).toUpperCase())+'\'))">':E((s.name||"?").trim().charAt(0).toUpperCase());
-   o.innerHTML='<div class="sp-c">'+(s.video?'<video class="sp-vd" playsinline '+(unlocked&&!muted?"":"muted")+' autoplay src="'+E(s.video)+'"></video>':"")+
-    '<button class="sp-m" aria-label="Son">'+(muted?"🔇":"🔊")+'</button><button class="sp-x" aria-label="Fermer">✕</button>'+
-    '<div class="sp-in"><div class="sp-lg">'+logo+'</div><div class="sp-tx"><div class="sp-tg">'+(en?"Partner · Sponsored":"Partenaire · Sponsorisé")+'</div><div class="sp-nm">'+E(s.name)+'</div><div class="sp-sub">'+E(s.text||(en?"Thank you to our partner for supporting this event.":"Merci à notre partenaire qui soutient cet événement."))+'</div><div class="sp-eq"><i></i><i></i><i></i><i></i><i></i></div></div></div><div class="sp-pb"><i></i></div></div>';
+   o=document.createElement("div");o.id="spOv";o.className="spFull";
+   const en=isEn();
+   const tag='<div class="spf-tag">'+(en?"Partner · Sponsored":"Partenaire · Sponsorisé")+'</div>';
+   const ini=E((s.name||"?").trim().charAt(0).toUpperCase());
+   const logo=s.logo?'<img alt="" src="'+E(s.logo)+'" onerror="this.replaceWith(document.createTextNode(\''+ini+'\'))">':ini;
+   if(s.video){
+    o.innerHTML=tag+'<video class="spf-v" playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback"></video><div id="spHint" class="spf-hint">🔊 '+(en?"Tap the screen for sound":"Touchez l\u2019écran pour activer le son")+'</div>';
+   }else{
+    o.innerHTML=tag+'<div class="spf-card"><div class="sp-lg">'+logo+'</div><div class="spf-nm">'+E(s.name)+'</div><div class="spf-sub">'+E(s.text||(en?"Thank you to our partner for supporting this event.":"Merci à notre partenaire qui soutient cet événement."))+'</div><div class="sp-eq"><i></i><i></i><i></i><i></i><i></i></div><div class="spf-pb"><i></i></div></div>';
+   }
    document.body.appendChild(o);
+   const ov=document.documentElement.style.overflow;document.documentElement.style.overflow="hidden";
    requestAnimationFrame(()=>requestAnimationFrame(()=>o.classList.add("on")));
-   const eq=o.querySelector(".sp-eq"),pb=o.querySelector(".sp-pb i");
-   let over=false,t0=Date.now(),MIN=9000;
-   const fin=()=>{if(over)return;over=true;clearInterval(iv);res()};
-   const me=cur={fin,aud:null};
-   const iv=setInterval(()=>{const p=Math.min(1,(Date.now()-t0)/MIN);pb.style.width=(p*100)+"%"},120);
-   let spoken=false;
-   const finish=()=>{const left=Math.max(0,MIN-(Date.now()-t0));setTimeout(()=>{if(cur===me)close()},Math.min(left,1500))};
-   if(s.audio&&unlocked&&!muted){
-    try{const a=new Audio(s.audio);cur.aud=a;eq.classList.add("talk");a.onended=()=>{eq.classList.remove("talk");finish()};a.onerror=()=>eq.classList.remove("talk");a.play().then(()=>{spoken=true}).catch(()=>eq.classList.remove("talk"));MIN=Math.max(MIN,15000)}catch(e){}
-   }else if(speak(script(s),()=>{eq.classList.remove("talk");finish()})){spoken=true;eq.classList.add("talk");MIN=Math.max(MIN,12000)}
-   if(!spoken)setTimeout(()=>{if(cur===me)close()},9000);
-   o.querySelector(".sp-x").onclick=e=>{e.stopPropagation();close()};
-   o.querySelector(".sp-m").onclick=e=>{e.stopPropagation();const m=ld(MUTE)==="1";sv(MUTE,m?"0":"1");e.target.textContent=m?"🔊":"🔇";if(!m){try{speechSynthesis.cancel()}catch(x){}if(cur&&cur.aud)cur.aud.pause();eq.classList.remove("talk")}};
-   o.querySelector(".sp-c").onclick=()=>{hit(s,"click");if(s.link){try{window.open(s.link,"_blank","noopener")}catch(e){}}};
+   const me=cur={res,aud:null,vid:null,iv:null,cap:null,vis:null,ov};
+   const done=()=>{if(cur===me)close()};
+   me.cap=setTimeout(done,s.video?6*60*1000:20000);   /* sécurité : jamais bloqué */
+   me.vis=()=>{if(!document.hidden&&me.vid&&me.vid.paused&&!me.vid.ended){me.vid.play().catch(()=>{})}};
+   document.addEventListener("visibilitychange",me.vis);
    hit(s,"view");
+   if(s.video){
+    const v=o.querySelector("video");me.vid=v;
+    v.src=s.video;v.muted=!unlocked;
+    v.addEventListener("ended",done);v.addEventListener("error",done);
+    v.addEventListener("playing",()=>{if(!v.muted){const h=document.getElementById("spHint");if(h)h.remove()}});
+    /* toucher l'écran = activer le son (ne ferme jamais la vidéo) */
+    o.addEventListener("pointerdown",()=>{if(v.muted){v.muted=false;v.play().catch(()=>{});const h=document.getElementById("spHint");if(h)h.remove()}else if(v.paused&&!v.ended){v.play().catch(()=>{})}});
+    /* vidéo bloquée (réseau coupé) : on libère l'écran au bout de 16 s sans image */
+    let lastT=-1,stall=0;
+    me.iv=setInterval(()=>{if(document.hidden)return;if(v.currentTime>lastT+.05){lastT=v.currentTime;stall=0}else if(++stall>=8)done()},2000);
+    const p=v.play();if(p&&p.catch)p.catch(()=>{v.muted=true;v.play().catch(()=>{})});
+   }else{
+    const eq=o.querySelector(".sp-eq"),pb=o.querySelector(".spf-pb i"),t0=Date.now();let MIN=9000,spoken=false;
+    me.iv=setInterval(()=>{pb.style.width=Math.min(100,(Date.now()-t0)/MIN*100)+"%"},120);
+    const finish=()=>{const left=Math.max(0,MIN-(Date.now()-t0));setTimeout(done,Math.min(left,1500))};
+    if(s.audio&&unlocked){
+     try{const a=new Audio(s.audio);me.aud=a;eq.classList.add("talk");a.onended=()=>{eq.classList.remove("talk");finish()};a.onerror=()=>eq.classList.remove("talk");a.play().then(()=>{spoken=true}).catch(()=>eq.classList.remove("talk"));MIN=Math.max(MIN,15000)}catch(e){}
+    }else if(speak(script(s),()=>{eq.classList.remove("talk");finish()})){spoken=true;eq.classList.add("talk");MIN=Math.max(MIN,12000)}
+    if(!spoken)setTimeout(done,9000);
+   }
   });
  }
 
- /* ne pas déranger : dashboard admin, scanner, saisie en cours, onglet masqué */
+ /* seuls le scanner et le tableau de bord équipe ne sont jamais interrompus */
  function canShow(){
   try{
    if(document.hidden)return false;
    const a=document.getElementById("adm");if(a&&!a.hidden)return false;
    if(typeof stream!=="undefined"&&stream)return false;
-   const ae=document.activeElement;if(ae&&/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName))return false;
-   const mo=document.getElementById("mo");if(mo&&mo.classList.contains("on"))return false;
   }catch(e){}
   return true;
  }
-
- async function cycle(){
-  if(busy)return;
-  if(!canShow()){setTimeout(cycle,30000);return}
-  busy=true;
-  try{
-   const L=await getSponsors();
-   if(!L.length){busy=false;return}
-   sv(KEY,String(Date.now()));
-   for(const s of L){ if(!canShow())break; await showOne(s); await new Promise(r=>setTimeout(r,900)) }
-  }catch(e){}
+ async function play(){
+  if(busy)return;busy=true;
+  try{const L=await getSponsors();if(L.length){const i=(+ld(IDX)||0)%L.length;sv(IDX,String(i+1));await showOne(L[i])}}catch(e){}
   busy=false;
  }
- window.spotNow=cycle;
-
- /* planning : 1er spot ~20 s après l'ouverture (ou le reste de la pause), puis toutes les 5 minutes */
- const last=+ld(KEY)||0,wait=Math.max(FIRST,EVERY-(Date.now()-last));
- setTimeout(()=>{cycle();timer=setInterval(cycle,EVERY)},last&&Date.now()-last<EVERY?wait:FIRST);
+ window.spotNow=play;
+ async function auto(){
+  while(!canShow())await sleep(4000);
+  await play();
+  setTimeout(auto,EVERY);   /* la vidéo réapparaît 5 minutes après la fin de la précédente */
+ }
+ setTimeout(auto,FIRST);
 })();
 </script>
 
@@ -10080,4 +10335,180 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
 })();
 </script>
 
+<style id="lrr-qr-css">
+.qrw{position:relative;border-radius:16px;overflow:hidden;background:#000;line-height:0;width:100%}
+.qrw video{width:100%;max-height:52vh;min-height:220px;object-fit:cover;display:block;border-radius:0!important;background:#000}
+.qrf{position:absolute;top:14%;bottom:14%;left:14%;right:14%;pointer-events:none}
+.qrf i{position:absolute;width:30px;height:30px;border:4px solid #f5b800;transition:border-color .2s}
+.qrf i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;border-radius:12px 0 0 0}
+.qrf i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;border-radius:0 12px 0 0}
+.qrf i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;border-radius:0 0 0 12px}
+.qrf i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;border-radius:0 0 12px 0}
+.qrf b{position:absolute;left:4%;right:4%;top:4%;height:2px;background:linear-gradient(90deg,transparent,#f5b800,transparent);animation:qrl 1.9s ease-in-out infinite}
+@keyframes qrl{0%,100%{top:4%}50%{top:94%}}
+.qrm{position:absolute;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;font:800 22px/1.25 system-ui,sans-serif;color:#fff;text-align:center;padding:16px;opacity:0;transition:opacity .18s;pointer-events:none}
+.qrw.qok .qrm{opacity:1;background:rgba(22,163,74,.85)}
+.qrw.qko .qrm{opacity:1;background:rgba(220,38,38,.88)}
+.qrw.qwa .qrm{opacity:1;background:rgba(245,158,11,.92);color:#111}
+.qrw.qdet .qrf i{border-color:#fff}
+.qrt{position:absolute;right:10px;bottom:10px;border:0;border-radius:50%;width:44px;height:44px;background:rgba(0,0,0,.55);color:#fff;font-size:20px;line-height:44px;padding:0;z-index:3}
+.qrt.on{background:#f5b800}
+</style>
+<style id="lrr-qr-css2">
+.qrm{flex-direction:column;transition:opacity .12s}
+.qri{font-size:68px;line-height:1}
+.qrh{font-size:26px;font-weight:900;letter-spacing:.3px;margin-top:8px;text-transform:uppercase}
+.qrs{font-size:17px;font-weight:700;margin-top:8px;white-space:pre-line;opacity:.96}
+.qrw.qwt .qrm{opacity:1;background:rgba(14,47,43,.82)}
+.qrw.qwt .qri{animation:qrp .7s ease-in-out infinite}
+@keyframes qrp{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+.qrw.qok .qrm,.qrw.qko .qrm,.qrw.qwa .qrm{opacity:1}
+.qrw.qok .qri,.qrw.qko .qri,.qrw.qwa .qri{animation:qrz .28s ease-out}
+@keyframes qrz{0%{transform:scale(.4);opacity:0}100%{transform:scale(1);opacity:1}}
+.qrd{position:absolute;left:10px;bottom:10px;max-width:70%;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.55);color:#fff;font:700 11px/1.3 system-ui,sans-serif;z-index:3;pointer-events:none}
+.qra{display:flex;align-items:center;gap:10px;margin:10px 0 2px;font-size:14px;font-weight:800;color:#0e2f2b;line-height:1.3}
+.qra input{width:24px;height:24px;padding:0;flex:none;accent-color:#16a34a}
+</style>
+
+<script>
+/* Lecteur QR v2 — un seul moteur pour tous les scanners (admin, organisateur, équipe d'entrée).
+   Dès qu'un QR est dans le cadre : « tic » immédiat + écran « Vérification », puis « tac » : vert / orange / rouge en plein écran. */
+(function(){
+ if(window.LRRQR&&window.LRRQR.v===2)return;
+ var BD=null,AC=null,loading=false,armUntil=0,pend=null,lastK="",lastT=0,rt=0;
+ try{if("BarcodeDetector" in window)BD=new BarcodeDetector({formats:["qr_code"]})}catch(e){BD=null}
+ var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+ var jsOk=function(){return !!(window.jsQR&&!window.jsQR.__shim)};
+ var URLS=["https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js","https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"];
+ var autoOn=function(){try{return localStorage.getItem("lrr_qr_auto")!=="0"}catch(e){return true}};
+ /* jsQR : chargé tout de suite, mis en cache par le service worker (marche aussi sans réseau à l'entrée) */
+ function ensureJs(){
+  if(jsOk()||loading)return;loading=true;var i=0;
+  (function next(){
+   if(jsOk()){loading=false;return}
+   if(i>=URLS.length){setTimeout(function(){loading=false},4000);return}
+   var s=document.createElement("script");s.src=URLS[i++];
+   s.onload=function(){if(jsOk())loading=false;else next()};s.onerror=next;document.head.appendChild(s)})()}
+ if(!BD)setTimeout(ensureJs,300);
+ /* sons : « tic » à la détection, « tac » au résultat */
+ function ac(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==="suspended")AC.resume()}catch(e){}return AC}
+ function tone(seq,type,vol){var a=ac();if(!a)return;try{var t=a.currentTime;
+  seq.forEach(function(p){var o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.value=p[0];
+   g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+p[1]);
+   o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+p[1]+.02);t+=p[1]+.02})}catch(e){}}
+ var SND={
+  tick:function(){tone([[1800,.035]],"square",.1)},
+  ok:function(){tone([[880,.09],[1320,.17]],"sine",.26)},
+  wa:function(){tone([[620,.12],[620,.12]],"triangle",.3)},
+  ko:function(){tone([[300,.18],[190,.3]],"square",.2)}};
+ function vib(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+ /* lecture du résultat affiché par les scanners */
+ function classify(t){
+  t=String(t||"");
+  if(/D[ÉE]J[ÀA]/i.test(t))return"wa";
+  if(/❌|⛔|INTROUVABLE|NON\s*CONFIRM|NON\s*PAY|NON\s*VENDU|ANNUL|EXPIR|FAUX|REFUS|INVALIDE|[ÉE]CHEC/i.test(t))return"ko";
+  if(/✅|✔|VALIDE|VALID[ÉE]E|ENREGISTR/i.test(t))return"ok";
+  return""}
+ function linesOf(raw){
+  return String(raw||"").split(/\n+/).map(function(s){return s.replace(/\s+/g," ").trim()})
+   .filter(function(s){return s&&!/^valider l.entr/i.test(s)})}
+ function paint(w,k,icon,head,sub){
+  w.classList.remove("qok","qko","qwa","qwt");w.classList.add("q"+k);
+  var m=w.querySelector(".qrm");if(!m)return;
+  m.innerHTML='<div class="qri"></div><div class="qrh"></div><div class="qrs"></div>';
+  m.children[0].textContent=icon;m.children[1].textContent=head;m.children[2].textContent=sub||""}
+ function hold(w,ms){clearTimeout(w._ft);w._ft=setTimeout(function(){w.classList.remove("qok","qko","qwa","qwt")},ms)}
+ function clearRes(){
+  var a=document.getElementById("dr"),b=document.getElementById("res");
+  if(a)a.innerHTML="";if(b)b.innerHTML=""}
+ function onResult(){
+  if(Date.now()>armUntil)return;
+  var w=document.querySelector(".qrw");if(!w)return;
+  var el=document.querySelector("#dr .p5res")||document.getElementById("res");if(!el)return;
+  var raw=(el.innerText||el.textContent||"").trim();if(!raw)return;
+  var L=linesOf(raw);if(!L.length)return;
+  var k=classify(L[0])||classify(raw);if(!k)return;
+  /* organisateur / admin : entrée enregistrée automatiquement quand le billet est valide */
+  var cb=document.getElementById("qra"),btn=(k==="ok"&&cb&&cb.checked)?el.querySelector('button[onclick*="nter("]'):null;
+  if(btn){pend=L.slice(1);paint(w,"wt","⏳","Entrée en cours…",pend.slice(0,2).join("\n"));hold(w,6000);setTimeout(function(){try{btn.click()}catch(e){}},80);return}
+  if(L.length<2&&pend){L=[L[0]].concat(pend)}pend=null;
+  var head=L[0].replace(/^[^A-Za-zÀ-ÿ0-9]+/,"").slice(0,34),sub=L.slice(1,3).map(function(s){return s.slice(0,60)}).join("\n"),now=Date.now();
+  paint(w,k,k==="ok"?"✅":k==="wa"?"⚠️":"⛔",head,sub);hold(w,k==="ok"?1700:2600);
+  if(!(k===lastK&&now-lastT<500)){SND[k]();vib(k==="ok"?[60]:k==="wa"?[80,50,80]:[150,70,150])}
+  lastK=k;lastT=now}
+ new MutationObserver(function(){
+  if(Date.now()>armUntil||rt)return;
+  rt=setTimeout(function(){rt=0;try{onResult()}catch(e){}},40)
+ }).observe(document.body,{childList:true,subtree:true,characterData:true});
+ /* détection : retour immédiat, puis résultat */
+ function detect(w,c,onCode){
+  armUntil=Date.now()+9000;pend=null;lastK="";clearRes();
+  SND.tick();vib(25);
+  w.classList.add("qdet");setTimeout(function(){w.classList.remove("qdet")},350);
+  paint(w,"wt","⏳","Vérification…","");hold(w,6000);
+  try{onCode(c)}catch(e){}}
+ var cv=document.createElement("canvas"),cx=cv.getContext("2d",{willReadFrequently:true});
+ async function decode(v,n){
+  if(BD&&!BD.bad){
+   try{var r=await BD.detect(v);BD.fails=0;for(var i=0;i<r.length;i++)if(r[i].rawValue)return r[i].rawValue}
+   catch(e){BD.fails=(BD.fails||0)+1;if(BD.fails>5)BD.bad=true}
+   if(!BD.bad&&(n%4||!jsOk()))return null}
+  if(!jsOk()){ensureJs();return null}
+  var w=v.videoWidth,h=v.videoHeight;if(!w||!h)return null;
+  var sc=Math.min(1,520/Math.max(w,h)),W=Math.round(w*sc),H=Math.round(h*sc);
+  if(cv.width!==W)cv.width=W;if(cv.height!==H)cv.height=H;
+  cx.drawImage(v,0,0,W,H);
+  var q=window.jsQR(cx.getImageData(0,0,W,H).data,W,H,{inversionAttempts:(n%4===3)?"onlyInvert":"dontInvert"});
+  return q&&q.data?q.data:null}
+ function nextFrame(v){
+  if(v.requestVideoFrameCallback)return Promise.race([new Promise(function(r){v.requestVideoFrameCallback(function(){r()})}),sleep(250)]);
+  return sleep(35)}
+ function decorate(v,stream){
+  var w=v.parentNode;
+  if(!w||!w.classList||!w.classList.contains("qrw")){
+   w=document.createElement("div");w.className="qrw";v.parentNode.insertBefore(w,v);w.appendChild(v);
+   w.insertAdjacentHTML("beforeend",'<div class="qrf"><i></i><i></i><i></i><i></i><b></b></div><div class="qrm"></div><div class="qrd"></div><button type="button" class="qrt" hidden aria-label="Lampe">🔦</button>')}
+  try{var tr=stream.getVideoTracks()[0],cp=tr.getCapabilities&&tr.getCapabilities(),b=w.querySelector(".qrt"),on=false;
+   if(cp&&cp.torch&&b){b.hidden=false;b.onclick=function(){on=!on;b.classList.toggle("on",on);tr.applyConstraints({advanced:[{torch:on}]}).catch(function(){})}}}catch(e){}
+  /* scanners admin / organisateur : case « entrée automatique » */
+  if(document.getElementById("res")&&!document.getElementById("qra")){
+   w.insertAdjacentHTML("afterend",'<label class="qra"><input type="checkbox" id="qra"'+(autoOn()?" checked":"")+'> Valider l\'entrée automatiquement</label>');
+   document.getElementById("qra").onchange=function(){try{localStorage.setItem("lrr_qr_auto",this.checked?"1":"0")}catch(e){}}}
+  return w}
+ window.LRRQR={v:2,_classify:classify,_lines:linesOf,
+  cam:async function(){
+   ac();
+   var C=[{video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}}},{video:{facingMode:"environment"}},{video:true}],err;
+   for(var i=0;i<C.length;i++){try{var st=await navigator.mediaDevices.getUserMedia(C[i]);
+    try{var tr=st.getVideoTracks()[0],cp=tr.getCapabilities&&tr.getCapabilities();if(cp&&cp.focusMode&&cp.focusMode.indexOf("continuous")>-1)await tr.applyConstraints({advanced:[{focusMode:"continuous"}]})}catch(e){}
+    return st}catch(e){err=e}}
+   throw err},
+  attach:function(v,stream,onCode){
+   var w=decorate(v,stream);v.setAttribute("playsinline","");v.setAttribute("autoplay","");v.muted=true;v.srcObject=stream;
+   var p=v.play();if(p&&p.catch)p.catch(function(){});
+   setTimeout(ensureJs,2500);
+   var chip=w.querySelector(".qrd"),t0=Date.now();
+   var iv=setInterval(function(){
+    if(!stream.active||!v.isConnected){clearInterval(iv);return}
+    if(!chip)return;
+    chip.textContent=(BD&&!BD.bad)?"⚡ Détecteur prêt":jsOk()?"✅ Détecteur prêt":(Date.now()-t0>9000?"⚠️ Détecteur indisponible : vérifiez la connexion":"⏳ Chargement du détecteur…")},600);
+   var last="",seen=0,lockAt=0,n=0;
+   (async function loop(){
+    while(true){
+     if(!stream.active||!v.isConnected||v.getClientRects().length===0)break;
+     try{
+      if(v.videoWidth&&!v.paused&&v.readyState>=2){
+       n++;var c=await decode(v,n),now=Date.now();
+       if(c){
+        /* même QR toujours devant la caméra : on ne le revérifie pas (évite « validé » puis « déjà utilisé ») */
+        if(c===last&&now-seen<1500&&now-lockAt<10000){seen=now}
+        else{last=c;seen=now;lockAt=now;detect(w,c,onCode)}}}
+     }catch(e){}
+     await nextFrame(v)}
+    clearInterval(iv);
+    try{if(stream.active)stream.getTracks().forEach(function(t){t.stop()})}catch(e){}
+   })()}
+ };
+})();
+</script>
 </body></html>
