@@ -1516,6 +1516,7 @@ window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageDa
 #evtabs a.on{background:none;color:var(--ink);box-shadow:inset 0 -3px 0 var(--gd)}
 .tkc{background:#fff;border:1px solid #dfe7e4;border-radius:26px;padding:22px 20px;margin-bottom:16px;box-shadow:0 8px 22px rgba(14,47,43,.07)}
 .tkrm{margin:12px 0 0;padding:12px 14px;border-radius:14px;background:#e8f5ee;color:#14633f;font-size:19px;font-weight:900;text-align:center;letter-spacing:.2px}.tkrm.lo{background:#dc2626;color:#fff;animation:lmp 1.6s infinite}.tkrm.own{background:#eef2f7;color:#334155;font-size:14px;letter-spacing:0;margin-top:8px}.tkrm.out{background:#111;color:#fff;font-size:22px;letter-spacing:2px}
+.tklg{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;margin-right:8px;border-radius:50%;background:color-mix(in srgb,var(--c) 16%,#fff);border:2px solid var(--c);font-size:16px;vertical-align:middle;flex:none}.tkc-n{display:flex;align-items:center}
 .tkc-n{font-size:20px;font-weight:900;text-transform:uppercase;color:var(--ink)}
 .tkc-r{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:14px 0}
 .tkc-p{font-size:28px;font-weight:900;color:var(--ink)}
@@ -1547,7 +1548,7 @@ window.jsQR=function(d,w,h){if(BD){if(!busy){busy=true;try{BD.detect(new ImageDa
 .cksel{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #dfe7e4;border-radius:22px;padding:16px;box-shadow:0 4px 14px rgba(14,47,43,.05)}
 .cksel select{flex:1;border:0;background:none;font-size:18px;font-weight:900;color:var(--ink);outline:0;min-width:0}
 .ckchip{background:#eef3f1;border-radius:10px;padding:5px 8px;font-weight:900;font-size:12px;color:var(--ink);flex:none}
-.ckcurs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.ckcurs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.ckcurs.ck3{grid-template-columns:repeat(3,minmax(0,1fr))}.ckcurs.ck3 .ckcur{flex-wrap:wrap;padding:12px 8px;font-size:13px}
 .ckcur{display:flex;align-items:center;justify-content:space-between;gap:6px;background:#fff;border:2px solid #dfe7e4;border-radius:22px;padding:14px 10px;font-size:15px;min-width:0;color:var(--ink);cursor:pointer;text-align:left}
 .ckcur b{font-weight:900;white-space:nowrap}
 .ckcur.on{border-color:var(--gd);background:#fffaf0}
@@ -2767,8 +2768,12 @@ function left(t){return t.stock?Math.max(t.stock-(EV.sold[t.id]||0)-(EV.qty[t.id
 const cur=c=>c==="USD"?"$":"FC";
 function evTotals(){let n=0,amt={};EV.e.tickets.forEach(t=>{const q=EV.qty[t.id]||0;if(q){n+=q;amt[t.currency]=(amt[t.currency]||0)+q*t.price}});return{n,amt}}
 const amtTxt=a=>Object.entries(a||{}).filter(([c,v])=>v>0).map(([c,v])=>nf(v)+" "+cur(c)).join(" + ")||"Gratuit";
+/* logos des catégories de billets */
+const TKL=[[/grand[\s_-]*sponsor/i,"🏆","#c9a227","gs"],[/vvip/i,"💎","#7b4fd6","vv"],[/vip/i,"👑","#d4a017","vp"],[/sponsor/i,"🤝","#1f7a6d","sp"],[/standard|simple|normal/i,"🎟️","#5b6b68","st"]];
+const tkClean=n=>String(n||"").replace(/^[\s\u{1F300}-\u{1FAFF}\u2600-\u27BF\uFE0F]+/u,"").trim()||String(n||"");
+function tkLogo(n){const k=TKL.find(x=>x[0].test(n||""));if(!k)return `<span class="tklg" style="--c:#5b6b68">🎟️</span>`;return `<span class="tklg tklg-${k[3]}" style="--c:${k[2]}" title="${esc(tkClean(n))}">${k[1]}</span>`}
 function drawTk(){$("evt").innerHTML=EV.e.tickets.map(t=>{const l=left(t),q=EV.qty[t.id]||0,e=EV.e,own=ownerView(e.id),rem=t.stock?Math.max(t.stock-(EV.sold[t.id]||0),0):null,so=rem===0,ra=t.stock?rem/t.stock:1,bd="",rmn=t.stock?'<div class="tkrm">🎟️ <b>'+rem+'/'+t.stock+'</b> restants</div>':"";
-  return `<div class="tkc"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div class="tkc-n">${esc(t.name)}</div>${bd}</div>${rmn}<div class="tkc-r"><b class="tkc-p">${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</b>${so?'<span class="tkso">SOLD OUT</span>':""}<div class="stp"${so?' style="display:none"':""}><button type="button" ${q?"":"disabled"} onclick="evq('${t.id}',-1)">−</button><span>${q}</span><button type="button" ${l===0?"disabled":""} onclick="evq('${t.id}',1)">+</button></div></div>${l===0?`<div class="tkc-i"><span>Disponibilité :</span><b class="out">SOLD OUT</b></div>`:""}<button type="button" class="tkc-d" onclick="tkDet(this)">Détails du ticket <i>▾</i></button><div class="tkc-dd" hidden>${t.desc||t.description?esc(t.desc||t.description)+"<br>":""}📅 ${esc(fmtRange(e))}<br>📍 ${esc([e.venue,e.city].filter(Boolean).join(", "))}<br>🎟️ Billet numérique avec QR code, à présenter à l'entrée.</div></div>`}).join("");
+  return `<div class="tkc"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div class="tkc-n">${tkLogo(t.name)}${esc(tkClean(t.name))}</div>${bd}</div>${rmn}<div class="tkc-r"><b class="tkc-p">${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</b>${so?'<span class="tkso">SOLD OUT</span>':""}<div class="stp"${so?' style="display:none"':""}><button type="button" ${q?"":"disabled"} onclick="evq('${t.id}',-1)">−</button><span>${q}</span><button type="button" ${l===0?"disabled":""} onclick="evq('${t.id}',1)">+</button></div></div>${l===0?`<div class="tkc-i"><span>Disponibilité :</span><b class="out">SOLD OUT</b></div>`:""}<button type="button" class="tkc-d" onclick="tkDet(this)">Détails du ticket <i>▾</i></button><div class="tkc-dd" hidden>${t.desc||t.description?esc(t.desc||t.description)+"<br>":""}📅 ${esc(fmtRange(e))}<br>📍 ${esc([e.venue,e.city].filter(Boolean).join(", "))}<br>🎟️ Billet numérique avec QR code, à présenter à l'entrée.</div></div>`}).join("");
  const T2=evTotals();applyFree();$("evs").innerHTML=`<p><span>Billets</span><b>${T2.n}</b></p><p><span>Total</span><b>${amtTxt(T2.amt)}</b></p>${T2.n?`<button class="btn dk" type="button" onclick="$('evform').scrollIntoView({behavior:'smooth'})">Continuer vers la commande ›</button>`:""}`}
 const isFreeCart=()=>{const T2=evTotals();return T2.n>0&&Object.values(T2.amt).every(v=>v===0)};
 function applyFree(){const w=$("paywrap");if(!w||EV.mode!=="res")return;const f=isFreeCart();w.hidden=f;$("freenote").hidden=!f;const b=$("obtn");if(b)b.textContent=f?"🎁 RÉSERVER GRATUITEMENT":"📲 ENVOYER MA RÉSERVATION"}
@@ -2776,7 +2781,7 @@ function evq(id,d){const t=EV.e.tickets.find(x=>x.id===id);if(d>0&&t.stock&&left
 function addrHTML(p){return `<h3>📍 Adresse complète *</h3><div class="g"><div><label>Pays *</label><input id="${p}pays" value="${esc((COUNTRIES.find(x=>x[0]===cty)||[])[3]||"")}"></div><div><label>Province *</label><input id="${p}prov" list="provl"></div></div><div class="g"><div><label>Ville *</label><input id="${p}ville" value="${esc(EV.e.city||"")}"></div><div><label>Commune *</label><input id="${p}com"></div></div><div class="g"><div><label>Quartier *</label><input id="${p}qua"></div><div><label>Avenue *</label><input id="${p}ave"></div></div><label>Localisation / point de repère *</label><textarea id="${p}loc"></textarea>`}
 function cashCat(id){const q=Math.max(1,Object.values(EV.qty).reduce((a,x)=>a+(x||0),0)||1);EV.qty={};EV.qty[id]=q;drawTk();try{PTV.sig=null;if($("otp")&&$("otp").files.length)ptVerify()}catch(e){}}
 function cashFormTop(e){return `<div class="note" style="margin:8px 0">🎟️ Un ticket acheté en espèces ? Enregistrez-le ici, <b>un ticket à la fois</b> (si vous en avez deux, recommencez).</div>
-<div class="g"><div><label>Civilité *</label><select id="p6civ"><option value="">— Choisir —</option><option>Monsieur</option><option>Madame</option></select></div><div><label>Nom complet *</label><input id="on" placeholder="Votre nom complet"></div></div>
+<div class="g"><div><label>Civilité *</label><select id="p6civ"><option value="">— Choisir —</option><option value="Monsieur">👨 Monsieur</option><option value="Madame">👩 Madame</option></select></div><div><label>Nom complet *</label><input id="on" placeholder="Votre nom complet"></div></div>
 <div class="g"><div><label>Numéro WhatsApp *</label><input id="op" type="tel" placeholder="+243..."></div><div><label>Catégorie du ticket *</label><select id="occ" onchange="cashCat(this.value)">${(e.tickets||[]).map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select></div></div>
 <label>Nom du vendeur (auprès de qui vous avez acheté) *</label><input id="os" placeholder="Ex : Mutombo" autocomplete="off" maxlength="60"><input id="oe" type="hidden">
 <div class="g"><div><label>Recto du ticket *</label><input id="otp" type="file" accept="image/*" onchange="ptVerify()"><div id="otpr" class="sm" style="margin:6px 0"></div></div><div><label>Verso du ticket *</label><input id="otv" type="file" accept="image/*" onchange="ptVerifyVerso()"><div id="otvr" class="sm" style="margin:6px 0"></div></div></div>`}
@@ -3156,8 +3161,8 @@ const CKRATE=2300; /* taux officiel : 1 $US = 2 300 CDF (même valeur que la fon
 const CKOPS=[["mpesa","M-Pesa","Vodacom M-Pesa","M","#1f9d55"],["airtel","Airtel Money","Airtel Money","A","#d92b21"],["orange","Orange Money","Orange Money","O","#f26f00"],["africell","Africell Money","Africell Money","Af","#6a2c91"]];
 let CKS=null;
 const ckEurUsd=()=>(+window.EURUSD>0?+window.EURUSD:1.10),ckEurCdf=()=>Math.round(CKRATE*ckEurUsd()),ckEur=usd=>Number(usd/ckEurUsd()).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €";
-const ckFmt=(v,c)=>c==="USD"?Number(v).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $US":Math.round(v).toLocaleString("fr-FR")+" CDF";
-function ckAmounts(){const T2=evTotals(),c=Object.keys(T2.amt)[0]||"FC",b=T2.amt[c]||0;return c==="USD"?{USD:b,CDF:Math.round(b*CKRATE)}:{CDF:b,USD:Math.ceil(b/CKRATE*100)/100}}
+const ckFmt=(v,c)=>c==="EUR"?Number(v).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" €":c==="USD"?Number(v).toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2})+" $US":Math.round(v).toLocaleString("fr-FR")+" CDF";
+function ckAmounts(){const T2=evTotals(),c=Object.keys(T2.amt)[0]||"FC",b=T2.amt[c]||0;const r=c==="USD"?{USD:b,CDF:Math.round(b*CKRATE)}:{CDF:b,USD:Math.ceil(b/CKRATE*100)/100};r.EUR=Math.ceil(r.USD/ckEurUsd()*100)/100;return r}
 function evGo(){const T2=evTotals();
  if(!T2.n){alert("Veuillez sélectionner au moins un billet.");return}
  if(Object.keys(T2.amt).length>1){alert("Les billets en FC et en $ se paient séparément : faites deux achats distincts.");return}
@@ -3175,23 +3180,23 @@ function ckDraw(){const e=EV.e,a=ckAmounts(),T=evTotals();
  const line=e.tickets.filter(t=>EV.qty[t.id]).map(t=>EV.qty[t.id]+"x "+esc(t.name)).join(", ");
  const meta=[fmtRange(e),e.city].filter(Boolean).map(esc).join(" • ");
  const list=CKS.country==="CD"?CKOPS.concat([["card","Carte bancaire","Visa / Mastercard","💳","#0e2f2b"]]):[["card","Carte bancaire","Visa / Mastercard","💳","#0e2f2b"]];
- const total=ckFmt(CKS.cur==="USD"?a.USD:a.CDF,CKS.cur);
+ const total=ckFmt(a[CKS.cur]||a.CDF,CKS.cur);
  const row=m=>{const on=CKS.op===m[0],card=m[0]==="card";
   return `<div class="ckm${on?" on":""}"><button type="button" class="ckmr" onclick="ckSel('${m[0]}')"><span class="lg" style="background:${m[4]}">${OPLOGO[m[0]]?`<img alt="" src="${OPLOGO[m[0]]}">`:m[3]}</span><span class="nm"><b>${m[1]}</b><span>${m[2]}</span></span><span class="ch">›</span></button>${on?`<div class="ckpay">${card?`<p class="ckfine" style="margin:12px 0 0">Vous serez redirigé vers la page sécurisée de SimplyPaye pour saisir votre carte.</p>`:`<label for="ckmm">Numéro ${m[1]} qui paie</label><input id="ckmm" type="tel" inputmode="tel" placeholder="2438XXXXXXXX" value="${esc(CKS.mm)}" oninput="CKS.mm=this.value">`}<button type="button" class="ckgo" id="ckgo" onclick="ckPay()">${card?"Payer par carte":"Payer"} ${esc(total)}</button></div>`:""}</div>`};
  $("ck").innerHTML=`<div class="ckw"><button type="button" class="ckback" onclick="ckClose()">← Retour à l'événement</button>
  <div class="ckc"><div class="ckhd"><div class="ckbrand"><img alt="" src="${$("mainLogo").src}"><div>Restau du Rire Tickets<small>Billetterie</small></div></div><div class="t"><small>Événement</small>${esc(e.title)}</div></div>
  <div class="cksum"><img alt="" src="${esc(img)}" onerror="ckNext(this)"><div><small>Votre commande</small><b>${esc(e.title)}</b><div class="m">${line}</div><small>${meta}</small></div></div></div>
  <div class="ckh" style="margin-top:6px">Pays</div><div class="cksel"><span class="ckchip">${CKS.country==="CD"?"CD":"🌍"}</span><select onchange="ckCty(this.value)"><option value="CD"${CKS.country==="CD"?" selected":""}>Congo (Rép. dém.)</option><option value="XX"${CKS.country!=="CD"?" selected":""}>Reste du monde (carte bancaire Visa / Mastercard)</option><option value="EA">🌍 Afrique de l'Est / diaspora : mobile money ou transfert</option></select></div>
- <div class="ckh">Choisissez une devise</div><div class="ckcurs">
+ <div class="ckh">Choisissez une devise</div><div class="ckcurs ck3">
   <button type="button" class="ckcur${CKS.cur==="USD"?" on":""}" onclick="ckCur('USD')"><span class="ckchip">USD</span><b>${ckFmt(a.USD,"USD")}</b><span class="ckrad">${CKS.cur==="USD"?"✓":""}</span></button>
-  <button type="button" class="ckcur${CKS.cur==="CDF"?" on":""}" onclick="ckCur('CDF')"><span class="ckchip">CDF</span><b>${ckFmt(a.CDF,"CDF")}</b><span class="ckrad">${CKS.cur==="CDF"?"✓":""}</span></button></div>
-  <div class="ckeur"><span class="ckchip">EUR</span><span>Équivalent en euros : <b>${ckEur(a.USD)}</b></span></div>
+  <button type="button" class="ckcur${CKS.cur==="CDF"?" on":""}" onclick="ckCur('CDF')"><span class="ckchip">CDF</span><b>${ckFmt(a.CDF,"CDF")}</b><span class="ckrad">${CKS.cur==="CDF"?"✓":""}</span></button>
+  <button type="button" class="ckcur${CKS.cur==="EUR"?" on":""}" onclick="ckCur('EUR')"><span class="ckchip">EUR</span><b>${ckFmt(a.EUR,"EUR")}</b><span class="ckrad">${CKS.cur==="EUR"?"✓":""}</span></button></div>
  <div class="ckrate"><span>Taux : <b>1 $US = ${CKRATE.toLocaleString("fr-FR")} CDF</b> · <b>1 € = ${ckEurCdf().toLocaleString("fr-FR")} CDF</b></span><span>Frais de l'opérateur éventuels en sus</span></div>
  <div class="ckh">Choisissez un moyen de paiement</div>${list.map(row).join("")}
  <p class="ckfine">Billet confirmé tout de suite après le paiement, avec votre QR code.</p></div>`}
 async function ckPay(){const m=CKS.op;if(!m)return;const card=m==="card",mm=(CKS.mm||"").trim();
  if(!card&&mm.replace(/\D/g,"").length<9){alert("Entrez le numéro Mobile Money qui doit payer.");return}
- await startPay({kind:"event",event_id:CKS.f.event_id,method:card?"card":"mobile",op:card?"":m,mm:card?"":mm,currency:CKS.cur,customer:CKS.f.customer,qty:CKS.f.qty},$("ckgo"),()=>{EV.qty={};drawTk();ckClose()})}
+ await startPay({kind:"event",event_id:CKS.f.event_id,method:card?"card":"mobile",op:card?"":m,mm:card?"":mm,currency:CKS.cur==="EUR"?"USD":CKS.cur,customer:CKS.f.customer,qty:CKS.f.qty},$("ckgo"),()=>{EV.qty={};drawTk();ckClose()})}
 
 </script>
 <script>
@@ -4254,7 +4259,7 @@ function card(eid,o,n){const ev=evOf(eid),conf=o.status==="confirmed",l=link(o,e
 <div class="sm">📞 <a href="https://wa.me/${ph(o.phone)}" target="_blank" rel="noopener" style="color:inherit">${esc(o.phone)}</a> • 🎟 ${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}${Object.keys(o.amounts||{}).length?" • 💰 "+esc(amtTxt(o.amounts)):""}</div>
 <div class="sm">🛒 Acheté <b>${esc(p6Cap(DL(o.created_at)))}</b> à <b>${esc(T(o.created_at))}</b> • 🧾 Chez : ${o.seller?"<b>"+esc(o.seller)+"</b>":"<b style=\"color:#d9822b\">vendeur non indiqué</b>"}</div>${recLine(o)}
 ${o.confirmed_at?`<div class="sm">✅ Confirmé le <b>${esc(D(o.confirmed_at))}</b> à <b>${esc(T(o.confirmed_at))}</b></div>`:""}
-${!o.civility?`<div class="sm">Civilité : <button class="ab" onclick="p6Civ('${eid}','${o.id}','Monsieur')">Mr</button><button class="ab" onclick="p6Civ('${eid}','${o.id}','Madame')">Mme</button></div>`:""}
+${!o.civility?`<div class="sm">Civilité : <button class="ab" onclick="p6Civ('${eid}','${o.id}','Monsieur')">👨 Mr</button><button class="ab" onclick="p6Civ('${eid}','${o.id}','Madame')">👩 Mme</button></div>`:""}
 ${!conf?`<button class="ab" onclick="setOrd('${eid}','${o.id}','confirmed')">✓ Confirmer</button>`:""}${conf||["cash","paper","door"].includes(o.kind)?`<a class="ab" target="_blank" rel="noopener" href="${esc(l)}" style="text-decoration:none;display:inline-block">💬 Envoyer le code sur WhatsApp</a>`:""}${o.status!=="cancelled"?`<button class="ab" onclick="setOrd('${eid}','${o.id}','cancelled')">✕ Annuler</button>`:""}${o.proof_path?`<button class="ab" onclick="ordProof('${o.proof_path}')">📸 ${o.kind==="cash"?"Ticket : recto":"Capture"}</button>`:""}${o.address&&o.address.verso_path?`<button class="ab" onclick="ordProof('${o.address.verso_path}')">🔄 Ticket : verso</button>`:""}</div>`}
 const dayKey=i=>{const d=new Date(i);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const p6Cap=x=>String(x||"").charAt(0).toUpperCase()+String(x||"").slice(1);
@@ -4278,7 +4283,7 @@ drawOrders=function(eid){const l=ORD[eid]||[],box=$((window.ODB?"odb_":"ord_")+e
  else if(T==="ven")box.innerHTML=head+orgBox(eid).split('<div class="g">')[0]+sellerBox(eid)+`<div class="g"></div>`;
  else box.innerHTML=head+orgBox(eid)+sellerBox(eid)+ver+cashHTML(eid,cash)+oth};
 /* --- formulaire client : civilité (Monsieur / Madame), obligatoire pour les achats en espèces --- */
-const _sm6=setMode;setMode=function(m){_sm6(m);try{const n=$("on");if(n&&!$("p6civ")){(n.previousElementSibling||n).insertAdjacentHTML("beforebegin",'<label>Civilité *</label><select id="p6civ"><option value="">— Choisir —</option><option>Monsieur</option><option>Madame</option></select>')}}catch(e){}};
+const _sm6=setMode;setMode=function(m){_sm6(m);try{const n=$("on");if(n&&!$("p6civ")){(n.previousElementSibling||n).insertAdjacentHTML("beforebegin",'<label>Civilité *</label><select id="p6civ"><option value="">— Choisir —</option><option value="Monsieur">👨 Monsieur</option><option value="Madame">👩 Madame</option></select>')}}catch(e){}};
 const _so6=window.submitOrder;window.submitOrder=function(){if(typeof EV!=="undefined"&&EV&&EV.mode==="cash"&&$("p6civ")&&!$("p6civ").value){alert("Choisissez Monsieur ou Madame.");$("p6civ").focus();return}return _so6.apply(this,arguments)};
 const _f6=window.fetch;window.fetch=function(u,o){try{if(typeof u==="string"&&o&&o.method==="POST"&&typeof o.body==="string"&&$("p6civ")&&$("p6civ").value&&(u===SB+"/rest/v1/orders"||u.indexOf("/functions/v1/")>0)){const b=JSON.parse(o.body);if(b&&b.event_id&&!b.civility){b.civility=$("p6civ").value;o=Object.assign({},o,{body:JSON.stringify(b)})}}}catch(e){}return _f6.call(this,u,o)};
 })();
@@ -4466,7 +4471,7 @@ window.p7Out=async function(kind){const st=$("p7st"),say=(h,bad)=>{if(st){st.sty
 
 /* ================= 🏪 CAISSE A LA PORTE ================= */
 async function tPos(b){const e=EVT(),tk=e.tickets||[];
- b.innerHTML=`<div class="p5cd"><b>🏪 Vente à la porte (espèces)</b><small>Le client paie, le billet est confirmé tout de suite avec un QR code.</small><select id="ps_t">${tk.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select><div class="p5row"><input id="ps_q" type="number" min="1" max="20" value="1"><select id="ps_v"><option value="">Civilité</option><option>Monsieur</option><option>Madame</option></select></div><div class="p5row"><input id="ps_n" placeholder="Nom (facultatif)"><input id="ps_p" placeholder="WhatsApp (facultatif)"></div><input id="ps_c" placeholder="Nom du caissier" value="${esc(ld("lrr_cashier")||"")}"><label class="sm"><input id="ps_e" type="checkbox" style="width:auto" checked> Faire entrer le client immédiatement</label><button class="btn dk" onclick="p7Pos()">💵 ENCAISSER</button></div><div id="ps_l"></div>`;posList()}
+ b.innerHTML=`<div class="p5cd"><b>🏪 Vente à la porte (espèces)</b><small>Le client paie, le billet est confirmé tout de suite avec un QR code.</small><select id="ps_t">${tk.map(t=>`<option value="${esc(t.id)}">${esc(t.name)} — ${t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"}</option>`).join("")}</select><div class="p5row"><input id="ps_q" type="number" min="1" max="20" value="1"><select id="ps_v"><option value="">Civilité</option><option value="Monsieur">👨 Monsieur</option><option value="Madame">👩 Madame</option></select></div><div class="p5row"><input id="ps_n" placeholder="Nom (facultatif)"><input id="ps_p" placeholder="WhatsApp (facultatif)"></div><input id="ps_c" placeholder="Nom du caissier" value="${esc(ld("lrr_cashier")||"")}"><label class="sm"><input id="ps_e" type="checkbox" style="width:auto" checked> Faire entrer le client immédiatement</label><button class="btn dk" onclick="p7Pos()">💵 ENCAISSER</button></div><div id="ps_l"></div>`;posList()}
 async function posList(){const el=$("ps_l");if(!el)return;try{const l=(await ra("org_orders",{p_event:CUR()})).filter(o=>o.kind==="door"&&D(o.created_at)===D(new Date()));const t={};l.forEach(o=>{if(o.status!=="cancelled")Object.entries(sum(o)).forEach(([k,v])=>t[k]=(t[k]||0)+v)});
  el.innerHTML=`<div class="p5cd"><b>Aujourd'hui à la caisse</b><small>${l.reduce((a,o)=>a+(+o.total_qty||0),0)} billet(s) · ${esc(amtTxt(t))}</small>${l.slice(0,15).map(o=>`<small>${T(o.created_at)} · ${esc(o.name)} · ${esc(catn(o))} · ${esc(amtTxt(o.amounts))}</small>`).join("")}</div>`}catch(x){}}
 window.p7Pos=async function(){const g=i=>$(i).value.trim();if(g("ps_c"))sv("lrr_cashier",g("ps_c"));
@@ -10182,14 +10187,15 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
   const add=s=>{if(!s||!s.name)return;const k=String(s.name).trim().toLowerCase();if(seen.has(k))return;seen.add(k);out.push(s)};
   try{
    const r=await fetch(SB+"/rest/v1/sponsors?active=eq.true&select=*&limit=50",{headers:H("")});
-   if(r.ok)(await r.json()).forEach(s=>add({id:s.id,name:s.name,logo:s.logo_url||s.logo,link:s.link,video:s.video_url,audio:s.audio_url,text:s.message||s.slogan||s.description||s.text}));
+   if(r.ok)(await r.json()).forEach(s=>add({id:s.id,name:s.name,logo:s.logo_url||s.logo,link:s.link,video:s.video_url,audio:s.audio_url,text:s.lyrics||s.paroles||s.message||s.slogan||s.description||s.text}));
   }catch(e){}
-  try{(typeof DBEV!=="undefined"?DBEV:[]).forEach(ev=>((ev.modes||{}).sponsors||[]).forEach(s=>add({name:s.name,logo:s.logo,link:s.link||s.url,text:s.message||s.slogan||s.text,ev:ev.title})))}catch(e){}
+  try{(typeof DBEV!=="undefined"?DBEV:[]).forEach(ev=>((ev.modes||{}).sponsors||[]).forEach(s=>add({name:s.name,logo:s.logo,link:s.link||s.url,text:s.lyrics||s.paroles||s.message||s.slogan||s.text,ev:ev.title})))}catch(e){}
   return out;
  }
+ /* paroles courtes : 140 caractères au maximum, coupées proprement */
+ function lyr(s){let t=String(s.text||"").replace(/\s+/g," ").trim();if(t.length>140){t=t.slice(0,140);const i=Math.max(t.lastIndexOf(" "),t.lastIndexOf(","),t.lastIndexOf("."));if(i>80)t=t.slice(0,i);t=t.replace(/[,;:\s]+$/,"")+"…"}return t}
  function script(s){
-  const en=isEn(),body=s.text?String(s.text):(en?"Thank you for your trust.":"Merci de leur faire confiance.");
-  return en?("A message from our partner "+s.name+". "+body):("Un message de notre partenaire "+s.name+". "+body);
+  const en=isEn();return s.name+". "+lyr(s)||(en?"Thank you for your trust.":"Merci de leur faire confiance.");
  }
  function speak(txt,done){
   let fin=false;const end=()=>{if(!fin){fin=true;done&&done()}};
@@ -10231,11 +10237,10 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
    const ini=E((s.name||"?").trim().charAt(0).toUpperCase());
    const logo=s.logo?'<img alt="" src="'+E(s.logo)+'" onerror="this.replaceWith(document.createTextNode(\''+ini+'\'))">':ini;
    if(s.video){
-    o.innerHTML=tag+'<video class="spf-v" playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback"></video><div id="spHint" class="spf-hint">🔊 '+(en?"Tap the screen for sound":"Touchez l\u2019écran pour activer le son")+'</div>';
+    o.innerHTML=tag+'<div class="spf-win"><video class="spf-v" playsinline webkit-playsinline preload="auto" disablepictureinpicture controlslist="nodownload noplaybackrate noremoteplayback"></video><div class="spf-vp"><i></i></div><div class="spf-lg2"><b>'+logo+'</b><span>'+E(s.name)+'</span></div></div>'+(lyr(s)?'<div class="spf-ly">♪ '+E(lyr(s))+'</div>':"")+'<div id="spHint" class="spf-hint">🔊 '+(en?"Tap the screen for sound":"Touchez l\u2019écran pour activer le son")+'</div>';
    }else{
-    o.innerHTML=tag+'<div class="spf-card"><div class="sp-lg">'+logo+'</div><div class="spf-nm">'+E(s.name)+'</div><div class="spf-sub">'+E(s.text||(en?"Thank you to our partner for supporting this event.":"Merci à notre partenaire qui soutient cet événement."))+'</div><div class="sp-eq"><i></i><i></i><i></i><i></i><i></i></div><div class="spf-pb"><i></i></div></div>';
+    o.innerHTML=tag+'<div class="spf-card"><div class="sp-lg">'+logo+'</div><div class="spf-nm">'+E(s.name)+'</div><div class="spf-sub">'+E(lyr(s)||(en?"Thank you to our partner for supporting this event.":"Merci à notre partenaire qui soutient cet événement."))+'</div><div class="sp-eq"><i></i><i></i><i></i><i></i><i></i></div><div class="spf-pb"><i></i></div></div>';
    }
-   if(s.video)o.insertAdjacentHTML("beforeend",'<div class="spf-vp"><i></i></div><div class="spf-lg2"><b>'+logo+'</b><span>'+E(s.name)+'</span></div>');
    document.body.appendChild(o);
    const ov=document.documentElement.style.overflow;document.documentElement.style.overflow="hidden";
    requestAnimationFrame(()=>requestAnimationFrame(()=>o.classList.add("on")));
@@ -10300,6 +10305,17 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
 .spf-lg2 b img{width:100%;height:100%;object-fit:cover}
 .spf-vp{position:absolute;left:calc(50% - min(50vw,28.125vh));width:min(100vw,56.25vh);top:env(safe-area-inset-top,0px);height:4px;background:rgba(255,255,255,.25);z-index:6}
 .spf-vp i{display:block;height:100%;width:0;background:#f5b800}
+</style>
+<style id="lrr-spot-win">
+/* vidéo sponsor en fenêtre (pas plein écran) + paroles courtes */
+#spOv.spFull{background:rgba(6,14,13,.78);flex-direction:column;padding:16px}
+.spf-win{position:relative;width:min(86vw,340px);aspect-ratio:9/16;max-height:52vh;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 12px 40px rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.18)}
+#spOv.spFull .spf-win .spf-v{width:100%;height:100%;margin:0;object-fit:cover}
+#spOv.spFull .spf-win .spf-vp{left:0;width:100%;top:0}
+#spOv.spFull .spf-win .spf-lg2{left:10px;bottom:10px;max-width:calc(100% - 20px)}
+.spf-ly{margin-top:14px;max-width:min(86vw,340px);color:#fff;font:600 15px/1.45 system-ui,sans-serif;text-align:center;font-style:italic;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+#spOv.spFull .spf-card{left:50%;right:auto;top:50%;bottom:auto;transform:translate(-50%,-50%);width:min(86vw,340px);height:auto;max-height:60vh;border-radius:18px;padding:24px 18px;overflow:hidden}
+.spf-sub{display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 </style>
 <style id="lrr-news-css">
 #nwOv{position:fixed;inset:0;z-index:2147483500;background:#000;display:flex;justify-content:center;opacity:0;transition:opacity .35s}
@@ -10677,6 +10693,51 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
     try{if(stream.active)stream.getTracks().forEach(function(t){t.stop()})}catch(e){}
    })()}
  };
+})();
+</script>
+<script>
+/* Dashboard équipe : 🎫 Livraison des billets (reçus / non reçus) + 📈 Pourcentage de billets */
+(function(){
+ const E=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const MARK={},TAB={v:"non"};let lastErr="";
+ const conf=()=>(typeof rows!=="undefined"?rows:[]).filter(r=>r.status==="confirmed");
+ const sent=r=>!!(MARK[r.id]!==undefined?MARK[r.id]:r.ticket_sent_at);
+ const cats=r=>T.filter(t=>r[t[0]]).map(t=>t[1]+" × "+r[t[0]]).join(", ");
+ const phone=r=>{let p=String(r.phone||"").replace(/\D/g,"");if(p[0]==="0")p="243"+p.slice(1);return p};
+ function inject(){
+  const a=document.getElementById("admrpt");if(!a||document.getElementById("dlvCard"))return;
+  a.insertAdjacentHTML("afterend",
+  '<div class="card adm-only" id="dlvCard"><h2>🎫 Billets reçus / non reçus</h2><p class="sm">Retrouvez une personne qui n\'a pas reçu son billet, renvoyez-le, puis marquez-le comme reçu.</p><div id="dlvStat"></div><input id="dlvQ" placeholder="🔎 Nom, téléphone, code…" oninput="dlvDraw()" style="margin:8px 0"><div id="dlvTabs" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"></div><div id="dlvList"></div></div>'+
+  '<div class="card adm-only" id="pctCard"><h2>📈 Pourcentage des billets</h2><p class="sm">Calcul automatique : billets confirmés ÷ places disponibles, par tranche de 10 %.</p><div id="pctBody"></div></div>');
+ }
+ window.dlvTab=function(t){TAB.v=t;dlvDraw()};
+ window.dlvDraw=function(){
+  inject();const box=document.getElementById("dlvList");if(!box)return;
+  const L=conf(),S=L.filter(sent),N=L.filter(r=>!sent(r)),q=((document.getElementById("dlvQ")||{}).value||"").toLowerCase();
+  document.getElementById("dlvStat").innerHTML='<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="s2">✅ Reçus : '+S.length+'</span><span class="s1">⚠️ Non reçus / à vérifier : '+N.length+'</span><span class="sm">Total confirmés : '+L.length+'</span></div>'+(lastErr?'<p class="sm" style="color:#f5b800">'+E(lastErr)+'</p>':'');
+  document.getElementById("dlvTabs").innerHTML=[["non","⚠️ Non reçus ("+N.length+")"],["recu","✅ Reçus ("+S.length+")"]].map(x=>'<button class="ab" style="'+(TAB.v===x[0]?"outline:2px solid #f5b800":"")+'" onclick="dlvTab(\''+x[0]+'\')">'+x[1]+'</button>').join("");
+  const src=(TAB.v==="non"?N:S).filter(r=>!q||[r.name,r.phone,r.email,r.ticket_code,r.id].join(" ").toLowerCase().includes(q));
+  box.innerHTML=src.length?src.slice(0,80).map(r=>'<div class="row2" style="display:block;padding:8px 0;border-bottom:1px solid #333"><b>'+E(r.name)+'</b> <span class="sm">'+E(r.phone)+(r.email?" • "+E(r.email):"")+'</span><div class="sm">'+E("LRR-"+String(r.id).slice(0,8).toUpperCase())+" • "+E(cats(r))+(r.ticket_sent_at?" • envoyé le "+E(new Date(r.ticket_sent_at).toLocaleString("fr-FR")):"")+'</div><div style="margin-top:4px">'+
+   '<button class="ab" onclick="wa(\''+r.id+'\')">💬 Renvoyer (WhatsApp)</button><button class="ab" onclick="tkt(\''+r.id+'\')">🎫 Billet</button>'+(r.email?'<a class="ab" style="text-decoration:none" href="mailto:'+E(r.email)+'?subject='+encodeURIComponent("Votre billet Restau du Rire")+'">✉️ E-mail</a>':"")+
+   (sent(r)?'<button class="ab" onclick="dlvSet(\''+r.id+'\',false)">↩ Remettre en non reçu</button>':'<button class="ab" onclick="dlvSet(\''+r.id+'\',true)">✅ Marquer comme reçu</button>')+'</div></div>').join(""):'<p class="sm">Aucune personne dans cette liste.</p>';
+  pct();
+ };
+ window.dlvSet=async function(id,ok){
+  try{await api("reservations?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({ticket_sent_at:ok?new Date().toISOString():null})});MARK[id]=ok;const r=rows.find(x=>x.id===id);if(r)r.ticket_sent_at=ok?new Date().toISOString():null;lastErr=""}
+  catch(e){lastErr="Enregistrement impossible : exécutez d'abord le fichier SQL 29 (colonne ticket_sent_at).";}
+  dlvDraw()};
+ function pct(){
+  const b=document.getElementById("pctBody");if(!b)return;const L=conf(),tot={};T.forEach(t=>tot[t[0]]=0);L.forEach(r=>T.forEach(t=>tot[t[0]]+=+r[t[0]]||0));
+  let S=0,C=0;const row=(nm,n,cap)=>{const p=cap?Math.min(100,n/cap*100):0,tr=Math.floor(p/10)*10,seg=Array.from({length:10},(_,i)=>'<i style="flex:1;height:12px;border-radius:3px;background:'+(i<tr/10?"#f5b800":"#3a3a3a")+'"></i>').join("");
+   return '<div style="margin:10px 0"><div style="display:flex;justify-content:space-between;gap:8px"><b>'+E(nm)+'</b><span><b style="color:#f5b800">'+tr+' %</b> <span class="sm">('+p.toFixed(1).replace(".",",")+' % exact)</span></span></div><div style="display:flex;gap:3px;margin:4px 0">'+seg+'</div><div class="sm">'+n+' vendus sur '+cap+' places</div></div>'};
+  const h=T.map(t=>{const cap=(typeof LIM!=="undefined"?LIM[t[0]]:0)||0;S+=tot[t[0]];C+=cap;return row(t[1],tot[t[0]],cap)}).join("");
+  b.innerHTML=row("🎟️ Total toutes catégories",S,C)+'<hr style="border:0;border-top:1px solid #333">'+h;
+ };
+ const _d=window.draw;if(typeof _d==="function"){window.draw=function(){const r=_d.apply(this,arguments);try{dlvDraw()}catch(e){console.warn(e)}return r}}
+ /* récupère l'état "reçu" enregistré (colonne ticket_sent_at) après chaque chargement */
+ async function pull(){try{if(typeof tok==="undefined"||!tok)return;const d=await api("reservations?select=id,ticket_sent_at&ticket_sent_at=not.is.null&limit=5000");d.forEach(x=>{const r=rows.find(y=>y.id===x.id);if(r)r.ticket_sent_at=x.ticket_sent_at});lastErr=""}catch(e){lastErr="Suivi des envois indisponible : exécutez le fichier SQL 29."}try{dlvDraw()}catch(e){}}
+ const _l=window.load;if(typeof _l==="function"){window.load=async function(){const r=await _l.apply(this,arguments);pull();return r}}
+ document.addEventListener("DOMContentLoaded",inject);inject();
 })();
 </script>
 </body></html>
