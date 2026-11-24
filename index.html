@@ -10375,7 +10375,7 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
 #dback{display:none;margin:0 0 12px}
 #dash[data-t] #dback{display:inline-block}
 #dash[data-t] #dtiles{display:none}
-#dash[data-t="res"] > [data-tab]:not([data-tab~="res"]),#dash[data-t="tools"] > [data-tab]:not([data-tab~="tools"]),#dash[data-t="scan"] > [data-tab]:not([data-tab~="scan"]),#dash[data-t="sales"] > [data-tab]:not([data-tab~="sales"]),#dash[data-t="org"] > [data-tab]:not([data-tab~="org"]),#dash[data-t="arch"] > [data-tab]:not([data-tab~="arch"]),#dash[data-t="sys"] > [data-tab]:not([data-tab~="sys"]){display:none!important}
+#dash[data-t="res"] > [data-tab]:not([data-tab~="res"]),#dash[data-t="tools"] > [data-tab]:not([data-tab~="tools"]),#dash[data-t="scan"] > [data-tab]:not([data-tab~="scan"]),#dash[data-t="sales"] > [data-tab]:not([data-tab~="sales"]),#dash[data-t="org"] > [data-tab]:not([data-tab~="org"]),#dash[data-t="arch"] > [data-tab]:not([data-tab~="arch"]),#dash[data-t="sys"] > [data-tab]:not([data-tab~="sys"]),#dash[data-t="dlv"] > [data-tab]:not([data-tab~="dlv"]),#dash[data-t="pct"] > [data-tab]:not([data-tab~="pct"]){display:none!important}
 #dash:not([data-t]) > [data-tab]{display:none!important}
 #dtitle{font-size:18px;font-weight:900;margin:0 0 10px}
 </style>
@@ -10389,6 +10389,8 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
   ["scan","Entrée & scanner","#06b6d4",SV('<path d="M4 8V5a1 1 0 011-1h3M16 4h3a1 1 0 011 1v3M20 16v3a1 1 0 01-1 1h-3M8 20H5a1 1 0 01-1-1v-3M4 12h16"/>')],
   ["sales","Réservations & ventes","#10b981",SV('<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>')],
   ["org","Organisateurs & communauté","#f59e0b",SV('<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 0 6 1.5 6 5.5"/>')],
+  ["dlv","Billets reçus / non reçus","#14b8a6",SV('<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10l9 5 9-5"/>')],
+  ["pct","Pourcentage des billets","#eab308",SV('<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.2"/><circle cx="17" cy="17" r="2.2"/>')],
   ["arch","Archives","#64748b",SV('<rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10h14V9M10 13h4"/>')],
   ["sys","Système & paiements","#ef4444",SV('<path d="M3 12h4l2-6 4 12 2-6h6"/>')]
  ];
@@ -10396,6 +10398,8 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
   const id=el.id||"",t=(el.textContent||"").slice(0,160).toLowerCase(),c=el.className||"";
   if(el.classList.contains("top"))return"";
   if(id==="admtools"||id==="admrpt"||id==="vxCard"||id==="cpCard"||/outils du créateur|voix des sponsors/.test(t))return"tools";
+  if(id==="dlvCard")return"dlv";
+  if(id==="pctCard")return"pct";
   if(id==="archcard"||/archives/.test(t))return"arch";
   if(/diagnostic|paiements en attente|simplypay/.test(t))return"sys";
   if(/scanner un billet|scan hors ligne/.test(t)&&el.tagName==="BUTTON")return"scan";
@@ -10724,7 +10728,7 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
  };
  window.dlvSet=async function(id,ok){
   try{await api("reservations?id=eq."+id,{method:"PATCH",headers:{Prefer:"return=minimal"},body:JSON.stringify({ticket_sent_at:ok?new Date().toISOString():null})});MARK[id]=ok;const r=rows.find(x=>x.id===id);if(r)r.ticket_sent_at=ok?new Date().toISOString():null;lastErr=""}
-  catch(e){lastErr="Enregistrement impossible : exécutez d'abord le fichier SQL 29 (colonne ticket_sent_at).";}
+  catch(e){lastErr="Enregistrement impossible : exécutez d'abord le fichier SQL 30 (colonne ticket_sent_at).";}
   dlvDraw()};
  function pct(){
   const b=document.getElementById("pctBody");if(!b)return;const L=conf(),tot={};T.forEach(t=>tot[t[0]]=0);L.forEach(r=>T.forEach(t=>tot[t[0]]+=+r[t[0]]||0));
@@ -10735,7 +10739,7 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
  };
  const _d=window.draw;if(typeof _d==="function"){window.draw=function(){const r=_d.apply(this,arguments);try{dlvDraw()}catch(e){console.warn(e)}return r}}
  /* récupère l'état "reçu" enregistré (colonne ticket_sent_at) après chaque chargement */
- async function pull(){try{if(typeof tok==="undefined"||!tok)return;const d=await api("reservations?select=id,ticket_sent_at&ticket_sent_at=not.is.null&limit=5000");d.forEach(x=>{const r=rows.find(y=>y.id===x.id);if(r)r.ticket_sent_at=x.ticket_sent_at});lastErr=""}catch(e){lastErr="Suivi des envois indisponible : exécutez le fichier SQL 29."}try{dlvDraw()}catch(e){}}
+ async function pull(){try{if(typeof tok==="undefined"||!tok)return;const d=await api("reservations?select=id,ticket_sent_at&ticket_sent_at=not.is.null&limit=5000");d.forEach(x=>{const r=rows.find(y=>y.id===x.id);if(r)r.ticket_sent_at=x.ticket_sent_at});lastErr=""}catch(e){lastErr="Suivi des envois indisponible : exécutez le fichier SQL 30."}try{dlvDraw()}catch(e){}}
  const _l=window.load;if(typeof _l==="function"){window.load=async function(){const r=await _l.apply(this,arguments);pull();return r}}
  document.addEventListener("DOMContentLoaded",inject);inject();
 })();
