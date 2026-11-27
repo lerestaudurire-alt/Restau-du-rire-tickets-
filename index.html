@@ -3010,7 +3010,7 @@ function odbSec(t,b){
 function odbPro(px){px=px||"";const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");if(!L.length)return`<div class="odpro"><h3 class="odh3">⚙️ Outils pro</h3><p class="odsm">Aucun événement sur le compte <b>${esc(myEmail()||"connecté")}</b>. Connectez-vous avec l'adresse e-mail utilisée pour créer votre événement : les 10 outils (rappels, parrainage, tirage, sponsors, billets…) apparaîtront ici.</p></div>`;
  const B=odbTools();
  return `<div class="odpro"><h3 class="odh3">⚙️ Outils pro</h3>${L.length>1?`<select id="odpe${px}" class="odpe">${L.map(e=>`<option value="${e.id}">${esc(e.title)}</option>`).join("")}</select>`:`<input type="hidden" id="odpe${px}" value="${L[0].id}">`}<div class="odpg">${B.map(b=>`<button class="odpb" onclick="odbPro2('${b[2]}','${px}')"><i>${b[0]}</i><span>${b[1]}</span></button>`).join("")}</div></div>`}
-function odbTools(){return [["🧑‍💼","Billets en espèces pour les vendeurs","paper"],["🚪","Entrée / scanner","door"],["🏪","Caisse à la porte","pos"],["💰","Remise de caisse","cash"],["🧾","Journal des ventes","ventes"],["📊","Statistiques","stat"],...(role==="admin"?[["🎟️","Billets & stock (ajouter des billets)","tix"],["🔥","Dernière minute","tix"]]:[]),["🎁","Packs (2 billets pour moins cher)","packs"],["🏷️","Codes promo","promo"],["🤝","Ambassadeurs","amb"],["🎁","Invités","inv"],["📺","Direct","live"],["📣","Annonce","news"],["📣","Message groupé","msg"],["💬","Rappels WhatsApp","rem"],["📍","Position GPS","geo"],["🏆","Meilleurs vendeurs","lead"],["🎰","Tirage au sort","draw"],["🎯","Défi pour spectateurs","chal"],["🎁","Parrainage","ref"],["🎫","Pass saison","pass"],["🏷️","Sponsors & plan d'accès","spons"],["🎁","Billets cadeaux","gift"],["📢","Annulation","ann"]]}
+function odbTools(){return [["🧑‍💼","Billets en espèces pour les vendeurs","paper"],["🚪","Entrée / scanner","door"],["🏪","Caisse à la porte","pos"],["💰","Remise de caisse","cash"],["🧾","Journal des ventes","ventes"],["📊","Statistiques","stat"],...(role==="admin"?[["🎟️","Billets & stock (ajouter des billets)","tix"],["🔥","Dernière minute","tix"]]:[]),["✨","Options des billets (badges, groupe, avantages)","tkx"],["🎁","Packs (2 billets pour moins cher)","packs"],["🏷️","Codes promo","promo"],["🤝","Ambassadeurs","amb"],["🎁","Invités","inv"],["📺","Direct","live"],["📣","Annonce","news"],["📣","Message groupé","msg"],["💬","Rappels WhatsApp","rem"],["📍","Position GPS","geo"],["🏆","Meilleurs vendeurs","lead"],["🎰","Tirage au sort","draw"],["🎯","Défi pour spectateurs","chal"],["🎁","Parrainage","ref"],["🎫","Pass saison","pass"],["🏷️","Sponsors & plan d'accès","spons"],["🎁","Billets cadeaux","gift"],["📢","Annulation","ann"]]}
 window.odbMenu=function(){const m=$("odmenu");if(m){m.remove();return}const t=document.querySelector("#odb .odt")||document.querySelector(".odw .odt");if(!t)return;t.insertAdjacentHTML("afterend",`<div id="odmenu" class="odpro" style="margin:0 0 14px"><h3 class="odh3">☰ Outils pro &amp; gestion pro</h3><div class="odpg">${odbTools().map(b=>`<button class="odpb" onclick="odbMenu();odbPro2('${b[2]}','')"><i>${b[0]}</i><span>${b[1]}</span></button>`).join("")}</div></div>`)};
 function odbPro2(tab,px){const eid=($("odpe"+(px||""))||{}).value||((MYEV||[])[0]||{}).id,e=(MYEV||[]).find(x=>x.id===eid);if(!e)return;
  if(tab==="gift"){odbClose();location.hash="#event/"+evUrlKey(e);setTimeout(()=>toast("🎁 Sur le formulaire d'achat, cochez « C'est un cadeau »"),1200);return}
@@ -3833,7 +3833,7 @@ async function drawCard(withPoster){const e=EV.e,W=1080,H=1920,c=document.create
 window.p4Card=async function(){const e=EV&&EV.e;if(!e)return;toast("Création du visuel…");let c=await drawCard(true),blob=await new Promise(r=>{try{c.toBlob(r,"image/png")}catch(z){r(null)}});if(!blob){c=await drawCard(false);blob=await new Promise(r=>c.toBlob(r,"image/png"))}
  const url=URL.createObjectURL(blob),file=new File([blob],"billet-"+(e.title||"evenement").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+".png",{type:"image/png"});window._p4f=file;window._p4u=url;
  mo.classList.add("on");$("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:340px;margin:auto;text-align:center;max-height:94vh;overflow:auto"><h2 style="color:#000;font-size:17px;margin-bottom:8px">🖼️ Votre visuel</h2><img src="${url}" alt="" style="width:100%;border-radius:12px"><p class="sm" style="margin:8px 0">Publiez-le dans votre statut WhatsApp, Instagram ou Facebook : vos amis scannent le code et réservent.</p><button class="ab" onclick="p4Share()">📤 Partager</button><a class="ab" style="display:block;text-decoration:none" download="${esc(file.name)}" href="${url}">⬇️ Télécharger</a><button class="ab" onclick="closeMo()">Fermer</button></div>`};
-window.p4Share=async function(){const f=window._p4f,e=EV.e,t=e.title+" — "+evShare(e);try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:t});return}}catch(z){return}toast("Téléchargez l'image puis publiez-la")};
+window.p4Share=async function(){const f=window._p4f,e=EV.e,t=lrr300(e.title+" — "+evShare(e),e);try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:t});return}}catch(z){return}toast("Téléchargez l'image puis publiez-la")};
 
 /* 7. Cotiser entre amis pour sortir ; liste d'attente via WhatsApp */
 window.p4Tribe=function(){const e=EV.e,T=evTotals(),cu=Object.keys(T.amt).find(k=>T.amt[k]>0),tk=(e.tickets||[]).filter(t=>t.price>0).sort((a,b)=>PV(a)-PV(b))[0],goal=cu?T.amt[cu]:(tk?tk.price*4:""),cur=cu||(tk?tk.currency:"FC");
@@ -4057,7 +4057,7 @@ window.p5Copy=copy;
 const _myobs=new MutationObserver(()=>{const m=$("myev");if(!m||$("p5gp"))return;const b=m.querySelector('button[onclick="odbOpen()"]');if(b&&0)b.insertAdjacentHTML("afterend","")});
 const _mv=$("myev");if(_mv)_myobs.observe(_mv,{childList:true,subtree:true});
 let CUR="",TAB="door";
-const TABS=[["tix","🎟️ Billets & stock"],["packs","🎁 Packs"],["promo","🏷️ Codes promo"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["invo","✉️ Invitation"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["chal","🎯 Défi pour spectateurs"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["paper","🧑‍💼 Vendeurs"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["ann","📢 Annulation"]];
+const TABS=[["tix","🎟️ Billets & stock"],["tkx","✨ Options billets"],["packs","🎁 Packs"],["promo","🏷️ Codes promo"],["door","🚪 Entrée"],["amb","🤝 Ambassadeurs"],["inv","🎁 Invités"],["invo","✉️ Invitation"],["inst","📆 Versements"],["live","📺 Direct"],["news","📣 Annonce"],["ventes","🧾 Journal des ventes"],["msg","📣 Message groupé"],["geo","📍 Position GPS"],["comm","💼 Commissions"],["stat","📊 Stats"],["rem","Rappels"],["lead","🏆 Meilleurs vendeurs"],["draw","🎰 Tirage au sort"],["chal","🎯 Défi pour spectateurs"],["ref","🎁 Parrainage"],["pass","🎫 Pass saison"],["spons","🏷️ Sponsors & accès"],["paper","🧑‍💼 Vendeurs"],["pos","🏪 Caisse porte"],["cash","💰 Remise de caisse"],["ann","📢 Annulation"]];
 window.p5Manage=async function(tab,eid){if(typeof tab==="string"&&TABS.some(t=>t[0]===tab))TAB=tab;if(typeof eid==="string"&&eid)CUR=eid;let ov=$("p5m");if(!ov){ov=document.createElement("div");ov.id="p5m";ov.className="p5ov";document.body.appendChild(ov)}ov.style.zIndex=window.ODB?"10000":"";ov.style.display="block";document.body.style.overflow="hidden";
  if(!MYEV||!MYEV.length){try{await loadMine()}catch(x){}}
  const L=(MYEV||[]).filter(e=>e.status==="published"||e.status==="pending");
@@ -4125,13 +4125,20 @@ const PG=document.querySelector("#v-cotm,#v-gift");if(PG&&!$("v-dscan")){PG.inse
 const S={id:"",pin:"",door:"",title:"",mf:[],q:[],stream:null,raf:0};
 const mfKey=()=>"lrr_mf_"+S.id,qKey=()=>"lrr_q_"+S.id;
 function dscan(id){const el=$("v-dscan");if(!el)return;S.id=UUID.test(id||"")?id:"";if(!S.id){el.innerHTML='<div class="x2"><h2>🚪 Scanner d\'entrée</h2><p class="sm">Lien invalide.</p></div>';return}
- S.pin=sessionStorage.getItem("lrr_pin_"+S.id)||"";S.door=ld("lrr_door_"+S.id)||"";S.mf=jl(mfKey(),[]);S.q=jl(qKey(),[]);
+ S.pin=sessionStorage.getItem("lrr_pin_"+S.id)||"";S.door=ld("lrr_door_"+S.id)||"";S.mf=jl(mfKey(),[]);S.q=jl(qKey(),[]);gLoad();
  if(S.pin){scanUI();return}
  el.innerHTML=`<div class="x2"><h2>🚪 Scanner d'entrée</h2><p class="sm">Entrez le code PIN donné par l'organisateur.</p><input id="dp" type="password" inputmode="numeric" maxlength="6" placeholder="PIN à 6 chiffres" style="font-size:22px;text-align:center"><button class="btn dk" onclick="p5Login()">Entrer</button><p class="sm" id="dm"></p></div>`}
 window.p5Login=async function(){const p=($("dp").value||"").trim(),m=$("dm");if(!/^\d{6}$/.test(p)){m.textContent="Le PIN contient 6 chiffres.";return}m.textContent="⏳";try{const r=await rp("scanner_login",{p_event:S.id,p_pin:p});if(!r.ok){m.textContent="❌ "+r.error;return}S.pin=p;S.title=r.title||"";S.door=S.door||r.door||"";sessionStorage.setItem("lrr_pin_"+S.id,p);sv("lrr_title_"+S.id,S.title);await sync(true);scanUI()}catch(x){m.textContent="❌ "+x.message}};
 async function sync(full){try{if(S.q.length){const r=await rp("scan_batch",{p_event:S.id,p_pin:S.pin,p_scans:S.q});if(Array.isArray(r)){S.q=[];sv(qKey(),"[]")}}
  const m=await rp("scanner_manifest",{p_event:S.id,p_pin:S.pin});if(Array.isArray(m)){S.mf=m;sv(mfKey(),JSON.stringify(m))}return true}catch(x){return false}}
-function counts(){const sold=S.mf.reduce((a,o)=>a+(+o.qty||0),0),ent=S.mf.filter(o=>o.used).reduce((a,o)=>a+(+o.qty||0),0);return{sold,ent}}
+/* billets groupe (ex : famille 5 personnes) et billets offerts : un QR = plusieurs entrées, comptées une à une */
+function gnorm(x){return String(x||"").toLowerCase().replace(/[^a-z0-9à-ÿ]+/g,"")}
+function gLoad(){try{S.gx=JSON.parse(localStorage.getItem("lrr_gx_"+S.id)||"null")}catch(z){S.gx=null}
+ if(navigator.onLine)af(SB+"/rest/v1/events?id=eq."+S.id+"&select=tickets,modes").then(r=>r.json()).then(l=>{const e=l&&l[0];if(!e)return;const X=(e.modes||{}).tkx||{},g={};(e.tickets||[]).forEach(t=>{const x=X[t.id]||{},m=/(\d+)\s*achet\S*\s*=\s*(\d+)\s*offert/i.exec(x.promo||"");g[gnorm(t.name)]={g:+x.group>1?+x.group:1,bn:m?+m[1]:0,bm:m?+m[2]:0}});S.gx=g;try{localStorage.setItem("lrr_gx_"+S.id,JSON.stringify(g))}catch(z){}try{scanUI2()}catch(z){}}).catch(()=>{})}
+function persons(items){let n=0,grp=false;(items||[]).forEach(i=>{const c=(S.gx||{})[gnorm(i.name)]||{g:1,bn:0,bm:0},q=+i.qty||0;let p=q*c.g;if(c.bn&&c.bm)p+=Math.floor(q/c.bn)*c.bm*c.g;if(p!==q)grp=true;n+=p});return{n:n,grp:grp}}
+function gCnt(){try{return JSON.parse(localStorage.getItem("lrr_gc_"+S.id)||"{}")}catch(z){return{}}}
+function gSet(k,v){const c=gCnt();c[k]=v;try{localStorage.setItem("lrr_gc_"+S.id,JSON.stringify(c))}catch(z){}}
+function counts(){let sold=0,ent=0;const gc=gCnt();S.mf.forEach(o=>{const P=persons(o.items),t=P.n||(+o.qty||0);sold+=t;if(o.used)ent+=P.grp?Math.min(t,gc[o.id]||1):t});return{sold,ent}}
 function scanUI(){const el=$("v-dscan"),c=counts(),title=S.title||ld("lrr_title_"+S.id)||"Entrée";
  el.innerHTML=`<div class="x2"><h2>🚪 ${esc(title)}</h2><div class="p5cd"><div class="p5big" id="dc">${c.ent} / ${c.sold}</div><div class="p5bar"><i id="dbar" style="width:${c.sold?Math.round(c.ent/c.sold*100):0}%"></i></div><small id="dst">${navigator.onLine?"📶 En ligne":"✈️ Hors-ligne"} · ${S.q.length} scan(s) à synchroniser</small></div>
  <input id="dd" value="${esc(S.door)}" maxlength="30" placeholder="Porte (ex : A)" onchange="localStorage.setItem('lrr_door_${S.id}',this.value);" style="max-width:160px">
@@ -4144,19 +4151,29 @@ async function startCam(){try{S.stream=await LRRQR.cam();LRRQR.attach($("dv"),S.
 function stopCam(){cancelAnimationFrame(S.raf);if(S.stream){S.stream.getTracks().forEach(t=>t.stop());S.stream=null}}
 function show(cls,html){const r=$("dr");if(r)r.innerHTML=`<div class="p5res ${cls}">${html}</div>`;try{navigator.vibrate&&navigator.vibrate(cls==="ok"?60:[120,60,120])}catch(e){}}
 window.p5Check=async function(code){code=String(code||"").trim();if(!code)return;const door=($("dd")||{}).value||S.door,cu=code.toUpperCase().replace(/\s/g,"");
- const o=S.mf.find(x=>x.id.toLowerCase()===code.toLowerCase()||x.code===cu);
- const info=o=>`${esc(o.name)}<br><small style="font-weight:700">${(o.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")}${o.seats&&o.seats.length?" · place(s) "+esc(o.seats.map(s=>String(s).split("-")[1]).join(", ")):""}</small>`;
- if(navigator.onLine){try{const r=await rp("scan_ticket",{p_event:S.id,p_pin:S.pin,p_code:code,p_door:door||null});
-   if(r.result==="ok"){if(o)o.used=true;sv(mfKey(),JSON.stringify(S.mf));show("ok","✅ ENTRÉE VALIDÉE<br>"+esc(r.name)+"<br><small style=\"font-weight:700\">"+(r.items||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ")+(r.seats&&r.seats.length?" · place(s) "+esc(r.seats.map(s=>String(s).split("-")[1]).join(", ")):"")+"</small>")}
-   else if(r.result==="used")show("wa","⚠️ DÉJÀ UTILISÉ<br>"+esc(r.name||"")+"<br><small>"+(r.at?"Entré à "+fdt(r.at):"")+(r.door?" · porte "+esc(r.door):"")+"</small>");
-   else if(r.result==="unpaid")show("ko","❌ NON PAYÉ<br>"+esc(r.name||""));else if(r.result==="unsold")show("ko","❌ TICKET PAPIER NON VENDU<br><small>Faux ticket ou ticket volé (n° "+esc(r.serial||"?")+")</small>");else if(r.result==="void")show("ko","❌ TICKET ANNULÉ<br><small>n° "+esc(r.serial||"?")+"</small>");
-   else if(r.ok===false&&r.error)show("ko","❌ "+esc(r.error));
-   else show("ko","❌ BILLET INTROUVABLE");
-   scanUI2();return}catch(x){}}
- /* hors-ligne */
- if(!o){show("ko","❌ INTROUVABLE (hors-ligne)<br><small>"+(S.mf.length?"Ce code n'est pas dans la liste.":"Liste non chargée : connectez-vous une fois.")+"</small>");return}
- if(o.used){show("wa","⚠️ DÉJÀ UTILISÉ<br>"+info(o));return}
- o.used=true;sv(mfKey(),JSON.stringify(S.mf));S.q.push({code:o.id,door:door||null,at:new Date().toISOString()});sv(qKey(),JSON.stringify(S.q));show("ok","✅ ENTRÉE VALIDÉE (hors-ligne)<br>"+info(o));scanUI2()}
+  const o=S.mf.find(x=>x.id.toLowerCase()===code.toLowerCase()||x.code===cu),key=o?o.id:cu;
+  const itx=its=>(its||[]).map(i=>esc(i.name)+" × "+i.qty).join(", ");
+  const seat=x=>x&&x.seats&&x.seats.length?" · place(s) "+esc(x.seats.map(s=>String(s).split("-")[1]).join(", ")):"";
+  const info=o=>`${esc(o.name)}<br><small style="font-weight:700">${itx(o.items)}${seat(o)}</small>`;
+  const grpOk=(k,P,name,its,sx,off)=>"✅ ENTRÉE "+k+" / "+P.n+(off?" (hors-ligne)":"")+"<br><b>👥 BILLET GROUPE · "+P.n+" personnes</b><br>"+esc(name||"")+"<br><small style=\"font-weight:700\">"+itx(its)+(sx||"")+"</small><br><small>Scannez le même QR pour chaque personne. Reste "+(P.n-k)+".</small>";
+  const grpFull=(P,name)=>"⚠️ GROUPE COMPLET · "+P.n+" / "+P.n+" personnes déjà entrées<br>"+esc(name||"");
+  if(navigator.onLine){try{const r=await rp("scan_ticket",{p_event:S.id,p_pin:S.pin,p_code:code,p_door:door||null});
+    if(r.result==="ok"){if(o)o.used=true;sv(mfKey(),JSON.stringify(S.mf));const P=persons(r.items);
+      if(P.grp){gSet(key,1);show("ok",grpOk(1,P,r.name,r.items,seat(r)))}
+      else show("ok","✅ ENTRÉE VALIDÉE<br>"+esc(r.name)+"<br><small style=\"font-weight:700\">"+itx(r.items)+seat(r)+"</small>")}
+    else if(r.result==="used"){const its=(o&&o.items)||r.items,P=persons(its);
+      if(P.grp){let k=gCnt()[key]||1;if(k<P.n){k++;gSet(key,k);show("ok",grpOk(k,P,r.name,its,""))}else show("wa",grpFull(P,r.name))}
+      else show("wa","⚠️ DÉJÀ UTILISÉ<br>"+esc(r.name||"")+"<br><small>"+(r.at?"Entré à "+fdt(r.at):"")+(r.door?" · porte "+esc(r.door):"")+"</small>")}
+    else if(r.result==="unpaid")show("ko","❌ NON PAYÉ<br>"+esc(r.name||""));else if(r.result==="unsold")show("ko","❌ TICKET PAPIER NON VENDU<br><small>Faux ticket ou ticket volé (n° "+esc(r.serial||"?")+")</small>");else if(r.result==="void")show("ko","❌ TICKET ANNULÉ<br><small>n° "+esc(r.serial||"?")+"</small>");
+    else if(r.ok===false&&r.error)show("ko","❌ "+esc(r.error));
+    else show("ko","❌ BILLET INTROUVABLE");
+    scanUI2();return}catch(x){}}
+  /* hors-ligne */
+  if(!o){show("ko","❌ INTROUVABLE (hors-ligne)<br><small>"+(S.mf.length?"Ce code n'est pas dans la liste.":"Liste non chargée : connectez-vous une fois.")+"</small>");return}
+  const P=persons(o.items);
+  if(o.used){if(P.grp){let k=gCnt()[key]||1;if(k<P.n){k++;gSet(key,k);show("ok",grpOk(k,P,o.name,o.items,seat(o),1));scanUI2()}else show("wa",grpFull(P,o.name))}else show("wa","⚠️ DÉJÀ UTILISÉ<br>"+info(o));return}
+  o.used=true;sv(mfKey(),JSON.stringify(S.mf));S.q.push({code:o.id,door:door||null,at:new Date().toISOString()});sv(qKey(),JSON.stringify(S.q));
+  if(P.grp){gSet(key,1);show("ok",grpOk(1,P,o.name,o.items,seat(o),1))}else show("ok","✅ ENTRÉE VALIDÉE (hors-ligne)<br>"+info(o));scanUI2()}
 function scanUI2(){const c=counts(),a=$("dc");if(a)a.textContent=c.ent+" / "+c.sold;const b=$("dbar");if(b)b.style.width=(c.sold?Math.round(c.ent/c.sold*100):0)+"%";const s=$("dst");if(s)s.textContent=(navigator.onLine?"📶 En ligne":"✈️ Hors-ligne")+" · "+S.q.length+" scan(s) à synchroniser"}
 
 /* ================= MES BILLETS PRO (acheteur) ================= */
@@ -5403,7 +5420,7 @@ window.shareAffiche=async function(){try{
  var t=document.createElement("div");new QRCode(t,{text:u,width:230,height:230});var q=t.querySelector("canvas");if(q){x.fillStyle="#fff";x.fillRect(425,1020,230,230);x.drawImage(q,425,1020,230,230)}
  x.fillStyle="#fff";x.font="800 34px Inter,system-ui,sans-serif";x.fillText("Scannez pour réserver votre place",540,1305);
  var b=await new Promise(function(r){c.toBlob(r,"image/png")}),f=new File([b],"affiche.png",{type:"image/png"});
- if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:e.title,text:e.title+" — "+u});return}
+ if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:e.title,text:(window.lrr300?lrr300(e.title+" — "+u,e):e.title+" — "+u)});return}
  var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="affiche-"+String(e.title||"evenement").slice(0,20)+".png";document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},500);toast("Affiche enregistrée ✅")
 }catch(err){toast("Impossible de créer l'affiche")}};
 </script>
@@ -8844,7 +8861,7 @@ window.rkPoster=async function(id){
  var d=document.createElement("div");d.id="pstm";
  d.innerHTML='<div class="pst"><div class="psth"><b>🖼️ Affiche'+(C.rank?" · N°"+C.rank+" "+esc(C.gl.toLowerCase()):"")+'</b><button onclick="pstClose()" aria-label="Fermer">✕</button></div>'
   +'<img src="'+url+'" alt="Affiche">'
-  +'<label>📝 Texte prêt à publier</label><textarea id="psttx" rows="8">'+esc(postText(e,C))+'</textarea>'
+  +'<label>📝 Texte prêt à publier</label><textarea id="psttx" rows="8">'+esc(lrr300(postText(e,C),e))+'</textarea>'
   +'<button class="pstb" onclick="pstCopy()">📋 Copier le texte</button>'
   +'<label>📣 Publier sur</label><div class="pstn">'+NET.map(function(n){return '<button style="background:'+n[2]+'" onclick="pstGo(\''+n[0]+'\')">'+n[1]+'</button>'}).join("")+'</div>'
   +'<a class="pstb" download="'+esc(name)+'" href="'+url+'">⬇️ Télécharger l\'affiche (1080 px)</a>'
@@ -8854,6 +8871,8 @@ window.rkPoster=async function(id){
 /* ===== Affiche de rappel (J-30, J-14, J-7, J-3, J-1, Jour J) + texte de rappel professionnel ===== */
 var PRE=[30,14,7,3,1,0];
 var jLab=function(p){return p===0?"Jour J":"J-"+p};
+function chipsJ(e,jv){var t=jDays(e),a=[];if(t!==null&&t>=0)a.push(t);PRE.forEach(function(p){if(a.indexOf(p)<0&&(t===null||p<=t))a.push(p)});if(jv!==undefined&&jv!==null&&a.indexOf(jv)<0)a.push(jv);return a}
+function newDay(id){try{return localStorage.getItem("lrr_jday_"+id)!==new Date().toDateString()}catch(z){return true}}
 function paintRem(e,jv,C,im,H){
  var c=document.createElement("canvas");c.width=W;c.height=H;var x=c.getContext("2d");
  var y=head(x,e,H,im,jv===0?"JOUR J":"J-"+jv);
@@ -8901,8 +8920,8 @@ window.remPoster=async function(id,jv){
  var e=[].concat(typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]).find(function(x){return x&&x.id===id});if(!e)return;
  var j=jDays(e);
  if(j!==null&&j<0){alert("Cet événement est déjà passé.");return}
- if(jv===undefined||jv===null){jv=0;var s=PRE.slice().reverse();for(var k=0;k<s.length;k++){if(j===null||s[k]>=j){jv=s[k];break}}if(j!==null&&j>30)jv=30}
- toast("⏰ Création de l'affiche de rappel…");
+ if(jv===undefined||jv===null){jv=(j===null?0:Math.max(0,j))}
+ try{localStorage.setItem("lrr_jday_"+id,new Date().toDateString())}catch(z){}toast("⏰ Création de l'affiche de rappel…");
  try{if(!(ORD[id]&&ORD[id].length)&&typeof loadOrders==="function")await loadOrders(id)}catch(z){}
  try{await ensureSold(pool())}catch(z){}
  var C=compute(e),im=null,pu="";try{pu=evPoster(e)}catch(z){}
@@ -8915,7 +8934,7 @@ window.remPoster=async function(id,jv){
  var d=document.createElement("div");d.id="pstm";
  d.innerHTML='<div class="pst"><div class="psth"><b>⏰ Affiche de rappel · '+jLab(jv)+'</b><button onclick="pstClose()" aria-label="Fermer">✕</button></div>'
   +'<img src="'+url+'" alt="Affiche de rappel">'
-  +'<label>📅 Choisir le jour</label><div class="pstj">'+PRE.map(function(p){return '<button class="'+(p===jv?"on":"")+'" onclick="remPoster(\''+id+'\','+p+')">'+jLab(p)+'</button>'}).join("")+'</div>'
+  +'<label>📅 Choisir le jour</label><div class="pstj">'+chipsJ(e,jv).map(function(p){return '<button class="'+(p===jv?"on":"")+'" onclick="remPoster(\''+id+'\','+p+')">'+jLab(p)+(p===jDays(e)?" · aujourd'hui":"")+'</button>'}).join("")+'</div>'
   +'<label>📝 Texte de rappel prêt à publier</label><textarea id="psttx" rows="10">'+esc(remText(e,jv,C))+'</textarea>'
   +'<button class="pstb" onclick="pstCopy()">📋 Copier le texte</button>'
   +'<label>📣 Publier sur</label><div class="pstn">'+NET.map(function(n){return '<button style="background:'+n[2]+'" onclick="pstGo(\''+n[0]+'\')">'+n[1]+'</button>'}).join("")+'</div>'
@@ -8923,10 +8942,10 @@ window.remPoster=async function(id,jv){
  d.addEventListener("click",function(ev){if(ev.target===d)close()});document.body.appendChild(d)};
 window.remTab=function(){
  var L=(typeof MYEV!=="undefined"?MYEV:[]).filter(function(e){return e.status==="published"});
- var h='<h3 class="odh3">⏰ Affiche de rappel</h3><p class="odsm">Créez l\'affiche « J-7 » (ou J-30, J-14, J-3, J-1, Jour J) avec le QR code, accompagnée d\'un texte de rappel professionnel prêt à publier.</p>';
+ var h='<h3 class="odh3">⏰ Affiche de rappel</h3><p class="odsm">L\'affiche du jour se met à jour toute seule : J-20 aujourd\'hui, J-19 demain, jusqu\'au Jour J. Elle contient le QR code et un texte professionnel (500 mots maximum) prêt à publier.</p>';
  if(!L.length)return h+'<p class="odsm">Aucun événement publié pour le moment.</p>';
  return h+L.map(function(e){var j=jDays(e),st=j===null?"":j<0?"Événement passé":j===0?"C'est aujourd'hui":"J-"+j+" · "+j+" jour"+(j>1?"s":"")+" restant"+(j>1?"s":"");
-  return '<div class="odc"><div class="odh"><b>'+esc(e.title)+'</b></div><div class="odsm">'+esc(fmtRange(e))+' • '+esc([e.venue,e.city].filter(Boolean).join(", "))+'</div><div class="odsm" style="margin:4px 0 8px"><b>'+st+'</b></div><div class="odbn">'+(j!==null&&j<0?"":PRE.map(function(p){return '<button class="ab" onclick="remPoster(\''+e.id+'\','+p+')">'+jLab(p)+'</button>'}).join(""))+'</div></div>'}).join("")};
+  return '<div class="odc"><div class="odh"><b>'+esc(e.title)+'</b></div><div class="odsm">'+esc(fmtRange(e))+' • '+esc([e.venue,e.city].filter(Boolean).join(", "))+'</div><div class="odsm" style="margin:4px 0 8px"><b>'+st+'</b></div><div class="odbn">'+(j!==null&&j<0?"":(j===null?"":'<button class="ab" style="background:#ffcd28;color:#111;font-weight:900" onclick="remPoster(\''+e.id+'\')">📅 Affiche d\'aujourd\'hui · '+jLab(j)+(newDay(e.id)?" 🆕":"")+'</button>')+PRE.filter(function(p){return j===null||p<j}).map(function(p){return '<button class="ab" onclick="remPoster(\''+e.id+'\','+p+')">'+jLab(p)+'</button>'}).join(""))+'</div></div>'}).join("")};
 (function(){var s=document.createElement("style");s.textContent=".pst .pstj{display:flex;flex-wrap:wrap;gap:6px}.pst .pstj button{padding:8px 12px;border:1px solid #ccc;border-radius:999px;background:#fff;color:#111;font:700 13px system-ui}.pst .pstj button.on{background:#111;color:#ffcd28;border-color:#111}";document.head.appendChild(s)})();
 
 var st=document.createElement("style");st.textContent="#pstm{position:fixed;inset:0;z-index:2147483000;background:rgba(0,0,0,.82);display:flex;align-items:flex-start;justify-content:center;padding:14px;overflow:auto}.pst{background:#fff;color:#111;border-radius:18px;padding:14px;width:100%;max-width:420px;box-sizing:border-box}.pst .psth{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}.pst .psth button{border:0;background:#eee;border-radius:50%;width:32px;height:32px;font-size:15px}.pst img{width:100%;border-radius:12px;display:block}.pst label{display:block;font-weight:800;font-size:13px;margin:12px 0 4px}.pst textarea{width:100%;box-sizing:border-box;font:13px/1.45 system-ui;padding:9px;border:1px solid #ddd;border-radius:10px;color:#111;background:#fafafa}.pst .pstb{display:block;width:100%;box-sizing:border-box;margin-top:8px;padding:12px;border-radius:12px;border:0;background:#111;color:#ffcd28;font:800 14px system-ui;text-align:center;text-decoration:none}.pst .pstn{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pst .pstn button{padding:12px;border:0;border-radius:12px;color:#fff;font:800 14px system-ui}.pst small{display:block;margin-top:10px;color:#666;font-size:12px;line-height:1.4}.tpr .ab{flex:none}";document.head.appendChild(st);
@@ -9616,9 +9635,10 @@ window.pwDone=async function(){const{c,i}=window.PWS,k=$("pwk").value.trim(),n=$
 <script>/* v29 : textes de rappel et de partage de 300 mots minimum ; validation du compte par SMS / WhatsApp */
 (function(){
 const ph=x=>String(x||"").replace(/[^\d+]/g,""),W=t=>String(t||"").trim().split(/\s+/).filter(Boolean).length;
-window.lrr300=function(t,e){t=String(t||"");if(W(t)>=300)return t;e=e||{};const T=e.title||"cet événement",pl=[e.venue,e.city].filter(Boolean).join(", "),
+const cap500=function(t){t=String(t||"");const re=/\S+/g;let m,n=0,end=-1;while((m=re.exec(t))){n++;if(n===500){end=m.index+m[0].length;break}}if(end<0)return t;let c=t.slice(0,end);const q=Math.max(c.lastIndexOf(". "),c.lastIndexOf("!"),c.lastIndexOf("?"),c.lastIndexOf("\n"));if(q>c.length*0.6)c=c.slice(0,q+1);return c.trim()};window.cap500=cap500;
+window.lrr300=function(t,e){t=String(t||"");const cp=cap500;if(W(t)>=300)return cp(t);e=e||{};const T=e.title||"cet événement",pl=[e.venue,e.city].filter(Boolean).join(", "),
 B="\n\n📌 Informations pratiques\nPour bien profiter de « "+T+" »"+(pl?" ("+pl+")":"")+", voici l'essentiel à retenir. Les portes ouvrent environ une heure avant le début du spectacle : nous vous conseillons d'arriver tôt afin d'éviter l'attente à l'entrée et de choisir tranquillement votre place. Présentez votre billet avec son QR code, directement sur votre téléphone ou imprimé. Pensez à charger votre batterie et à augmenter la luminosité de l'écran pour que le scan soit rapide. Chaque billet n'est valable qu'une seule fois : ne partagez jamais votre QR code ni votre code de billet avec des inconnus et ne l'envoyez pas en photo sur les réseaux sociaux.\n\n🎫 Votre billet\nVous pouvez retrouver votre billet à tout moment dans la rubrique « Mes places » du site Restau du Rire Tickets, avec votre nom complet et votre numéro WhatsApp. En cas de perte, de doute ou d'erreur sur votre commande, contactez l'organisation avant le jour de l'événement : plus vous nous écrivez tôt, plus nous pouvons vous aider vite.\n\n🤝 Bonne ambiance pour tous\nNous vous demandons de respecter les artistes, le personnel et les autres spectateurs, de couper la sonnerie de votre téléphone pendant les passages sur scène et de suivre les consignes de l'équipe d'accueil et de sécurité. Les objets dangereux et les produits interdits ne sont pas admis. Si vous venez en groupe, entrez ensemble avec vos billets prêts afin de fluidifier l'accueil.\n\n📣 Parlez-en autour de vous\nVotre présence compte énormément pour les artistes et pour toute l'équipe. Invitez vos amis, votre famille et vos collègues : les places partent vite et chaque spectateur contribue à créer une ambiance inoubliable. Transférez ce message à vos proches et partagez le lien de réservation pour qu'ils puissent réserver à leur tour en toute sécurité.\n\n🙏 Merci de votre confiance\nToute l'équipe est mobilisée pour que cette soirée soit réussie du début à la fin. Pour toute question, répondez simplement à ce message ou écrivez-nous sur WhatsApp. Nous avons hâte de vous retrouver, de rire, de vibrer et de partager ensemble un moment que vous n'oublierez pas. À très bientôt !";
-return t+B};
+let K="";try{const X=(e.modes||{}).tkx||{},L=(e.tickets||[]).map(function(k){const x=X[k.id]||{};return "🎟️ "+k.name+" : "+(k.price>0?k.price+" "+(k.currency==="USD"?"$":"FC"):"Gratuit")+(x.group>1?" (valable pour "+x.group+" personnes)":"")+(x.promo?" — 🎁 "+x.promo:"")+(x.perk?" — ✓ "+x.perk:"")});if(L.length)K="\n\n💳 Nos billets\n"+L.join("\n")}catch(z){}return cp(t+K+B)};
 signin=async function(e,pw){const b=String(e).includes("@")?{email:e,password:pw}:{phone:ph(e),password:pw};const r=await fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(b)});if(!r.ok)return false;setSession(await r.json());await initRole();return true};
 const _ra=renderAcc;renderAcc=function(){const x=_ra.apply(this,arguments);try{const a=$("at");void 0;const e=$("ae");if(!tok&&e&&accMode==="login")e.placeholder="E-mail ou numéro (+243…)"}catch(z){}return x};
 const _d2=doAuth;doAuth=async function(){const c=$("ac");if(accMode!=="signup"||!c||c.value==="email")return _d2();
@@ -10840,4 +10860,108 @@ addEventListener("online",function(){document.querySelectorAll("img.pic").forEac
  if(typeof odbTab==="function"){var ot0=odbTab;window.odbTab=odbTab=function(){var r=ot0.apply(this,arguments);try{if(window.ODT==="home")put(document.getElementById("odtab"))}catch(x){}return r}}
 })();
 </script>
+<style id="tkxcss">
+.tkx-row{grid-area:c;display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+#v-ev #evt .tkc.tkx{grid-template-areas:"n d" "c c" "m s" "o s" "p s"}
+#v-ev #evt .tkc.tkx>div:first-child{flex-wrap:wrap;gap:6px}
+.tkx-p{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px;line-height:1.1}
+.tkx-promo{background:linear-gradient(135deg,#3a9d5d,#5bc878);color:#fff}
+.tkx-until{background:#fdf1de;color:#c2570c}
+.tkx-grp{background:#e6efff;color:#1d4ed8}
+.tkx-bd{margin-left:auto;border-radius:999px;padding:6px 12px;font-weight:800;font-size:12.5px;color:#fff;white-space:nowrap}
+.tkxP{margin:12px 0;border:1.5px solid #f2d46b;border-radius:22px;padding:14px;background:linear-gradient(135deg,#fffdf3,#fdf3d6)}
+.tkxPh{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.tkxPh i{font-style:normal;display:grid;place-items:center;width:38px;height:38px;border-radius:12px;background:#f5c04a;font-size:18px}
+.tkxPh b{font-size:17px;color:#14213d}
+.tkxPi{background:#fffdf8;border:1px solid #f2dc8c;border-radius:16px;padding:12px 14px;margin-bottom:10px;color:#1b2540}
+.tkxPi b{text-transform:uppercase;font-size:15px}.tkxPi span{color:#6b7280;font-weight:700}
+.tkxPi p{margin:6px 0 0;font-size:15px;line-height:1.4}.tkxPi em{font-style:normal;color:#c2701b;font-weight:900;margin-right:8px}
+html.dk .tkxP{background:#2a2614;border-color:#6b5a1d}html.dk .tkxPi{background:#1d1a0e;border-color:#5b4d19;color:#f3ead0}html.dk .tkxPh b{color:#f3ead0}
+html.dk .tkx-until{background:#3a2a12;color:#ffb86b}html.dk .tkx-grp{background:#1b2a4d;color:#9db8ff}
+.tkxo{margin:8px 0;border:1px dashed #9bb5ae;border-radius:14px;padding:8px 10px}.tkxo summary{cursor:pointer;font-weight:800}
+.tkxo label{display:block;margin-top:8px;font-size:13px}
+</style>
+<script id="tkxjs">
+/* ===== Options des billets : badges, offres, billets groupe, avantages inclus ===== */
+(function(){
+const BD={demand:["Forte demande","#ea4466","📈"],popular:["Populaire","#7c3aed","⭐"],last:["Dernières places","#e8590c","🔥"],new:["Nouveau","#0f9d8a","✨"]};
+const pad=n=>String(n).padStart(2,"0");
+const fdl=d=>pad(d.getDate())+"/"+pad(d.getMonth()+1)+" à "+pad(d.getHours())+"h"+pad(d.getMinutes());
+const loc=iso=>{const d=new Date(iso);return isNaN(d)?"":d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())+"T"+pad(d.getHours())+":"+pad(d.getMinutes())};
+const E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function fields(x,open){x=x||{};const o=(v,l)=>'<option value="'+v+'"'+(x.badge===v?" selected":"")+'>'+l+'</option>';
+ return '<details class="tkxo"'+(open?" open":"")+'><summary>✨ Options : badge, offre, groupe, avantages</summary>'
+ +'<label>Badge</label><select class="xb">'+o("","Aucun")+o("auto","Forte demande — automatique (≤ 25 % des billets restants)")+o("demand","Forte demande")+o("popular","Populaire")+o("last","Dernières places")+o("new","Nouveau")+'</select>'
+ +'<label>Offre promo (facultatif) — « 1 acheté = 1 offert » : le même QR fait entrer 2 personnes, automatiquement</label><input class="xp" list="tkxpl" maxlength="40" placeholder="Ex : 1 acheté = 1 offert" value="'+E(x.promo)+'">'
+ +'<label>🗓️ Programmer : début de l\'offre et du badge (facultatif)</label><input class="xf" type="datetime-local" value="'+E(x.from?loc(x.from):"")+'">'
+ +'<label>🕒 Programmer : fin de l\'offre et du badge (facultatif)</label><input class="xu" type="datetime-local" value="'+E(x.until?loc(x.until):"")+'">'
+ +'<label>Billet groupe : nombre de personnes (le scanner compte 1/5, 2/5…)</label><input class="xg" type="number" min="2" max="50" placeholder="Ex : 5 pour un billet famille" value="'+E(x.group||"")+'">'
+ +'<label>Avantages inclus (facultatif)</label><textarea class="xe" rows="2" maxlength="200" placeholder="Ex : Accès au spectacle + 1 consommation offerte">'+E(x.perk)+'</textarea></details>'}
+function read(r){const g=c=>{const n=r.querySelector(c);return n?String(n.value||"").trim():""};
+ const x={},b=g(".xb"),p=g(".xp"),u=g(".xu"),fr=g(".xf"),n=Math.floor(+g(".xg")||0),e=g(".xe");
+ if(b)x.badge=b;if(p)x.promo=p.slice(0,40);if(u){const d=new Date(u);if(!isNaN(d))x.until=d.toISOString()}
+ if(fr){const d=new Date(fr);if(!isNaN(d))x.from=d.toISOString()}
+ if(n>=2)x.group=Math.min(n,50);if(e)x.perk=e.slice(0,200);return x}
+document.body.insertAdjacentHTML("beforeend",'<datalist id="tkxpl"><option value="1 acheté = 1 offert"><option value="2 achetés = 1 offert"><option value="Tarif early bird"><option value="-20 %"></datalist>');
+
+/* 1. Formulaire « Créer un événement » */
+if(typeof syncTR==="function"&&typeof drawTR==="function"){
+ const s0=syncTR;syncTR=function(){const r=s0.apply(this,arguments);document.querySelectorAll("#trs .trr").forEach((row,i)=>{if(TR[i])TR[i].x=read(row)});return r};
+ const d0=drawTR;drawTR=function(){const r=d0.apply(this,arguments);document.querySelectorAll("#trs .trr").forEach((row,i)=>{const h=fields((TR[i]||{}).x),b=row.querySelector(".ab");b?b.insertAdjacentHTML("beforebegin",h):row.insertAdjacentHTML("beforeend",h)});return r};
+ try{if($("trs"))drawTR()}catch(z){}
+}
+const ex0=window.evExtra;window.evExtra=function(){const r=ex0?ex0():{};
+ try{syncTR();const tkx={};TR.filter(t=>t.name.trim()&&t.price!=="").forEach((t,i)=>{if(t.x&&Object.keys(t.x).length)tkx["t"+(i+1)]=t.x});if(Object.keys(tkx).length)r.tkx=tkx}catch(z){}return r};
+
+/* 2. Page publique de l'événement */
+function deco(){if(typeof EV==="undefined"||!EV||!EV.e)return;
+ const e=EV.e,M=e.modes||{},X=M.tkx||{},cards=document.querySelectorAll("#evt .tkc"),now=Date.now(),perks=[];
+ (e.tickets||[]).forEach((t,i)=>{const x=X[t.id],c=cards[i];if(!x||!c)return;
+  const st=+t.stock||0,rem=st?Math.max(st-((EV.sold||{})[t.id]||0),0):null,live=(!x.until||Date.parse(x.until)>now)&&(!x.from||Date.parse(x.from)<=now);
+  let b=x.badge;if(b==="auto")b=(st&&rem>0&&rem/st<=.25)?"demand":"";
+  const chips=[];
+  if(x.promo&&live)chips.push('<span class="tkx-p tkx-promo">🎁 '+E(x.promo)+'</span>');
+  if(x.until&&live)chips.push('<span class="tkx-p tkx-until">🕒 jusqu\'au '+E(fdl(new Date(x.until)))+'</span>');
+  if(x.group>1)chips.push('<span class="tkx-p tkx-grp">👥 '+(+x.group)+' personnes</span>');
+  c.classList.add("tkx");const f=c.firstElementChild;
+  if(f&&b&&BD[b]&&rem!==0&&live)f.insertAdjacentHTML("beforeend",'<span class="tkx-bd" style="background:'+BD[b][1]+'">'+BD[b][2]+' '+BD[b][0]+'</span>');
+  if(f&&chips.length)f.insertAdjacentHTML("afterend",'<div class="tkx-row">'+chips.join("")+'</div>');
+  const dd=c.querySelector(".tkc-dd");if(dd){let h="";if(x.group>1)h+="👥 Accès pour "+(+x.group)+" personnes avec ce billet.<br>";if(x.perk)h+="✓ "+E(x.perk)+"<br>";if(h)dd.insertAdjacentHTML("afterbegin",h)}
+  if(x.perk)perks.push({n:(typeof tkClean==="function"?tkClean(t.name):t.name),p:(t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit"),t:x.perk});
+ });
+ {let free=0,pers=0;const lv=x=>(!x.until||Date.parse(x.until)>Date.now())&&(!x.from||Date.parse(x.from)<=Date.now());
+  (e.tickets||[]).forEach(t=>{const x=X[t.id]||{},q=(EV.qty||{})[t.id]||0;if(!q)return;const g=x.group>1?+x.group:1,m=/(\d+)\s*achet\S*\s*=\s*(\d+)\s*offert/i.exec(x.promo||"");if(m&&lv(x))free+=Math.floor(q/+m[1])*(+m[2])*g;if(g>1)pers+=q*g});
+  const sm=document.getElementById("evs");if(sm&&(free||pers))sm.insertAdjacentHTML("afterbegin",'<p class="tkx-note" style="display:block;margin:0 0 8px;padding:8px 10px;border-radius:12px;background:#e9f7ee;color:#1d6b3a;font-weight:800;font-size:13.5px">'+(pers?'👥 Votre sélection fait entrer '+pers+' personnes. ':'')+(free?'🎁 +'+free+' entrée'+(free>1?'s':'')+' offerte'+(free>1?'s':'')+' incluse'+(free>1?'s':'')+' automatiquement (même QR).':'')+'</p>')}
+ let P=document.getElementById("tkxperks");
+ if(!P){const ev=document.getElementById("evt");if(!ev)return;ev.insertAdjacentHTML("afterend",'<div id="tkxperks"></div>');P=document.getElementById("tkxperks")}
+ P.innerHTML=(M.tkxOn!==false&&perks.length)?'<div class="tkxP"><div class="tkxPh"><i>🎁</i><b>'+E(M.tkxTitle||"Avantages inclus avec vos billets")+'</b></div>'+perks.map(p=>'<div class="tkxPi"><b>'+E(p.n)+'</b> <span>· '+E(p.p)+'</span><p><em>✓</em>'+E(p.t)+'</p></div>').join("")+'</div>':"";
+}
+if(typeof drawTk==="function"){const t0=drawTk;drawTk=function(){const r=t0.apply(this,arguments);try{deco()}catch(z){console.warn("tkx",z)}return r}}
+
+/* 3. Espace organisateur : onglet « Options billets » (événements déjà publiés inclus) */
+window.P7T=Object.assign(window.P7T||{},{tkx:async function(b){
+ const e=(window.p5Ev&&window.p5Ev())||{},TK=Array.isArray(e.tickets)?e.tickets:[],M=e.modes||{},X=M.tkx||{};
+ if(!TK.length){b.innerHTML='<div class="p5cd"><small>Aucune catégorie de billets sur cet événement.</small></div>';return}
+ b.innerHTML='<div class="p5cd"><b>✨ Options des billets</b><small>Badges (« Forte demande »…), offres limitées dans le temps, billets groupe (famille, table…) et encadré « Avantages inclus ». Fonctionne sur un événement déjà publié ; les billets déjà vendus ne changent pas.</small>'
+ +'<label>Titre de l\'encadré des avantages</label><input id="tkx_t" maxlength="60" value="'+E(M.tkxTitle||"Avantages inclus avec vos billets")+'">'
+ +'<label class="ck"><input type="checkbox" id="tkx_on"'+(M.tkxOn===false?"":" checked")+'><span>Afficher l\'encadré « Avantages inclus »</span></label></div>'
+ +TK.map(t=>'<div class="p5cd" data-tid="'+E(t.id)+'"><b>'+E(t.name)+'</b> <span class="p5k">'+(t.price>0?nf(t.price)+" "+cur(t.currency):"Gratuit")+'</span>'+fields(X[t.id],true)+'</div>').join("")
+ +'<button class="btn dk" id="tkx_s" onclick="tkxSave()">💾 Enregistrer les options</button>'}});
+window.tkxSave=async function(){
+ const e=(window.p5Ev&&window.p5Ev())||{},id=window.p5Cur&&window.p5Cur();if(!id)return;
+ const tkx={};document.querySelectorAll("#p5b [data-tid]").forEach(c=>{const x=read(c);if(Object.keys(x).length)tkx[c.getAttribute("data-tid")]=x});
+ const patch={tkx:tkx,tkxTitle:(document.getElementById("tkx_t").value||"").trim().slice(0,60),tkxOn:document.getElementById("tkx_on").checked};
+ const btn=document.getElementById("tkx_s");if(btn)btn.disabled=true;
+ try{
+  try{await window.p5ra("owner_update_event",{p_event:id,p_modes:patch,p_tickets:null})}
+  catch(x){if(!/owner_update_event|schema cache|Could not find|404/i.test((x&&x.message)||""))throw x;
+   const mm=Object.assign({},e.modes||{},patch),r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id),{method:"PATCH",headers:{"Content-Type":"application/json",Prefer:"return=representation"},body:JSON.stringify({modes:mm})});
+   const rows=r.ok?await r.json():[];if(!rows.length)throw new Error("La base n'autorise pas encore cette modification sur un événement publié. Lancez le fichier 24-modifier-evenement-publie.sql dans Supabase, puis réessayez.")}
+  let ok=true;try{const r=await af(SB+"/rest/v1/events?id=eq."+encodeURIComponent(id)+"&select=modes"),l=await r.json(),m=(l[0]||{}).modes||{};ok=Object.keys(m.tkx||{}).length===Object.keys(tkx).length}catch(z){}
+  e.modes=Object.assign({},e.modes||{},patch);const d=(typeof DBEV!=="undefined"?DBEV:[]).find(x=>x.id===id);if(d)d.modes=Object.assign({},d.modes||{},patch);
+  alert(ok?"✅ Options enregistrées. Elles s'affichent déjà sur la page de l'événement.":"⚠️ La base n'a pas gardé les options (champ « modes » filtré côté Supabase). Vérifiez la fonction owner_update_event.");
+ }catch(x){alert("❌ "+((x&&x.message)||x))}finally{if(btn)btn.disabled=false}};
+})();
+</script>
+
 </body></html>
