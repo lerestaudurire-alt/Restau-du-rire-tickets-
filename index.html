@@ -3830,7 +3830,7 @@ async function drawCard(withPoster){const e=EV.e,W=1080,H=1920,c=document.create
  x.fillStyle="#fff";rr(x,90,1620,900,230,32);x.fill();const u=evShare(e);
  try{const t=document.createElement("div");new QRCode(t,{text:u,width:190,height:190});const qc=t.querySelector("canvas");if(qc)x.drawImage(qc,780,1640,190,190)}catch(z){}
  x.fillStyle="#1c1b2e";x.font="900 54px Inter,system-ui,sans-serif";x.fillText("Réserve ta place",125,1710);x.font="700 30px Inter,system-ui,sans-serif";x.fillStyle="#6f6a7d";x.fillText("Scanne le code ou ouvre le lien",125,1756);x.font="800 28px Inter,system-ui,sans-serif";x.fillStyle="#ff6b1a";x.fillText("Billetterie officielle · Restau du Rire Tickets",125,1812);return c}
-window.p4Card=async function(){const e=EV&&EV.e;if(!e)return;toast("Création du visuel…");let c=await drawCard(true),blob=await new Promise(r=>{try{c.toBlob(r,"image/png")}catch(z){r(null)}});if(!blob){c=await drawCard(false);blob=await new Promise(r=>c.toBlob(r,"image/png"))}
+window.p4Card=async function(){const e=EV&&EV.e;if(!e)return;toast("Création du visuel…");let c=await (window.lrrFlyer?lrrFlyer(e,true):drawCard(true)),blob=await new Promise(r=>{try{c.toBlob(r,"image/png")}catch(z){r(null)}});if(!blob){c=await (window.lrrFlyer?lrrFlyer(e,false):drawCard(false));blob=await new Promise(r=>c.toBlob(r,"image/png"))}
  const url=URL.createObjectURL(blob),file=new File([blob],"billet-"+(e.title||"evenement").toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,40)+".png",{type:"image/png"});window._p4f=file;window._p4u=url;
  mo.classList.add("on");$("mc").innerHTML=`<div style="background:#fff;color:#000;border-radius:16px;padding:14px;width:100%;max-width:340px;margin:auto;text-align:center;max-height:94vh;overflow:auto"><h2 style="color:#000;font-size:17px;margin-bottom:8px">🖼️ Votre visuel</h2><img src="${url}" alt="" style="width:100%;border-radius:12px"><p class="sm" style="margin:8px 0">Publiez-le dans votre statut WhatsApp, Instagram ou Facebook : vos amis scannent le code et réservent.</p><label style="display:block;text-align:left;font-weight:800;font-size:13px;margin:6px 0 4px">📝 Texte prêt à publier</label><textarea id="p4tx" rows="7" style="width:100%;box-sizing:border-box;border:1px solid #ccc;border-radius:10px;padding:8px;font:14px system-ui;color:#111">${esc(lrr300(e.title+" — "+evShare(e),e))}</textarea><button class="ab" onclick="p4CopyTx()">📋 Copier le texte</button>${(function(){try{var j=Math.round((new Date(e.starts_at||e.date||e.dates&&e.dates[0]).setHours(0,0,0,0)-new Date().setHours(0,0,0,0))/864e5);return j>=0&&j<=365?'<button class="ab" onclick="closeMo();remPoster(\''+e.id+'\')">📅 Affiche '+(j===0?"Jour J":"J-"+j)+' du jour</button>':""}catch(z){return""}})()}<button class="ab" onclick="p4Share()">📤 Partager</button><a class="ab" style="display:block;text-decoration:none" download="${esc(file.name)}" href="${url}">⬇️ Télécharger</a><button class="ab" onclick="closeMo()">Fermer</button></div>`};
 window.p4CopyTx=function(){const t=($("p4tx")||{}).value||"";try{navigator.clipboard.writeText(t).then(()=>toast("Texte copié ✅"))}catch(z){const a=$("p4tx");if(a){a.select();document.execCommand("copy");toast("Texte copié ✅")}}};
@@ -5420,7 +5420,7 @@ window.shareAffiche=async function(){try{
  x.font="700 42px Inter,system-ui,sans-serif";x.fillStyle="#f5b72c";x.fillText(fmtRange(e).slice(0,48),540,y);y+=60;x.fillStyle="#dfe9e6";x.fillText([e.venue,e.city].filter(Boolean).join(", ").slice(0,44),540,y);
  var t=document.createElement("div");new QRCode(t,{text:u,width:230,height:230});var q=t.querySelector("canvas");if(q){x.fillStyle="#fff";x.fillRect(425,1020,230,230);x.drawImage(q,425,1020,230,230)}
  x.fillStyle="#fff";x.font="800 34px Inter,system-ui,sans-serif";x.fillText("Scannez pour réserver votre place",540,1305);
- var b=await new Promise(function(r){c.toBlob(r,"image/png")}),f=new File([b],"affiche.png",{type:"image/png"});
+ try{var cf=window.lrrFlyer?await window.lrrFlyer(e,true):null;if(cf)c=cf}catch(z){}var b=await new Promise(function(r){c.toBlob(r,"image/png")}),f=new File([b],"affiche.png",{type:"image/png"});
  if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:e.title,text:(function(){var t=window.lrr300?lrr300(e.title+" — "+u,e):e.title+" — "+u;try{navigator.clipboard&&navigator.clipboard.writeText(t);toast("Texte copié : collez-le avec l'image")}catch(z){}return t})()});return}
  var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="affiche-"+String(e.title||"evenement").slice(0,20)+".png";document.body.appendChild(a);a.click();setTimeout(function(){a.remove()},500);toast("Affiche enregistrée ✅")
 }catch(err){toast("Impossible de créer l'affiche")}};
@@ -8831,6 +8831,7 @@ function postText(e,C){
 
 function close(){var m=document.getElementById("pstm");if(m)m.remove()}
 window.pstClose=close;
+window.pstWc=function(){var t=document.getElementById("psttx"),c=document.getElementById("pstwc");if(!t)return;var m=t.value.match(/\S+/g)||[];if(m.length>250&&window.cap500){t.value=cap500(t.value);m=t.value.match(/\S+/g)||[]}if(c)c.textContent=m.length+" / 250 mots"};
 window.pstCopy=function(){var t=document.getElementById("psttx");if(!t)return;try{navigator.clipboard.writeText(t.value);toast("Texte copié ✅")}catch(z){t.select();try{document.execCommand("copy");toast("Texte copié ✅")}catch(y){}}};
 window.pstGo=async function(net){
  var f=window._pstF,t=(document.getElementById("psttx")||{}).value||"",e=window._pstE;
@@ -8855,19 +8856,20 @@ window.rkPoster=async function(id){
  try{await ensureSold(pool())}catch(z){}
  var C=compute(e);
  if(!C.sold){alert("Aucun billet vendu pour le moment : l'affiche de classement se crée dès la première vente.");return}
- var c=await draw(e,C,true),blob=await new Promise(function(r){try{c.toBlob(r,"image/png")}catch(z){r(null)}});
- if(!blob){c=await draw(e,C,false);blob=await new Promise(function(r){c.toBlob(r,"image/png")})}
+ var c=await flyerCls(e,C,true),blob=await new Promise(function(r){try{c.toBlob(r,"image/png")}catch(z){r(null)}});
+ if(!blob){c=await flyerCls(e,C,false);blob=await new Promise(function(r){c.toBlob(r,"image/png")})}
  var url=URL.createObjectURL(blob),name="affiche-"+String(e.title||"evenement").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").slice(0,40)+".png";
  window._pstF=new File([blob],name,{type:"image/png"});window._pstU=url;window._pstE=e;close();
  var d=document.createElement("div");d.id="pstm";
  d.innerHTML='<div class="pst"><div class="psth"><b>🖼️ Affiche'+(C.rank?" · N°"+C.rank+" "+esc(C.gl.toLowerCase()):"")+'</b><button onclick="pstClose()" aria-label="Fermer">✕</button></div>'
   +'<img src="'+url+'" alt="Affiche">'
-  +'<label>📝 Texte prêt à publier</label><textarea id="psttx" rows="8">'+esc(lrr300(postText(e,C),e))+'</textarea>'
+  +'<label>📝 Texte prêt à publier · <span id="pstwc"></span></label><textarea id="psttx" rows="8" oninput="pstWc()">'+esc(lrr300(postText(e,C),e))+'</textarea>'
+  +(function(){var j=jDays(e);return j!==null&&j>=0?'<button class="pstb" style="background:#ffcd28;color:#111" onclick="pstClose();remPoster(\''+e.id+'\')">📅 Affiche '+(j===0?"Jour J":"J-"+j)+' du jour (style flyer)</button>':""})()
   +'<button class="pstb" onclick="pstCopy()">📋 Copier le texte</button>'
   +'<label>📣 Publier sur</label><div class="pstn">'+NET.map(function(n){return '<button style="background:'+n[2]+'" onclick="pstGo(\''+n[0]+'\')">'+n[1]+'</button>'}).join("")+'</div>'
   +'<a class="pstb" download="'+esc(name)+'" href="'+url+'">⬇️ Télécharger l\'affiche (1080 px)</a>'
   +'<small>Sur téléphone, le bouton ouvre le menu de partage avec l\'affiche et le texte. Sur ordinateur, l\'affiche est téléchargée et le texte copié : il suffit de les coller dans la publication.</small></div>';
- d.addEventListener("click",function(ev){if(ev.target===d)close()});document.body.appendChild(d)};
+ d.addEventListener("click",function(ev){if(ev.target===d)close()});document.body.appendChild(d);pstWc()};
 
 /* ===== Affiche de rappel (J-30, J-14, J-7, J-3, J-1, Jour J) + texte de rappel professionnel ===== */
 var PRE=[30,14,7,3,1,0];
@@ -8917,7 +8919,7 @@ function remText(e,jv,C){return lrr300(remText0(e,jv,C),e)}function remText0(e,j
  l.push("");l.push("#RestauDuRireTickets"+(e.city?" #"+tag(e.city):"")+(tag(e.title).length<=28?" #"+tag(e.title):""));
  return l.join("\n")}
 function toBlob(c){return new Promise(function(r){try{c.toBlob(r,"image/png")}catch(z){r(null)}})}
-function paintJJ(e,jv,im){
+function paintFlyer(e,im,o){
  var S=1500,c=document.createElement("canvas");c.width=S;c.height=S;var x=c.getContext("2d");
  x.fillStyle="#fff";x.fillRect(0,0,S,S);
  x.fillStyle="#f1f2f4";x.fillRect(0,255,700,1010);
@@ -8931,24 +8933,32 @@ function paintJJ(e,jv,im){
  x.save();x.shadowColor="rgba(0,40,90,.28)";x.shadowBlur=30;x.shadowOffsetY=10;x.fillStyle="#fff";x.fillRect(px,py,pw,ph);x.restore();
  if(im&&im.width){var k=Math.min(pw/im.width,ph/im.height),w=im.width*k,h=im.height*k;x.drawImage(im,px+(pw-w)/2,py+(ph-h)/2,w,h)}
  else{var g3=x.createLinearGradient(px,py,px,py+ph);g3.addColorStop(0,"#1c1b2e");g3.addColorStop(1,"#4a2f8f");x.fillStyle=g3;x.fillRect(px,py,pw,ph);x.fillStyle="#fff";F(x,64,900);wrapC(x,String(e.title||"").toUpperCase(),pw-100,.8).slice(0,6).forEach(function(l,i){dt(x,l,px+pw/2,py+400+i*80,.8,"center")})}
- var hd=jv===0?"C'EST AUJOURD'HUI !":jv===1?"C'EST DEMAIN !":"PLUS QUE "+jv+" JOURS !";
+ var hd=o.head||"";
  x.fillStyle="#0b355c";F(x,52,900);dt(x,hd,95,590,.8);
- var txt=jv===0?"JOUR J":"J-"+(jv<10?"0":"")+jv,sx=.62,sz=jv===0?300:360;
+ var txt=String(o.big||""),sx=.62,sz=txt.length>4?300:360;
  F(x,sz,900);var tw=mw(x,txt,sx);if(tw>560)sx*=560/tw;
  var gg=x.createLinearGradient(95,0,655,0);gg.addColorStop(0,"#0b355c");gg.addColorStop(1,"#0a6cbd");x.fillStyle=gg;
- dt(x,txt,95,jv===0?880:890,sx);
+ dt(x,txt,95,txt.length>4?880:890,sx);
  var d0=D0(e),dl=d0?d0.toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}).toUpperCase()+" · "+d0.toLocaleTimeString("fr-FR",{hour:"2-digit",minute:"2-digit"}).replace(":","H"):"";
  x.fillStyle="#0b355c";F(x,40,900);if(dl)dt(x,dl,95,985,.8);
  F(x,32,800);wrapC(x,[e.venue,e.city].filter(Boolean).join(", ").toUpperCase(),560,.85).slice(0,2).forEach(function(l,i){dt(x,l,95,1038+i*40,.85)});
+ if(o.extra){x.fillStyle="#0a6cbd";F(x,34,900);wrapC(x,String(o.extra).toUpperCase(),560,.85).slice(0,2).forEach(function(l,i){dt(x,l,95,1150+i*42,.85)})}
  qrBox(x,e,80,1272,300,210);
  x.fillStyle="#0b355c";F(x,46,900);wrapC(x,String(e.title||"").toUpperCase(),800,.8).slice(0,2).forEach(function(l,i){dt(x,l,410,1336+i*52,.8)});
  x.fillStyle="#0a6cbd";F(x,30,800);dt(x,"RÉSERVEZ SUR "+SITE(),410,1450,.85);
  return c}
+function jOpts(j){return{head:j===0?"C'EST AUJOURD'HUI !":j===1?"C'EST DEMAIN !":"PLUS QUE "+j+" JOURS !",big:j===0?"JOUR J":"J-"+(j<10?"0":"")+j}}
+function paintJJ(e,jv,im){return paintFlyer(e,im,jOpts(jv))}
+function clsOpts(e,C){var gl=String(C.gl||"").toUpperCase();return{head:C.rank?"CLASSEMENT "+gl:"BILLETTERIE OUVERTE",big:C.rank?"N°"+C.rank:(C.kind==="cap"?C.pct+" %":String(C.sold)),extra:C.kind==="cap"?"≈ "+C.pct+" % des billets vendus":C.sold+" billet"+(C.sold>1?"s":"")+" vendu"+(C.sold>1?"s":"")}}
+async function flyerImg(e,w){var im=null;if(w){try{var pu=evPoster(e);if(pu)im=await loadImg(pu)}catch(z){}}return im}
+async function flyerCls(e,C,w){return paintFlyer(e,await flyerImg(e,w),clsOpts(e,C))}
+window.lrrFlyer=async function(e,w){var im=await flyerImg(e,w),j=jDays(e),sd=D0(e),M=["JAN","FÉV","MARS","AVR","MAI","JUIN","JUIL","AOÛT","SEPT","OCT","NOV","DÉC"];
+ return paintFlyer(e,im,(j!==null&&j>=0)?jOpts(j):{head:"RÉSERVEZ VOTRE PLACE",big:sd?sd.getDate()+" "+M[sd.getMonth()]:"BILLETS"})};
 window.remPoster=async function(id,jv,st){
  var e=[].concat(typeof MYEV!=="undefined"?MYEV:[],typeof ALLEV!=="undefined"?ALLEV:[],typeof DBEV!=="undefined"?DBEV:[]).find(function(x){return x&&x.id===id});if(!e)return;
  var j=jDays(e);
  if(j!==null&&j<0){alert("Cet événement est déjà passé.");return}
- if(jv===undefined||jv===null){jv=(j===null?0:Math.max(0,j))}st=st||window._remSt||"jj";window._remSt=st;
+ if(jv===undefined||jv===null){jv=(j===null?0:Math.max(0,j))}st="jj";
  try{localStorage.setItem("lrr_jday_"+id,new Date().toDateString())}catch(z){}toast("⏰ Création de l'affiche de rappel…");
  try{if(!(ORD[id]&&ORD[id].length)&&typeof loadOrders==="function")await loadOrders(id)}catch(z){}
  try{await ensureSold(pool())}catch(z){}
@@ -8963,15 +8973,14 @@ window.remPoster=async function(id,jv,st){
  d.innerHTML='<div class="pst"><div class="psth"><b>⏰ Affiche de rappel · '+jLab(jv)+'</b><button onclick="pstClose()" aria-label="Fermer">✕</button></div>'
   +'<img src="'+url+'" alt="Affiche de rappel">'
   +'<label>📅 Choisir le jour</label><div class="pstj">'+chipsJ(e,jv).map(function(p){return '<button class="'+(p===jv?"on":"")+'" onclick="remPoster(\''+id+'\','+p+')">'+jLab(p)+(p===jDays(e)?" · aujourd'hui":"")+'</button>'}).join("")+'</div>'
-  +'<label>🎨 Style de l\'affiche</label><div class="pstj"><button class="'+(st==="jj"?"on":"")+'" onclick="remPoster(\''+id+'\','+jv+',\'jj\')">Flyer + J-N</button><button class="'+(st==="jj"?"":"on")+'" onclick="remPoster(\''+id+'\','+jv+',\'classic\')">Classique</button></div>'
-   +'<label>📝 Texte de rappel prêt à publier</label><textarea id="psttx" rows="10">'+esc(remText(e,jv,C))+'</textarea>'
+  +'<label>📝 Texte de rappel prêt à publier · <span id="pstwc"></span></label><textarea id="psttx" rows="10" oninput="pstWc()">'+esc(remText(e,jv,C))+'</textarea>'
   +'<button class="pstb" onclick="pstCopy()">📋 Copier le texte</button>'
   +'<label>📣 Publier sur</label><div class="pstn">'+NET.map(function(n){return '<button style="background:'+n[2]+'" onclick="pstGo(\''+n[0]+'\')">'+n[1]+'</button>'}).join("")+'</div>'
   +'<a class="pstb" download="'+esc(name)+'" href="'+url+'">⬇️ Télécharger l\'affiche (1080 px)</a></div>';
- d.addEventListener("click",function(ev){if(ev.target===d)close()});document.body.appendChild(d)};
+ d.addEventListener("click",function(ev){if(ev.target===d)close()});document.body.appendChild(d);pstWc()};
 window.remTab=function(){
  var L=(typeof MYEV!=="undefined"?MYEV:[]).filter(function(e){return e.status==="published"});
- var h='<h3 class="odh3">⏰ Affiche de rappel</h3><p class="odsm">L\'affiche du jour se met à jour toute seule : J-20 aujourd\'hui, J-19 demain, jusqu\'au Jour J. Elle contient le QR code et un texte professionnel (500 mots maximum) prêt à publier.</p>';
+ var h='<h3 class="odh3">⏰ Affiche de rappel</h3><p class="odsm">L\'affiche du jour se met à jour toute seule : J-20 aujourd\'hui, J-19 demain, jusqu\'au Jour J. Elle contient le QR code et un texte professionnel (250 mots maximum) prêt à publier.</p>';
  if(!L.length)return h+'<p class="odsm">Aucun événement publié pour le moment.</p>';
  return h+L.map(function(e){var j=jDays(e),st=j===null?"":j<0?"Événement passé":j===0?"C'est aujourd'hui":"J-"+j+" · "+j+" jour"+(j>1?"s":"")+" restant"+(j>1?"s":"");
   return '<div class="odc"><div class="odh"><b>'+esc(e.title)+'</b></div><div class="odsm">'+esc(fmtRange(e))+' • '+esc([e.venue,e.city].filter(Boolean).join(", "))+'</div><div class="odsm" style="margin:4px 0 8px"><b>'+st+'</b></div><div class="odbn">'+(j!==null&&j<0?"":(j===null?"":'<button class="ab" style="background:#ffcd28;color:#111;font-weight:900" onclick="remPoster(\''+e.id+'\')">📅 Affiche d\'aujourd\'hui · '+jLab(j)+(newDay(e.id)?" 🆕":"")+'</button>')+PRE.filter(function(p){return j===null||p<j}).map(function(p){return '<button class="ab" onclick="remPoster(\''+e.id+'\','+p+')">'+jLab(p)+'</button>'}).join(""))+'</div></div>'}).join("")};
@@ -9664,8 +9673,8 @@ window.pwDone=async function(){const{c,i}=window.PWS,k=$("pwk").value.trim(),n=$
 <script>/* v29 : textes de rappel et de partage de 300 mots minimum ; validation du compte par SMS / WhatsApp */
 (function(){
 const ph=x=>String(x||"").replace(/[^\d+]/g,""),W=t=>String(t||"").trim().split(/\s+/).filter(Boolean).length;
-const cap500=function(t){t=String(t||"");const re=/\S+/g;let m,n=0,end=-1;while((m=re.exec(t))){n++;if(n===500){end=m.index+m[0].length;break}}if(end<0)return t;let c=t.slice(0,end);const q=Math.max(c.lastIndexOf(". "),c.lastIndexOf("!"),c.lastIndexOf("?"),c.lastIndexOf("\n"));if(q>c.length*0.6)c=c.slice(0,q+1);return c.trim()};window.cap500=cap500;
-window.lrr300=function(t,e){t=String(t||"");const cp=cap500;if(W(t)>=300)return cp(t);e=e||{};const T=e.title||"cet événement",pl=[e.venue,e.city].filter(Boolean).join(", "),
+const cap500=function(t){t=String(t||"");const re=/\S+/g;let m,n=0,end=-1;while((m=re.exec(t))){n++;if(n===250){end=m.index+m[0].length;break}}if(end<0)return t;let c=t.slice(0,end);const q=Math.max(c.lastIndexOf(". "),c.lastIndexOf("!"),c.lastIndexOf("?"),c.lastIndexOf("\n"));if(q>c.length*0.6)c=c.slice(0,q+1);return c.trim()};window.cap500=cap500;
+window.lrr300=function(t,e){t=String(t||"");const cp=cap500;if(W(t)>=120)return cp(t);e=e||{};const T=e.title||"cet événement",pl=[e.venue,e.city].filter(Boolean).join(", "),
 B="\n\n📌 Informations pratiques\nPour bien profiter de « "+T+" »"+(pl?" ("+pl+")":"")+", voici l'essentiel à retenir. Les portes ouvrent environ une heure avant le début du spectacle : nous vous conseillons d'arriver tôt afin d'éviter l'attente à l'entrée et de choisir tranquillement votre place. Présentez votre billet avec son QR code, directement sur votre téléphone ou imprimé. Pensez à charger votre batterie et à augmenter la luminosité de l'écran pour que le scan soit rapide. Chaque billet n'est valable qu'une seule fois : ne partagez jamais votre QR code ni votre code de billet avec des inconnus et ne l'envoyez pas en photo sur les réseaux sociaux.\n\n🎫 Votre billet\nVous pouvez retrouver votre billet à tout moment dans la rubrique « Mes places » du site Restau du Rire Tickets, avec votre nom complet et votre numéro WhatsApp. En cas de perte, de doute ou d'erreur sur votre commande, contactez l'organisation avant le jour de l'événement : plus vous nous écrivez tôt, plus nous pouvons vous aider vite.\n\n🤝 Bonne ambiance pour tous\nNous vous demandons de respecter les artistes, le personnel et les autres spectateurs, de couper la sonnerie de votre téléphone pendant les passages sur scène et de suivre les consignes de l'équipe d'accueil et de sécurité. Les objets dangereux et les produits interdits ne sont pas admis. Si vous venez en groupe, entrez ensemble avec vos billets prêts afin de fluidifier l'accueil.\n\n📣 Parlez-en autour de vous\nVotre présence compte énormément pour les artistes et pour toute l'équipe. Invitez vos amis, votre famille et vos collègues : les places partent vite et chaque spectateur contribue à créer une ambiance inoubliable. Transférez ce message à vos proches et partagez le lien de réservation pour qu'ils puissent réserver à leur tour en toute sécurité.\n\n🙏 Merci de votre confiance\nToute l'équipe est mobilisée pour que cette soirée soit réussie du début à la fin. Pour toute question, répondez simplement à ce message ou écrivez-nous sur WhatsApp. Nous avons hâte de vous retrouver, de rire, de vibrer et de partager ensemble un moment que vous n'oublierez pas. À très bientôt !";
 let K="";try{const X=(e.modes||{}).tkx||{},L=(e.tickets||[]).map(function(k){const x=X[k.id]||{};return "🎟️ "+k.name+" : "+(k.price>0?k.price+" "+(k.currency==="USD"?"$":"FC"):"Gratuit")+(x.group>1?" (valable pour "+x.group+" personnes)":"")+(x.promo?" — 🎁 "+x.promo:"")+(x.perk?" — ✓ "+x.perk:"")});if(L.length)K="\n\n💳 Nos billets\n"+L.join("\n")}catch(z){}return cp(t+K+B)};
 signin=async function(e,pw){const b=String(e).includes("@")?{email:e,password:pw}:{phone:ph(e),password:pw};const r=await fetch(SB+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:KEY,"Content-Type":"application/json"},body:JSON.stringify(b)});if(!r.ok)return false;setSession(await r.json());await initRole();return true};
